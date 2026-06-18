@@ -1,0 +1,51 @@
+---
+import Base from '../../layouts/Base.astro';
+const title = 'Text to PDF — Convert Text to a PDF File (Free, Private)';
+const description = 'Free text to PDF converter. Paste your text, pick page size and font size, and download a clean PDF — generated in your browser, nothing uploaded.';
+---
+<Base title={title} description={description}>
+  <Fragment slot="head">
+    <script is:inline src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+  </Fragment>
+  <header class="head"><div class="wrap">
+    <p class="kicker">Document Tool</p><h1>Text to PDF</h1>
+    <p>Paste text, get a clean PDF — made in your browser, never uploaded.</p>
+  </div></header>
+  <div class="wrap"><div class="tool">
+    <textarea id="t" rows="9" placeholder="Type or paste your text here…"></textarea>
+    <div class="row2" style="margin-top:14px">
+      <label class="ctl">Page size<select id="size"><option value="a4" selected>A4</option><option value="letter">Letter</option></select></label>
+      <label class="ctl">Font size<select id="fs"><option>11</option><option selected>12</option><option>14</option><option>16</option></select></label>
+    </div>
+    <button id="dl" class="dlbtn" type="button">⬇ Download PDF</button>
+  </div></div>
+  <div class="ad">Ad space</div>
+  <div class="content">
+    <h2>Turn text into a PDF</h2>
+    <p>Paste any text — notes, an article, a list — choose A4 or Letter and a font size, and download a tidy, multi-page PDF with automatic line wrapping and page breaks. It's handy for sharing plain text as a proper document, printing, or attaching to an email. Everything is generated locally in your browser, so your text is never uploaded.</p>
+    <div class="xlinks"><a href="/tools/word-counter">Word Counter →</a><a href="/tools/pdf-tools">Merge PDF →</a></div>
+  </div>
+  <style>
+    textarea{width:100%;background:var(--surface2);border:1px solid var(--line);border-radius:11px;color:var(--txt);font:inherit;font-size:15px;line-height:1.6;padding:14px;outline:none;resize:vertical}
+    textarea:focus{border-color:var(--brand)}
+    .ctl{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:var(--dim)}
+    .ctl select{background:var(--surface2);border:1px solid var(--line);border-radius:9px;color:var(--txt);font:inherit;font-weight:600;padding:10px 11px}
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .dlbtn{margin-top:14px;padding:12px 20px;border-radius:10px;border:0;background:linear-gradient(135deg,var(--brand2),var(--brand));color:#fff;font:inherit;font-weight:700;cursor:pointer}
+  </style>
+  <script is:inline>
+    (function(){
+      function $(i){return document.getElementById(i);}
+      $('dl').onclick=function(){
+        if(typeof jspdf==='undefined'){alert('PDF engine still loading — try again in a second.');return;}
+        var doc=new jspdf.jsPDF({unit:'pt',format:$('size').value});
+        var fs=parseInt($('fs').value,10);doc.setFontSize(fs);
+        var pw=doc.internal.pageSize.getWidth(),ph=doc.internal.pageSize.getHeight(),m=48,lh=fs*1.45;
+        var lines=doc.splitTextToSize($('t').value||' ',pw-m*2);
+        var y=m;
+        lines.forEach(function(ln){ if(y>ph-m){doc.addPage();y=m;} doc.text(ln,m,y); y+=lh; });
+        doc.save('document.pdf');
+      };
+    })();
+  </script>
+</Base>

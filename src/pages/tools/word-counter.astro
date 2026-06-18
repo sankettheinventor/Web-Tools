@@ -1,0 +1,53 @@
+---
+import Base from '../../layouts/Base.astro';
+const title = 'Word Counter — Words, Characters, Reading Time (Free)';
+const description = 'Free word counter. Count words, characters, sentences and paragraphs as you type, with estimated reading and speaking time. Runs in your browser — nothing is uploaded.';
+---
+<Base title={title} description={description}>
+  <header class="head"><div class="wrap">
+    <p class="kicker">Text Tool</p><h1>Word Counter</h1>
+    <p>Counts update live as you type or paste.</p>
+  </div></header>
+  <div class="wrap"><div class="tool">
+    <textarea id="t" rows="8" placeholder="Type or paste your text here…"></textarea>
+    <div class="stats">
+      <div class="stat"><div class="sv" id="words">0</div><div class="sk">Words</div></div>
+      <div class="stat"><div class="sv" id="chars">0</div><div class="sk">Characters</div></div>
+      <div class="stat"><div class="sv" id="charsns">0</div><div class="sk">No spaces</div></div>
+      <div class="stat"><div class="sv" id="sent">0</div><div class="sk">Sentences</div></div>
+      <div class="stat"><div class="sv" id="para">0</div><div class="sk">Paragraphs</div></div>
+      <div class="stat"><div class="sv" id="read">0s</div><div class="sk">Reading time</div></div>
+    </div>
+  </div></div>
+  <div class="ad">Ad space</div>
+  <div class="content">
+    <h2>About this word counter</h2>
+    <p>Writers, students and marketers all need to hit length targets — an essay word count, an SEO article, a caption. This counter shows words, characters (with and without spaces), sentences and paragraphs the moment you type, plus an estimated <b>reading time</b> (about 200 words per minute) and the text is never uploaded. Need exact character limits for social posts? Use the <a href="/tools/character-counter">character counter</a>.</p>
+    <div class="xlinks"><a href="/tools/character-counter">Character Counter →</a><a href="/tools/case-converter">Case Converter →</a></div>
+  </div>
+  <style>
+    textarea{width:100%;background:var(--surface2);border:1px solid var(--line);border-radius:11px;color:var(--txt);font:inherit;font-size:15px;line-height:1.6;padding:14px;outline:none;resize:vertical}
+    textarea:focus{border-color:var(--brand)}
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-top:16px}
+    .stat{background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center}
+    .sv{font-size:26px;font-weight:800;color:var(--brand)}.sk{font-size:12px;color:var(--dim);margin-top:2px;font-weight:600}
+  </style>
+  <script is:inline>
+    (function(){
+      function $(i){return document.getElementById(i);}
+      function fmt(n){return n.toLocaleString();}
+      function rt(w){var s=Math.round(w/200*60);if(s<60)return s+'s';var m=Math.floor(s/60);return m+'m '+(s%60)+'s';}
+      function c(){
+        var t=$('t').value;
+        var words=t.trim()?t.trim().split(/\s+/).length:0;
+        $('words').textContent=fmt(words);
+        $('chars').textContent=fmt(t.length);
+        $('charsns').textContent=fmt(t.replace(/\s/g,'').length);
+        $('sent').textContent=fmt((t.match(/[^.!?]+[.!?]+/g)||[]).length);
+        $('para').textContent=fmt(t.split(/\n+/).filter(function(p){return p.trim();}).length);
+        $('read').textContent=words?rt(words):'0s';
+      }
+      $('t').addEventListener('input',c);c();
+    })();
+  </script>
+</Base>

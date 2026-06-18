@@ -13,6 +13,7 @@ export async function GET(context: { site?: URL }) {
     'tools/jpg-to-png', 'tools/png-to-jpg', 'tools/webp-to-png',
     'tools/png-to-webp', 'tools/jpg-to-webp', 'tools/webp-to-jpg',
     'tools/color-picker', 'tools/palette-extractor', 'tools/color-converter', 'tools/gradient-generator',
+    'tools/word-counter', 'tools/character-counter', 'tools/case-converter', 'tools/text-to-pdf',
     'about', 'privacy-policy', 'terms',
   ];
   const urls = paths.map((p) => new URL(p, site).href);

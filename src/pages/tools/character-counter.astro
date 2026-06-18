@@ -1,0 +1,47 @@
+---
+import Base from '../../layouts/Base.astro';
+const title = 'Character Counter — With Social & SEO Limits (Free)';
+const description = 'Free character counter. Count characters live and see how you fit against X/Twitter, SMS, Instagram, and SEO meta title/description limits. Runs in your browser.';
+---
+<Base title={title} description={description}>
+  <header class="head"><div class="wrap">
+    <p class="kicker">Text Tool</p><h1>Character Counter</h1>
+    <p>Live character count, with the limits that matter for posts and SEO.</p>
+  </div></header>
+  <div class="wrap"><div class="tool">
+    <textarea id="t" rows="6" placeholder="Type or paste your text here…"></textarea>
+    <div class="big"><span id="count">0</span> characters · <span id="words">0</span> words</div>
+    <div class="limits" id="limits"></div>
+  </div></div>
+  <div class="ad">Ad space</div>
+  <div class="content">
+    <h2>Why character limits matter</h2>
+    <p>Different platforms cut you off at different lengths. This counter tracks your text against the most common limits in real time, so you know before you post: <b>X/Twitter</b> (280), <b>SMS</b> (160 per segment), <b>Instagram caption</b> (2,200), and the SEO sweet spots for a <b>meta title</b> (~60) and <b>meta description</b> (~160). The bar turns red when you go over. Nothing is uploaded — it all runs in your browser. For words, sentences and reading time, see the <a href="/tools/word-counter">word counter</a>.</p>
+    <div class="xlinks"><a href="/tools/word-counter">Word Counter →</a><a href="/tools/case-converter">Case Converter →</a></div>
+  </div>
+  <style>
+    textarea{width:100%;background:var(--surface2);border:1px solid var(--line);border-radius:11px;color:var(--txt);font:inherit;font-size:15px;line-height:1.6;padding:14px;outline:none;resize:vertical}
+    textarea:focus{border-color:var(--brand)}
+    .big{margin-top:14px;font-size:18px;font-weight:700}.big span{color:var(--brand)}
+    .limits{display:grid;gap:10px;margin-top:16px}
+    .lim{background:var(--surface2);border:1px solid var(--line);border-radius:11px;padding:12px 14px}
+    .lim-top{display:flex;justify-content:space-between;font-size:13.5px;font-weight:600}.lim-top .n{color:var(--dim)}
+    .bar{height:6px;background:var(--line);border-radius:6px;margin-top:8px;overflow:hidden}
+    .fill{height:100%;border-radius:6px;background:var(--brand);transition:width .2s}
+    .fill.over{background:var(--err)}
+  </style>
+  <script is:inline>
+    (function(){
+      var L=[['X / Twitter',280],['SMS segment',160],['Meta title (SEO)',60],['Meta description (SEO)',160],['Instagram caption',2200]];
+      function $(i){return document.getElementById(i);}
+      $('limits').innerHTML=L.map(function(l,i){return '<div class="lim"><div class="lim-top"><span>'+l[0]+'</span><span class="n" id="n'+i+'">0 / '+l[1]+'</span></div><div class="bar"><div class="fill" id="f'+i+'"></div></div></div>';}).join('');
+      function c(){
+        var t=$('t').value,n=t.length;
+        $('count').textContent=n.toLocaleString();
+        $('words').textContent=(t.trim()?t.trim().split(/\s+/).length:0).toLocaleString();
+        L.forEach(function(l,i){var pct=Math.min(100,n/l[1]*100);var f=$('f'+i);f.style.width=pct+'%';f.className='fill'+(n>l[1]?' over':'');$('n'+i).textContent=n+' / '+l[1];$('n'+i).style.color=n>l[1]?'var(--err)':'var(--dim)';});
+      }
+      $('t').addEventListener('input',c);c();
+    })();
+  </script>
+</Base>

@@ -1,0 +1,66 @@
+---
+import Base from '../../layouts/Base.astro';
+const title = 'Case Converter — UPPERCASE, lowercase, Title, camelCase (Free)';
+const description = 'Free text case converter. Switch text between UPPERCASE, lowercase, Title Case, Sentence case, camelCase, snake_case and kebab-case instantly. Runs in your browser.';
+---
+<Base title={title} description={description}>
+  <header class="head"><div class="wrap">
+    <p class="kicker">Text Tool</p><h1>Case Converter</h1>
+    <p>Paste text, tap a case — copy the result.</p>
+  </div></header>
+  <div class="wrap"><div class="tool">
+    <textarea id="t" rows="6" placeholder="Type or paste your text here…">The quick brown fox jumps over the lazy dog</textarea>
+    <div class="cases">
+      <button class="cbtn" data-c="upper">UPPERCASE</button>
+      <button class="cbtn" data-c="lower">lowercase</button>
+      <button class="cbtn" data-c="title">Title Case</button>
+      <button class="cbtn" data-c="sentence">Sentence case</button>
+      <button class="cbtn" data-c="camel">camelCase</button>
+      <button class="cbtn" data-c="pascal">PascalCase</button>
+      <button class="cbtn" data-c="snake">snake_case</button>
+      <button class="cbtn" data-c="kebab">kebab-case</button>
+      <button class="cbtn" data-c="constant">CONSTANT_CASE</button>
+    </div>
+    <button id="copy" class="copybtn" type="button">Copy result</button>
+  </div></div>
+  <div class="ad">Ad space</div>
+  <div class="content">
+    <h2>Every case, explained</h2>
+    <ul>
+      <li><b>Title Case</b> capitalises Each Word — good for headings.</li>
+      <li><b>Sentence case</b> capitalises only the first letter of each sentence.</li>
+      <li><b>camelCase / PascalCase</b> join words for variable and class names.</li>
+      <li><b>snake_case / kebab-case / CONSTANT_CASE</b> for code, filenames and config keys.</li>
+    </ul>
+    <p>Transform applies in place so you can chain them, then copy. Nothing is uploaded.</p>
+    <div class="xlinks"><a href="/tools/word-counter">Word Counter →</a><a href="/tools/text-to-pdf">Text to PDF →</a></div>
+  </div>
+  <style>
+    textarea{width:100%;background:var(--surface2);border:1px solid var(--line);border-radius:11px;color:var(--txt);font:inherit;font-size:15px;line-height:1.6;padding:14px;outline:none;resize:vertical}
+    textarea:focus{border-color:var(--brand)}
+    .cases{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+    .cbtn{padding:9px 14px;border-radius:9px;border:1px solid var(--line);background:var(--surface2);color:var(--txt);font:inherit;font-weight:600;font-size:13px;cursor:pointer}
+    .cbtn:hover{border-color:var(--brand);color:var(--brand)}
+    .copybtn{margin-top:14px;padding:11px 18px;border-radius:10px;border:0;background:linear-gradient(135deg,var(--brand2),var(--brand));color:#fff;font:inherit;font-weight:700;cursor:pointer}
+  </style>
+  <script is:inline>
+    (function(){
+      function $(i){return document.getElementById(i);}
+      function words(t){return t.split(/[\s_-]+/).filter(Boolean);}
+      function cap(w){return w.charAt(0).toUpperCase()+w.slice(1).toLowerCase();}
+      var T={
+        upper:function(t){return t.toUpperCase();},
+        lower:function(t){return t.toLowerCase();},
+        title:function(t){return t.toLowerCase().replace(/\b\w/g,function(c){return c.toUpperCase();});},
+        sentence:function(t){return t.toLowerCase().replace(/(^\s*\w|[.!?]\s+\w)/g,function(c){return c.toUpperCase();});},
+        camel:function(t){return words(t).map(function(w,i){return i===0?w.toLowerCase():cap(w);}).join('');},
+        pascal:function(t){return words(t).map(cap).join('');},
+        snake:function(t){return words(t).map(function(w){return w.toLowerCase();}).join('_');},
+        kebab:function(t){return words(t).map(function(w){return w.toLowerCase();}).join('-');},
+        constant:function(t){return words(t).map(function(w){return w.toUpperCase();}).join('_');}
+      };
+      document.querySelectorAll('.cbtn').forEach(function(b){b.onclick=function(){$('t').value=T[b.dataset.c]($('t').value);};});
+      $('copy').onclick=function(){navigator.clipboard&&navigator.clipboard.writeText($('t').value);$('copy').textContent='Copied!';setTimeout(function(){$('copy').textContent='Copy result';},1000);};
+    })();
+  </script>
+</Base>
