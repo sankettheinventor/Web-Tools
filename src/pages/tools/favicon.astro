@@ -163,7 +163,7 @@ const description = 'Free favicon and app icon generator. Make a favicon from an
         zip.file('favicon.ico', makeIco(icoEntries));
         zip.file('head-snippet.html', $('code').textContent);
         var blob=await zip.generateAsync({type:'blob'});
-        dl(blob,'thor-icons.zip'); $('zip').textContent='⬇ All sizes (.zip)';
+        dl(blob,'snapjar-icons.zip'); $('zip').textContent='⬇ All sizes (.zip)';
       };
 
       // tabs

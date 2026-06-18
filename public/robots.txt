@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://thor-tools.netlify.app/sitemap.xml
+Sitemap: https://snapjar.netlify.app/sitemap.xml

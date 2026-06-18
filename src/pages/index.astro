@@ -1,6 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
-const title = 'Thor Tools — Free Online Calculators & Image Tools (No Signup, No Upload)';
+const title = 'SnapJar — Free Online Calculators & Image Tools (No Signup, No Upload)';
 const description = 'Free, fast, private online calculators and image tools. EMI, mortgage, SIP, income tax, compound interest, watermark and more — all run in your browser. Nothing is uploaded.';
 
 // Every tool is its own indexable page. This ItemList tells Google + AI
@@ -47,7 +47,7 @@ const tools = [
 const itemList = {
   '@context': 'https://schema.org',
   '@type': 'ItemList',
-  name: 'Free Online Tools — Thor Tools',
+  name: 'Free Online Tools — SnapJar',
   itemListElement: tools.map((t, i) => ({
     '@type': 'ListItem', position: i + 1, name: t.name,
     url: new URL(t.url, Astro.site).href,
@@ -150,6 +150,14 @@ const itemList = {
         <a class="tcard" href="/tools/character-counter"><div class="ti">📏</div><h3>Character Counter</h3><p>With X, SMS &amp; SEO limits.</p></a>
         <a class="tcard" href="/tools/case-converter"><div class="ti">🔠</div><h3>Case Converter</h3><p>UPPER, Title, camelCase &amp; more.</p></a>
         <a class="tcard" href="/tools/text-to-pdf"><div class="ti">📄</div><h3>Text to PDF</h3><p>Paste text, download a PDF.</p></a>
+      </div>
+    </section>
+
+    <section class="cat" id="media">
+      <h2>🎬 Media</h2>
+      <p class="csub">Our companion downloader (server-powered, opens in a new tab).</p>
+      <div class="tgrid">
+        <a class="tcard" href="https://elegant-crostata-510d7b.netlify.app/" target="_blank" rel="noopener"><div class="ti">⬇️</div><h3>Video Downloader ↗</h3><p>Save video from YouTube, Vimeo, TikTok &amp; 1000+ sites.</p></a>
       </div>
     </section>
   </div>

@@ -1,6 +1,6 @@
 // Self-generated sitemap for all current pages.
 export async function GET(context: { site?: URL }) {
-  const site = context.site?.href ?? 'https://thor-tools.netlify.app/';
+  const site = context.site?.href ?? 'https://snapjar.netlify.app/';
   const paths = [
     '',
     'calculators/emi', 'calculators/mortgage', 'calculators/sip',
