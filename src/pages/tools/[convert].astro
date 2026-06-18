@@ -1,0 +1,110 @@
+---
+import Base from '../../layouts/Base.astro';
+
+// One template → a dedicated, individually-rankable page per conversion.
+const CONVERSIONS = [
+  { slug: 'jpg-to-png',  from: 'JPG',  to: 'PNG',  mime: 'image/png',  lossy: false },
+  { slug: 'png-to-jpg',  from: 'PNG',  to: 'JPG',  mime: 'image/jpeg', lossy: true  },
+  { slug: 'webp-to-png', from: 'WebP', to: 'PNG',  mime: 'image/png',  lossy: false },
+  { slug: 'png-to-webp', from: 'PNG',  to: 'WebP', mime: 'image/webp', lossy: true  },
+  { slug: 'jpg-to-webp', from: 'JPG',  to: 'WebP', mime: 'image/webp', lossy: true  },
+  { slug: 'webp-to-jpg', from: 'WebP', to: 'JPG',  mime: 'image/jpeg', lossy: true  },
+];
+
+export function getStaticPaths() {
+  const list = [
+    { slug: 'jpg-to-png',  from: 'JPG',  to: 'PNG',  mime: 'image/png',  lossy: false },
+    { slug: 'png-to-jpg',  from: 'PNG',  to: 'JPG',  mime: 'image/jpeg', lossy: true  },
+    { slug: 'webp-to-png', from: 'WebP', to: 'PNG',  mime: 'image/png',  lossy: false },
+    { slug: 'png-to-webp', from: 'PNG',  to: 'WebP', mime: 'image/webp', lossy: true  },
+    { slug: 'jpg-to-webp', from: 'JPG',  to: 'WebP', mime: 'image/webp', lossy: true  },
+    { slug: 'webp-to-jpg', from: 'WebP', to: 'JPG',  mime: 'image/jpeg', lossy: true  },
+  ];
+  return list.map((c) => ({ params: { convert: c.slug }, props: c }));
+}
+
+const c = Astro.props;
+const title = `${c.from} to ${c.to} Converter — Free & Private (In Your Browser)`;
+const description = `Free ${c.from} to ${c.to} converter. Convert ${c.from} images to ${c.to} instantly in your browser — batch, high quality, no signup, and nothing is uploaded.`;
+const ext = c.to.toLowerCase() === 'jpg' ? 'jpg' : c.to.toLowerCase();
+---
+<Base title={title} description={description}>
+  <header class="head"><div class="wrap">
+    <p class="kicker">Image Converter</p><h1>{c.from} to {c.to} Converter</h1>
+    <p>Convert {c.from} images to {c.to} — instantly, in your browser, nothing uploaded.</p>
+  </div></header>
+  <div class="wrap"><div class="tool wm">
+    <div id="cfg" data-mime={c.mime} data-ext={ext} data-lossy={c.lossy ? '1' : '0'} hidden></div>
+    <div id="drop" class="drop"><input id="file" type="file" accept="image/*" multiple hidden />
+      <div class="drop-ic">🔄</div><p class="drop-t">Drop {c.from} images, or <button id="browse" type="button" class="linklike">browse</button></p>
+      <p class="drop-s">Batch supported · 🔒 nothing leaves your device</p></div>
+    <div id="editor" hidden>
+      <div class="wm-grid">
+        <div class="wm-preview"><canvas id="canvas" aria-label="Preview"></canvas><div class="thumbs" id="thumbs"></div></div>
+        <div class="wm-controls">
+          {c.lossy && (
+            <label class="ctl">Quality <span class="cv" id="qV">92%</span><input id="q" type="range" min="40" max="100" step="2" value="92" /></label>
+          )}
+          <div class="sizes"><span>New: <b id="nSize" class="hl">—</b></span></div>
+          <div class="wm-actions">
+            <button id="dl" type="button" class="wm-btn">⬇ Download {c.to}</button>
+            <button id="dlall" type="button" class="wm-btn ghost" hidden>Download all</button>
+            <button id="reset" type="button" class="wm-btn ghost">Start over</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div></div>
+  <div class="ad">Ad space</div>
+  <div class="content">
+    <h2>How to convert {c.from} to {c.to}</h2>
+    <p>Drop one or more {c.from} images above and they're converted to {c.to} right away — then download a single file or the whole batch. {c.to === 'PNG' ? 'PNG is lossless and supports transparency, ideal for logos, icons and graphics.' : c.to === 'WebP' ? 'WebP gives noticeably smaller files than JPG or PNG at the same quality, great for the web.' : 'JPG is the most universal format and keeps file sizes small for photos.'}</p>
+    <p><b>Everything runs in your browser</b> — your {c.from} files are never uploaded, so the conversion is instant and completely private.</p>
+    <div class="xlinks">
+      <a href="/tools/jpg-to-png">JPG→PNG</a><a href="/tools/png-to-jpg">PNG→JPG</a>
+      <a href="/tools/webp-to-png">WebP→PNG</a><a href="/tools/png-to-webp">PNG→WebP</a>
+      <a href="/tools/compress">Compressor →</a>
+    </div>
+  </div>
+  <style>
+    .drop{border:2px dashed var(--line);border-radius:16px;background:var(--surface2);padding:48px 24px;text-align:center;cursor:pointer}
+    .drop.drag{border-color:var(--brand)}.drop-ic{font-size:44px;margin-bottom:10px}.drop-t{font-size:17px;font-weight:600}.drop-s{font-size:13px;color:var(--dim);margin-top:8px}
+    .linklike{background:none;border:0;color:var(--brand);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline}
+    .wm{padding:20px}.wm-grid{display:grid;grid-template-columns:1fr 290px;gap:22px}.wm-preview{min-width:0}
+    #canvas{width:100%;height:auto;max-height:54vh;object-fit:contain;border:1px solid var(--line);border-radius:12px;background:var(--surface2)}
+    .thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.thumb{width:50px;height:50px;border-radius:8px;object-fit:cover;border:2px solid var(--line);cursor:pointer}.thumb.sel{border-color:var(--brand)}
+    .wm-controls{display:flex;flex-direction:column;gap:14px}.ctl{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:var(--dim)}.cv{float:right;color:var(--brand);font-weight:700}
+    .sizes{font-size:13.5px;color:var(--dim);background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:12px}.sizes .hl{color:var(--brand);font-weight:700}
+    .wm-actions{display:flex;gap:10px;flex-wrap:wrap}.wm-btn{flex:1;padding:12px;border-radius:10px;font-weight:700;color:#fff;border:0;cursor:pointer;background:linear-gradient(135deg,var(--brand2),var(--brand))}
+    .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line);flex:0 0 auto}
+    @media(max-width:680px){.wm-grid{grid-template-columns:1fr}}
+  </style>
+  <script is:inline>
+    (function(){
+      var cfg=document.getElementById('cfg'), MIME=cfg.dataset.mime, EXT=cfg.dataset.ext, LOSSY=cfg.dataset.lossy==='1';
+      var images=[], sel=0;
+      function $(i){return document.getElementById(i);}
+      function fmtKB(b){return b>1048576?(b/1048576).toFixed(2)+' MB':Math.round(b/1024)+' KB';}
+      function quality(){var q=$('q');return q?parseInt(q.value,10)/100:0.92;}
+      function render(c, item){
+        var w=item.img.naturalWidth,h=item.img.naturalHeight;c.width=w;c.height=h;var x=c.getContext('2d');
+        if(MIME==='image/jpeg'){x.fillStyle='#fff';x.fillRect(0,0,w,h);} x.drawImage(item.img,0,0,w,h);
+      }
+      function preview(){ if(!images[sel])return; render($('canvas'),images[sel]);
+        $('canvas').toBlob(function(b){if(b)$('nSize').textContent=fmtKB(b.size);},MIME,quality()); }
+      function thumbs(){var t=$('thumbs');t.innerHTML='';images.forEach(function(it,i){var im=document.createElement('img');im.src=it.img.src;im.className='thumb'+(i===sel?' sel':'');im.onclick=function(){sel=i;preview();thumbs();};t.appendChild(im);});$('dlall').hidden=images.length<2;}
+      function add(files){Array.prototype.slice.call(files).filter(function(f){return f.type.indexOf('image/')===0;}).forEach(function(f){var im=new Image();im.onload=function(){images.push({img:im,name:f.name.replace(/\.[^.]+$/,'')});$('drop').hidden=true;$('editor').hidden=false;sel=images.length-1;preview();thumbs();};im.src=URL.createObjectURL(f);});}
+      function download(item){var c=document.createElement('canvas');render(c,item);c.toBlob(function(b){var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=item.name+'.'+EXT;a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);},MIME,quality());}
+      $('browse').onclick=function(){$('file').click();};
+      $('drop').onclick=function(e){if(e.target.id==='drop'||e.target.className.indexOf('drop-')===0)$('file').click();};
+      $('file').onchange=function(e){add(e.target.files);};
+      ['dragover','dragenter'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.add('drag');});});
+      ['dragleave','drop'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.remove('drag');});});
+      $('drop').addEventListener('drop',function(e){add(e.dataTransfer.files);});
+      if($('q'))$('q').addEventListener('input',function(){$('qV').textContent=$('q').value+'%';preview();});
+      $('dl').onclick=function(){if(images[sel])download(images[sel]);};
+      $('dlall').onclick=function(){images.forEach(function(it,i){setTimeout(function(){download(it);},i*350);});};
+      $('reset').onclick=function(){images=[];sel=0;$('thumbs').innerHTML='';$('file').value='';$('editor').hidden=true;$('drop').hidden=false;};
+    })();
+  </script>
+</Base>
