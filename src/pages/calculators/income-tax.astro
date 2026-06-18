@@ -1,0 +1,116 @@
+---
+import Base from '../../layouts/Base.astro';
+const title = 'Income Tax Calculator India (New vs Old Regime, FY 2025-26)';
+const description = 'Free income tax calculator for India. Compare the new and old tax regimes for FY 2025-26, including standard deduction, 87A rebate and 4% cess. Instant, private estimate.';
+---
+<Base title={title} description={description}>
+  <header class="head"><div class="wrap">
+    <p class="kicker">Finance Calculator</p>
+    <h1>Income Tax Calculator</h1>
+    <p>Estimate your India income tax for FY 2025-26 — compare the new and old regimes live.</p>
+  </div></header>
+
+  <div class="wrap">
+    <div class="tool">
+      <div class="field">
+        <div class="field-top"><label for="income">Annual gross income</label>
+          <div class="valwrap"><span class="sym">₹</span><input id="income" type="number" inputmode="decimal" min="0" value="1200000" /></div></div>
+        <input id="incomeR" type="range" min="0" max="5000000" step="25000" value="1200000" aria-label="Annual gross income" />
+      </div>
+
+      <div class="grid2">
+        <div class="field">
+          <div class="field-top"><label for="regime">Tax regime</label></div>
+          <select id="regime" aria-label="Tax regime">
+            <option value="new" selected>New regime (FY 2025-26)</option>
+            <option value="old">Old regime</option>
+          </select>
+        </div>
+        <div class="field" id="dedField" style="display:none">
+          <div class="field-top"><label for="ded">Deductions (80C, etc.)</label>
+            <div class="valwrap"><span class="sym">₹</span><input id="ded" type="number" inputmode="decimal" min="0" value="150000" /></div></div>
+          <input id="dedR" type="range" min="0" max="500000" step="10000" value="150000" aria-label="Deductions" />
+        </div>
+      </div>
+
+      <div class="result" aria-live="polite">
+        <div class="rlabel">Estimated tax payable</div>
+        <div class="rbig" id="tax">—</div>
+        <div class="rsub" id="sub"></div>
+        <div class="breakdown">
+          <div class="bd"><div class="k">Taxable income</div><div class="v" id="bdTaxable">—</div></div>
+          <div class="bd"><div class="k">Tax + 4% cess</div><div class="v" id="bdCess">—</div></div>
+          <div class="bd"><div class="k">Effective rate</div><div class="v" id="bdRate">—</div></div>
+          <div class="bd"><div class="k">Take-home (yr)</div><div class="v" id="bdNet">—</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ad">Ad space</div>
+
+  <div class="content">
+    <h2>How income tax is calculated in India</h2>
+    <p>Your tax is worked out on your <b>taxable income</b> — gross income minus a standard deduction (and other deductions in the old regime) — applied across progressive slabs. Each slab taxes only the portion of income that falls within it.</p>
+    <h3>New regime (FY 2025-26)</h3>
+    <ul>
+      <li>Standard deduction: ₹75,000 for salaried individuals.</li>
+      <li>Slabs: nil up to ₹4L, then 5% / 10% / 15% / 20% / 25% / 30% in ₹4L bands up to ₹24L+.</li>
+      <li><b>Section 87A rebate</b> makes tax effectively nil for taxable income up to ₹12,00,000.</li>
+    </ul>
+    <h3>Old regime</h3>
+    <ul>
+      <li>Standard deduction ₹50,000 plus deductions like 80C (up to ₹1.5L), 80D and others.</li>
+      <li>Slabs: nil up to ₹2.5L, 5% to ₹5L, 20% to ₹10L, 30% above.</li>
+      <li>87A rebate makes tax nil for taxable income up to ₹5,00,000.</li>
+    </ul>
+    <p>A <b>4% health &amp; education cess</b> is added on top of the calculated tax in both regimes.</p>
+    <p><em>This is a simplified estimate for general guidance, ignores surcharge on very high incomes and marginal relief, and is not tax advice. Confirm with a tax professional or the official portal before filing.</em></p>
+    <div class="xlinks"><a href="/calculators/emi">EMI Calculator →</a><a href="/#calculators">All calculators →</a></div>
+  </div>
+
+  <script is:inline>
+    (function () {
+      var loc='en-IN';
+      function el(id){return document.getElementById(id);}
+      function num(id){var v=parseFloat(el(id).value);return isFinite(v)?v:0;}
+      function money(v){try{return new Intl.NumberFormat(loc,{style:'currency',currency:'INR',maximumFractionDigits:0}).format(Math.round(v));}catch(e){return '₹'+Math.round(v).toLocaleString();}}
+      function slabTax(ti, slabs){
+        var tax=0;
+        for(var i=0;i<slabs.length;i++){
+          var lo=slabs[i][0], hi=slabs[i][1], rate=slabs[i][2];
+          if(ti>lo){ tax += (Math.min(ti,hi)-lo)*rate/100; }
+        }
+        return tax;
+      }
+      var NEW=[[0,400000,0],[400000,800000,5],[800000,1200000,10],[1200000,1600000,15],[1600000,2000000,20],[2000000,2400000,25],[2400000,1e12,30]];
+      var OLD=[[0,250000,0],[250000,500000,5],[500000,1000000,20],[1000000,1e12,30]];
+      function pair(a,b){el(a).addEventListener('input',function(){el(b).value=el(a).value;compute();});el(b).addEventListener('input',function(){el(a).value=el(b).value;compute();});}
+      function compute(){
+        var gross=num('income'), regime=el('regime').value, taxable, tax;
+        if(regime==='new'){
+          taxable=Math.max(0, gross-75000);
+          tax=slabTax(taxable, NEW);
+          if(taxable<=1200000) tax=0;            // 87A rebate
+        } else {
+          taxable=Math.max(0, gross-50000-num('ded'));
+          tax=slabTax(taxable, OLD);
+          if(taxable<=500000) tax=0;             // 87A rebate
+        }
+        var cess=tax*0.04, total=tax+cess;
+        el('tax').textContent=money(total);
+        el('sub').textContent=(regime==='new'?'New regime':'Old regime')+' · FY 2025-26';
+        el('bdTaxable').textContent=money(taxable);
+        el('bdCess').textContent=money(total);
+        el('bdRate').textContent=gross>0?(total/gross*100).toFixed(1)+'%':'—';
+        el('bdNet').textContent=money(gross-total);
+      }
+      pair('income','incomeR'); pair('ded','dedR');
+      el('regime').addEventListener('change',function(){
+        el('dedField').style.display = el('regime').value==='old' ? 'block':'none';
+        compute();
+      });
+      compute();
+    })();
+  </script>
+</Base>

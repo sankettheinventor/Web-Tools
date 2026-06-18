@@ -5,7 +5,8 @@ export async function GET(context: { site?: URL }) {
     '',
     'calculators/emi', 'calculators/mortgage', 'calculators/sip',
     'calculators/compound-interest', 'calculators/loan-payoff',
-    'calculators/percentage', 'calculators/bmi',
+    'calculators/percentage', 'calculators/bmi', 'calculators/income-tax',
+    'tools/watermark',
     'about', 'privacy-policy', 'terms',
   ];
   const urls = paths.map((p) => new URL(p, site).href);

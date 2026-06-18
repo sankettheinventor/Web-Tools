@@ -51,9 +51,9 @@ nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(10px);background:var(-
 .mega-trigger:hover,.mega-trigger[aria-expanded="true"]{color:var(--txt)}
 .caret{font-size:10px;transition:transform .2s}
 .mega-trigger[aria-expanded="true"] .caret{transform:rotate(180deg)}
-.mega{position:absolute;top:calc(100% + 14px);left:0;z-index:60;display:none;gap:24px;
+.mega{position:absolute;top:calc(100% + 14px);right:0;z-index:60;display:none;gap:24px;
   background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);
-  padding:20px 22px;grid-template-columns:repeat(3,minmax(168px,1fr));min-width:580px}
+  padding:20px 22px;grid-template-columns:repeat(3,minmax(168px,1fr));width:min(620px,calc(100vw - 32px))}
 .mega.open{display:grid}
 .mega-h{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--brand);
   margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--line)}

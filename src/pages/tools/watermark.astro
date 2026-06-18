@@ -1,0 +1,220 @@
+---
+import Base from '../../layouts/Base.astro';
+const title = 'Add Watermark to Photos — Free Batch Watermark Studio';
+const description = 'Add a text or logo watermark to your photos in your browser — batch, tiling, position, opacity and rotation. Free, no signup, and your images are never uploaded.';
+---
+<Base title={title} description={description}>
+  <header class="head"><div class="wrap">
+    <p class="kicker">Image Tool</p>
+    <h1>Watermark Studio</h1>
+    <p>Add a text or logo watermark to your photos — one or many at once. Nothing is uploaded; it all happens on your device.</p>
+  </div></header>
+
+  <div class="wrap">
+    <div class="tool wm">
+      <!-- empty state: the upload box is the biggest first element -->
+      <div id="drop" class="drop">
+        <input id="file" type="file" accept="image/*" multiple hidden />
+        <div class="drop-ic">🖼️</div>
+        <p class="drop-t">Drop images here, or <button id="browse" type="button" class="linklike">browse your files</button></p>
+        <p class="drop-s">Batch supported · JPG, PNG, WebP · 🔒 nothing leaves your device</p>
+      </div>
+
+      <!-- editor -->
+      <div id="editor" hidden>
+        <div class="wm-grid">
+          <div class="wm-preview">
+            <canvas id="canvas" aria-label="Watermark preview"></canvas>
+            <div class="thumbs" id="thumbs"></div>
+          </div>
+          <div class="wm-controls">
+            <label class="ctl">Watermark text
+              <input id="text" type="text" value="© Your Brand" /></label>
+            <div class="row2">
+              <label class="ctl">Font
+                <select id="font"><option value="sans-serif">Sans</option><option value="serif">Serif</option><option value="monospace">Mono</option></select></label>
+              <label class="ctl">Color <input id="color" type="color" value="#ffffff" /></label>
+            </div>
+            <label class="ctl">Size <span class="cv" id="sizeV">6%</span>
+              <input id="size" type="range" min="2" max="20" step="0.5" value="6" /></label>
+            <div class="row2">
+              <label class="ctl">Opacity <span class="cv" id="opacityV">45%</span>
+                <input id="opacity" type="range" min="5" max="100" step="5" value="45" /></label>
+              <label class="ctl">Rotation <span class="cv" id="rotationV">0°</span>
+                <input id="rotation" type="range" min="-90" max="90" step="5" value="0" /></label>
+            </div>
+            <label class="ctl">Position
+              <select id="position">
+                <option value="top-left">Top left</option><option value="top-center">Top center</option><option value="top-right">Top right</option>
+                <option value="middle-left">Middle left</option><option value="middle-center">Center</option><option value="middle-right">Middle right</option>
+                <option value="bottom-left">Bottom left</option><option value="bottom-center">Bottom center</option><option value="bottom-right" selected>Bottom right</option>
+              </select></label>
+            <label class="chkrow"><input id="tile" type="checkbox" /> Tile across the whole image</label>
+            <label class="ctl">Logo watermark (optional)
+              <input id="logo" type="file" accept="image/*" /></label>
+            <div class="wm-actions">
+              <button id="dl" type="button" class="wm-btn">⬇ Download</button>
+              <button id="dlall" type="button" class="wm-btn ghost" hidden>Download all</button>
+              <button id="reset" type="button" class="wm-btn ghost">Start over</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ad">Ad space</div>
+
+  <div class="content">
+    <h2>How to watermark your photos</h2>
+    <ol>
+      <li>Drop one or many images into the box above.</li>
+      <li>Type your watermark text (or upload a logo), then adjust size, opacity, rotation and position.</li>
+      <li>Tick <b>Tile</b> to repeat the mark across the whole image — the hardest kind to crop out.</li>
+      <li>Click <b>Download</b> for the current image, or <b>Download all</b> for the whole batch.</li>
+    </ol>
+    <h3>Why watermark?</h3>
+    <p>A watermark deters people from reusing your photos as their own and keeps your brand visible wherever an image travels. A semi-transparent, tiled mark across the image is the most theft-resistant; a small corner mark is cleaner for portfolios.</p>
+    <p><b>Your images never leave your device.</b> Everything here is processed locally in your browser — there's no upload, so even sensitive images stay private.</p>
+    <div class="xlinks"><a href="/#image-tools">More image tools →</a><a href="/">All tools →</a></div>
+  </div>
+
+  <style>
+    .wm{padding:20px}
+    .drop{border:2px dashed var(--line);border-radius:16px;background:var(--surface2);padding:48px 24px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s}
+    .drop.drag{border-color:var(--brand);background:color-mix(in srgb,var(--brand) 8%,var(--surface2))}
+    .drop-ic{font-size:44px;margin-bottom:10px}
+    .drop-t{font-size:17px;font-weight:600}
+    .drop-s{font-size:13px;color:var(--dim);margin-top:8px}
+    .linklike{background:none;border:0;color:var(--brand);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline;padding:0}
+    .wm-grid{display:grid;grid-template-columns:1fr 300px;gap:22px}
+    .wm-preview{min-width:0}
+    #canvas{width:100%;height:auto;max-height:60vh;object-fit:contain;border:1px solid var(--line);border-radius:12px;background:var(--surface2)}
+    .thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .thumb{width:54px;height:54px;border-radius:8px;object-fit:cover;border:2px solid var(--line);cursor:pointer}
+    .thumb.sel{border-color:var(--brand)}
+    .wm-controls{display:flex;flex-direction:column;gap:14px}
+    .ctl{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:var(--dim)}
+    .ctl input[type=text],.ctl select{background:var(--surface2);border:1px solid var(--line);border-radius:9px;color:var(--txt);font:inherit;font-weight:600;padding:10px 11px;outline:none}
+    .ctl input[type=text]:focus,.ctl select:focus{border-color:var(--brand)}
+    .ctl input[type=range]{margin-top:2px}
+    .ctl input[type=color]{width:100%;height:38px;border:1px solid var(--line);border-radius:9px;background:var(--surface2);cursor:pointer}
+    .ctl input[type=file]{font-size:12px;color:var(--dim)}
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .cv{float:right;color:var(--brand);font-weight:700}
+    .chkrow{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:600;color:var(--txt);cursor:pointer}
+    .chkrow input{width:17px;height:17px;accent-color:var(--brand)}
+    .wm-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+    .wm-btn{flex:1;padding:12px;border-radius:10px;font-weight:700;font-size:14px;color:#fff;cursor:pointer;border:0;
+      background:linear-gradient(135deg,var(--brand2),var(--brand))}
+    .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line);flex:0 0 auto}
+    @media(max-width:680px){.wm-grid{grid-template-columns:1fr}}
+  </style>
+
+  <script is:inline>
+    (function () {
+      var images = [], sel = 0, logoImg = null;
+      var $ = function (id) { return document.getElementById(id); };
+      var drop = $('drop'), editor = $('editor'), canvas = $('canvas'), ctx = canvas.getContext('2d');
+
+      function settings(){
+        return {
+          text: $('text').value, font: $('font').value, color: $('color').value,
+          size: parseFloat($('size').value), opacity: parseInt($('opacity').value,10)/100,
+          rotation: parseFloat($('rotation').value), position: $('position').value, tile: $('tile').checked
+        };
+      }
+      function anchor(pos, w, h, fs){
+        var m = Math.min(w,h)*0.04 + fs*0.6;
+        var row = pos.split('-')[0], col = pos.split('-')[1];
+        var x, align;
+        if(col==='left'){x=m;align='left';} else if(col==='right'){x=w-m;align='right';} else {x=w/2;align='center';}
+        var y = row==='top' ? m+fs/2 : row==='bottom' ? h-m-fs/2 : h/2;
+        return {x:x,y:y,align:align};
+      }
+      function applyWatermark(c, w, h){
+        var s = settings();
+        if(s.text){
+          c.save(); c.globalAlpha = s.opacity;
+          var fs = Math.max(8, s.size/100 * Math.min(w,h));
+          c.font = '700 ' + fs + 'px ' + s.font; c.fillStyle = s.color; c.textBaseline = 'middle';
+          if(s.tile){
+            c.textAlign = 'center';
+            var tw = c.measureText(s.text).width, stepX = tw + fs*1.5, stepY = fs*3;
+            for(var y=-h; y<h*2; y+=stepY) for(var x=-w; x<w*2; x+=stepX){
+              c.save(); c.translate(x,y); c.rotate(s.rotation*Math.PI/180); c.fillText(s.text,0,0); c.restore();
+            }
+          } else {
+            var p = anchor(s.position,w,h,fs);
+            c.textAlign = p.align;
+            c.save(); c.translate(p.x,p.y); c.rotate(s.rotation*Math.PI/180); c.fillText(s.text,0,0); c.restore();
+          }
+          c.restore();
+        }
+        if(logoImg){
+          c.save(); c.globalAlpha = s.opacity;
+          var lw = Math.max(20, s.size/100 * w * 2), lh = lw * (logoImg.naturalHeight/logoImg.naturalWidth);
+          var p2 = anchor(s.position,w,h,0);
+          var lx = p2.align==='left' ? p2.x : p2.align==='right' ? p2.x-lw : p2.x-lw/2;
+          c.drawImage(logoImg, lx, p2.y-lh/2, lw, lh); c.restore();
+        }
+      }
+      function renderTo(c, item){
+        var w = item.img.naturalWidth, h = item.img.naturalHeight;
+        c.width = w; c.height = h;
+        var cx = c.getContext('2d'); cx.clearRect(0,0,w,h); cx.drawImage(item.img,0,0,w,h);
+        applyWatermark(cx,w,h);
+      }
+      function preview(){ if(images[sel]) renderTo(canvas, images[sel]); }
+      function thumbs(){
+        var t = $('thumbs'); t.innerHTML='';
+        images.forEach(function(it,i){
+          var im = document.createElement('img'); im.src = it.img.src; im.className = 'thumb'+(i===sel?' sel':'');
+          im.title = it.name; im.onclick = function(){ sel=i; preview(); thumbs(); };
+          t.appendChild(im);
+        });
+        $('dlall').hidden = images.length < 2;
+      }
+      function addFiles(files){
+        var arr = Array.prototype.slice.call(files).filter(function(f){return f.type.indexOf('image/')===0;});
+        arr.forEach(function(f){
+          var im = new Image();
+          im.onload = function(){ images.push({img:im, name:f.name}); drop.hidden=true; editor.hidden=false; sel=images.length-1; preview(); thumbs(); };
+          im.src = URL.createObjectURL(f);
+        });
+      }
+      function downloadItem(item){
+        var c = document.createElement('canvas'); renderTo(c, item);
+        c.toBlob(function(b){
+          var a = document.createElement('a'); a.href = URL.createObjectURL(b);
+          a.download = 'watermarked-' + item.name.replace(/\.[^.]+$/,'') + '.png'; a.click();
+          setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1500);
+        }, 'image/png');
+      }
+
+      // wire up
+      $('browse').onclick = function(){ $('file').click(); };
+      drop.onclick = function(e){ if(e.target===drop || e.target.classList.contains('drop-ic')||e.target.classList.contains('drop-t')||e.target.classList.contains('drop-s')) $('file').click(); };
+      $('file').onchange = function(e){ addFiles(e.target.files); };
+      ['dragover','dragenter'].forEach(function(ev){ drop.addEventListener(ev,function(e){e.preventDefault();drop.classList.add('drag');}); });
+      ['dragleave','drop'].forEach(function(ev){ drop.addEventListener(ev,function(e){e.preventDefault();drop.classList.remove('drag');}); });
+      drop.addEventListener('drop', function(e){ addFiles(e.dataTransfer.files); });
+
+      ['text','font','color','size','opacity','rotation','position','tile'].forEach(function(id){
+        $(id).addEventListener('input', function(){
+          $('sizeV').textContent = $('size').value + '%';
+          $('opacityV').textContent = $('opacity').value + '%';
+          $('rotationV').textContent = $('rotation').value + '°';
+          preview();
+        });
+      });
+      $('logo').onchange = function(e){
+        var f = e.target.files[0]; if(!f) return;
+        var im = new Image(); im.onload = function(){ logoImg = im; preview(); }; im.src = URL.createObjectURL(f);
+      };
+      $('dl').onclick = function(){ if(images[sel]) downloadItem(images[sel]); };
+      $('dlall').onclick = function(){ images.forEach(function(it,i){ setTimeout(function(){ downloadItem(it); }, i*400); }); };
+      $('reset').onclick = function(){ images=[]; sel=0; logoImg=null; $('logo').value=''; $('file').value=''; editor.hidden=true; drop.hidden=false; };
+    })();
+  </script>
+</Base>
