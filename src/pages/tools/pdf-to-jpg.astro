@@ -1,0 +1,77 @@
+---
+import Base from '../../layouts/Base.astro';
+const title = 'PDF to JPG — Convert PDF Pages to Images (Free, Private)';
+const description = 'Free PDF to JPG converter. Turn each page of a PDF into a JPG image right in your browser, then download them zipped. Nothing is uploaded.';
+---
+<Base title={title} description={description}>
+  <Fragment slot="head">
+    <script is:inline src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+    <script is:inline src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  </Fragment>
+  <header class="head"><div class="wrap">
+    <p class="kicker">PDF Tool</p><h1>PDF to JPG</h1>
+    <p>Turn every PDF page into an image — in your browser, never uploaded.</p>
+  </div></header>
+  <div class="wrap"><div class="tool wm">
+    <div id="drop" class="drop"><input id="file" type="file" accept="application/pdf,.pdf" hidden />
+      <div class="drop-ic">📄</div><p class="drop-t">Drop a PDF, or <button id="browse" type="button" class="linklike">browse</button></p>
+      <p class="drop-s">🔒 nothing leaves your device</p></div>
+    <div id="editor" hidden>
+      <div class="thumbs" id="thumbs"></div>
+      <div class="wm-actions"><button id="zip" type="button" class="wm-btn" hidden>⬇ Download all (.zip)</button>
+        <button id="reset" type="button" class="wm-btn ghost">New PDF</button></div>
+      <p id="status" class="status"></p>
+    </div>
+  </div></div>
+  <div class="ad">Ad space</div>
+  <div class="content">
+    <h2>Convert PDF pages to JPG</h2>
+    <p>Drop in a PDF and each page is rendered to a high-quality JPG you can download — individually or all at once as a zip. Handy for pulling a figure out of a report, sharing a single page as an image, or posting a PDF page where only images are allowed. It all runs locally in your browser, so your document is never uploaded.</p>
+    <div class="xlinks"><a href="/tools/jpg-to-pdf">JPG to PDF →</a><a href="/tools/pdf-tools">Merge PDF →</a></div>
+  </div>
+  <style>
+    .drop{border:2px dashed var(--line);border-radius:14px;background:var(--surface2);padding:40px 20px;text-align:center;cursor:pointer}
+    .drop.drag{border-color:var(--brand)}.drop-ic{font-size:40px;margin-bottom:8px}.drop-t{font-size:16px;font-weight:600}.drop-s{font-size:13px;color:var(--dim);margin-top:6px}
+    .linklike{background:none;border:0;color:var(--brand);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline}
+    .wm{padding:20px}.thumbs{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+    .pcell{text-align:center}.pcell img{width:120px;border:1px solid var(--line);border-radius:8px;background:#fff;display:block}
+    .pcell button{margin-top:5px;font-size:11px;font-weight:700;color:var(--brand);background:none;border:0;cursor:pointer}
+    .wm-actions{display:flex;gap:10px}.wm-btn{padding:11px 18px;border-radius:10px;font-weight:700;color:#fff;border:0;cursor:pointer;background:linear-gradient(135deg,var(--brand2),var(--brand))}
+    .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line)}.status{margin-top:10px;font-size:13px;color:var(--dim)}
+  </style>
+  <script is:inline>
+    (function(){
+      var imgs=[];
+      function $(i){return document.getElementById(i);}
+      function dl(blob,name){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);}
+      async function render(file){
+        if(typeof pdfjsLib==='undefined'){$('status').textContent='PDF engine loading… try again in a second.';return;}
+        pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+        $('drop').hidden=true;$('editor').hidden=false;$('status').textContent='Rendering…';
+        var buf=await file.arrayBuffer();
+        var pdf=await pdfjsLib.getDocument({data:buf}).promise;
+        $('thumbs').innerHTML='';imgs=[];
+        for(var n=1;n<=pdf.numPages;n++){
+          var page=await pdf.getPage(n);var vp=page.getViewport({scale:2});
+          var c=document.createElement('canvas');c.width=vp.width;c.height=vp.height;
+          await page.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
+          var blob=await new Promise(function(res){c.toBlob(res,'image/jpeg',0.9);});
+          var name='page-'+n+'.jpg';imgs.push({blob:blob,name:name});
+          var cell=document.createElement('div');cell.className='pcell';
+          var im=document.createElement('img');im.src=URL.createObjectURL(blob);
+          var b=document.createElement('button');b.textContent='Download';(function(bl,nm){b.onclick=function(){dl(bl,nm);};})(blob,name);
+          cell.appendChild(im);cell.appendChild(b);$('thumbs').appendChild(cell);
+        }
+        $('zip').hidden=imgs.length<2;$('status').textContent='Done — '+imgs.length+' page(s).';
+      }
+      $('browse').onclick=function(e){e.stopPropagation();$('file').click();};
+      $('drop').onclick=function(e){if(e.target.id==='drop'||e.target.className.indexOf('drop-')===0)$('file').click();};
+      $('file').onchange=function(e){if(e.target.files[0])render(e.target.files[0]);};
+      ['dragover','dragenter'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.add('drag');});});
+      ['dragleave','drop'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.remove('drag');});});
+      $('drop').addEventListener('drop',function(e){if(e.dataTransfer.files[0])render(e.dataTransfer.files[0]);});
+      $('zip').onclick=async function(){if(typeof JSZip==='undefined')return;var z=new JSZip();imgs.forEach(function(it){z.file(it.name,it.blob);});var b=await z.generateAsync({type:'blob'});dl(b,'pdf-pages.zip');};
+      $('reset').onclick=function(){imgs=[];$('thumbs').innerHTML='';$('file').value='';$('status').textContent='';$('zip').hidden=true;$('editor').hidden=true;$('drop').hidden=false;};
+    })();
+  </script>
+</Base>
