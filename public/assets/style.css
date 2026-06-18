@@ -11,7 +11,7 @@
 }
 :root[data-theme="light"]{
   --bg:#f6f5fb;--surface:#ffffff;--surface2:#f2effa;--line:#e5e0f1;
-  --txt:#191425;--dim:#665f82;--brand:#6b4dff;--brand2:#ff5e7e;
+  --txt:#191425;--dim:#565070;--brand:#6b4dff;--brand2:#ff5e7e;
   --ok:#15a06b;--err:#dc2626;
   --nav-bg:rgba(255,255,255,.82);--shadow:0 24px 60px -32px rgba(80,60,160,.22);
   --result-bg:linear-gradient(135deg,#eef0ff,#fdeef4);
@@ -23,6 +23,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
   overflow-x:hidden;transition:background .2s,color .2s}
 a{color:var(--brand);text-decoration:none}
 a:hover{text-decoration:underline}
+
+/* ===== form-control polish (applies across every tool) ===== */
+input[type=file]{color:var(--dim);cursor:pointer;max-width:100%}
+input[type=file]::file-selector-button{
+  margin-right:10px;padding:8px 14px;border-radius:9px;border:1px solid var(--line);
+  background:var(--surface2);color:var(--txt);font:inherit;font-weight:600;font-size:13px;
+  cursor:pointer;transition:border-color .15s,color .15s,background .15s}
+input[type=file]::file-selector-button:hover{border-color:var(--brand);color:var(--brand)}
+input[type=file]::-webkit-file-upload-button{
+  margin-right:10px;padding:8px 14px;border-radius:9px;border:1px solid var(--line);
+  background:var(--surface2);color:var(--txt);font:inherit;font-weight:600;font-size:13px;cursor:pointer}
+input[type=color]{-webkit-appearance:none;appearance:none;border:1px solid var(--line);border-radius:9px;background:var(--surface2);cursor:pointer}
+input[type=color]::-webkit-color-swatch-wrapper{padding:3px}
+input[type=color]::-webkit-color-swatch{border:none;border-radius:6px}
+/* mobile: 16px form text prevents iOS auto-zoom on focus */
+@media(max-width:760px){
+  input:not([type=range]):not([type=checkbox]),select,textarea{font-size:16px !important}
+}
 .wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
 .read{max-width:var(--read);margin:0 auto;padding:0 20px}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
