@@ -4,22 +4,21 @@ const title = 'Add Watermark to Photos — Free Batch Watermark Studio';
 const description = 'Add a text, logo or signature watermark to your photos in your browser — batch mode, fonts, opacity, position and tiling. Free, no signup, and your images are never uploaded.';
 ---
 <Base title={title} description={description}>
-  <header class="head"><div class="wrap">
-    <p class="kicker">Image Tool</p><h1>Watermark Studio</h1>
-    <p>Stamp text, a logo or a signature over your photos — one or many at once. Nothing is uploaded.</p>
-  </div></header>
-
-  <div class="wrap"><div class="tool wm">
+  <div class="wmapp">
     <input id="file" type="file" accept="image/*" multiple hidden />
-    <div class="wm-thumbs" id="thumbs"></div>
-      <div class="wm-editor">
-        <aside class="wm-side">
-          <div class="wm-tabs">
-            <button type="button" class="wt on" data-m="text"><span>T</span>Text</button>
-            <button type="button" class="wt" data-m="logo"><span>🖼</span>Logo</button>
-            <button type="button" class="wt" data-m="sign"><span>✒</span>Signature</button>
-          </div>
+    <div class="wmapp-top">
+      <h1>Watermark Studio</h1>
+      <div class="wm-thumbs" id="thumbs"><span class="thint">Your images appear here →</span></div>
+    </div>
 
+    <div class="wmapp-main">
+      <aside class="wm-side">
+        <div class="wm-tabs">
+          <button type="button" class="wt on" data-m="text"><span>T</span>Text</button>
+          <button type="button" class="wt" data-m="logo"><span>🖼</span>Logo</button>
+          <button type="button" class="wt" data-m="sign"><span>✒</span>Signature</button>
+        </div>
+        <div class="wm-scroll">
           <div class="wm-panel" data-panel="text">
             <label class="ctl">Watermark text<textarea id="t_text" rows="2">© Your Brand</textarea></label>
             <label class="ctl">Font<select id="t_font"><option>Arial</option><option>Georgia</option><option>Times New Roman</option><option>Courier New</option><option>Verdana</option><option>Trebuchet MS</option><option>Impact</option></select></label>
@@ -72,29 +71,29 @@ const description = 'Add a text, logo or signature watermark to your photos in y
             <label class="ctl">Size <span class="cv" id="s_sizeV">8%</span><input id="s_size" type="range" min="3" max="20" step="0.5" value="8" /></label>
             <label class="ctl">Opacity <span class="cv" id="s_opV">90%</span><input id="s_op" type="range" min="5" max="100" step="5" value="90" /></label>
           </div>
-        </aside>
+        </div>
+      </aside>
 
-        <div class="wm-canvas" id="dropzone">
-          <canvas id="canvas" aria-label="Watermark preview" hidden></canvas>
-          <div class="drop-prompt" id="prompt">
-            <div class="drop-ic">🖼️</div>
-            <p class="drop-t">Drop images here, or <button id="browse" type="button" class="linklike">browse</button></p>
-            <p class="drop-s">Batch supported · JPG, PNG, WebP · 🔒 nothing leaves your device</p>
-          </div>
+      <div class="wm-canvas" id="dropzone">
+        <canvas id="canvas" aria-label="Watermark preview" hidden></canvas>
+        <div class="drop-prompt" id="prompt">
+          <div class="drop-ic">🖼️</div>
+          <p class="drop-t">Drop images here, or <button id="browse" type="button" class="linklike">browse</button></p>
+          <p class="drop-s">Batch supported · JPG, PNG, WebP · 🔒 nothing leaves your device</p>
         </div>
       </div>
+    </div>
 
-      <div class="wm-bar">
-        <button id="reset" type="button" class="wm-btn ghost">↩ Start over</button>
-        <span class="wm-info" id="info">Drop a photo to begin</span>
-        <div class="grow"></div>
-        <button id="dlall" type="button" class="wm-btn ghost" hidden>Download all</button>
-        <button id="dl" type="button" class="wm-btn">⬇ Download</button>
-      </div>
-  </div></div>
+    <div class="wm-bar">
+      <button id="reset" type="button" class="wm-btn ghost">↩ Start over</button>
+      <span class="wm-info" id="info">Drop a photo to begin</span>
+      <div class="grow"></div>
+      <button id="dlall" type="button" class="wm-btn ghost" hidden>Download all</button>
+      <button id="dl" type="button" class="wm-btn">⬇ Download</button>
+    </div>
+  </div>
 
-  <div class="ad">Ad space</div>
-  <div class="content">
+  <div class="content" style="margin-top:30px">
     <h2>How to watermark your photos</h2>
     <ol>
       <li>Drop one or many images — they appear in the strip at the top (batch mode).</li>
@@ -107,38 +106,53 @@ const description = 'Add a text, logo or signature watermark to your photos in y
   </div>
 
   <style>
-    .drop{border:2px dashed var(--line);border-radius:16px;background:var(--surface2);padding:48px 24px;text-align:center;cursor:pointer}
-    .drop.drag{border-color:var(--brand)}.drop-ic{font-size:44px;margin-bottom:10px}.drop-t{font-size:17px;font-weight:600}.drop-s{font-size:13px;color:var(--dim);margin-top:8px}
-    .linklike{background:none;border:0;color:var(--brand);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline}
-    .wm{padding:16px}
-    .wm-thumbs{display:flex;gap:7px;overflow-x:auto;padding-bottom:8px;margin-bottom:12px}
-    .wm-thumbs img{width:60px;height:48px;object-fit:cover;border-radius:7px;border:2px solid var(--line);cursor:pointer;flex:0 0 auto}
+    /* full-viewport app */
+    .wmapp{display:flex;flex-direction:column;gap:10px;max-width:1200px;margin:0 auto;padding:12px 16px 0;
+      height:calc(100vh - 112px);min-height:520px}
+    .wmapp-top{display:flex;align-items:center;gap:16px;flex:0 0 auto}
+    .wmapp-top h1{font-size:18px;font-weight:800;letter-spacing:-.4px;white-space:nowrap}
+    .wm-thumbs{display:flex;gap:7px;overflow-x:auto;flex:1;align-items:center;min-width:0}
+    .wm-thumbs .thint{font-size:12.5px;color:var(--dim)}
+    .wm-thumbs img{width:58px;height:46px;object-fit:cover;border-radius:7px;border:2px solid var(--line);cursor:pointer;flex:0 0 auto}
     .wm-thumbs img.sel{border-color:var(--brand)}
-    .wm-editor{display:grid;grid-template-columns:280px 1fr;gap:18px}@media(max-width:760px){.wm-editor{grid-template-columns:1fr}}
-    .wm-side{background:var(--surface2);border:1px solid var(--line);border-radius:13px;padding:14px}
-    .wm-tabs{display:flex;gap:6px;margin-bottom:14px}
-    .wt{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px;background:var(--surface);border:1px solid var(--line);border-radius:9px;font:inherit;font-size:11.5px;font-weight:700;color:var(--dim);cursor:pointer}
+
+    .wmapp-main{flex:1;display:grid;grid-template-columns:280px 1fr;gap:14px;min-height:0}
+    .wm-side{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:14px;display:flex;flex-direction:column;min-height:0}
+    .wm-tabs{display:flex;gap:6px;margin-bottom:12px;flex:0 0 auto}
+    .wt{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;background:var(--surface2);border:1px solid var(--line);border-radius:9px;font:inherit;font-size:11.5px;font-weight:700;color:var(--dim);cursor:pointer}
     .wt span{font-size:15px}.wt.on{color:#fff;background:linear-gradient(135deg,var(--brand2),var(--brand));border-color:transparent}
-    .wm-panel{display:flex;flex-direction:column;gap:12px}.wm-panel[hidden]{display:none}
+    .wm-scroll{overflow-y:auto;min-height:0;padding-right:2px}
+    .wm-panel{display:flex;flex-direction:column;gap:11px}.wm-panel[hidden]{display:none}
     .ctl{display:flex;flex-direction:column;gap:5px;font-size:12.5px;font-weight:600;color:var(--dim)}
-    .ctl input,.ctl select,.ctl textarea{background:var(--surface);border:1px solid var(--line);border-radius:8px;color:var(--txt);font:inherit;font-weight:600;padding:9px 10px;outline:none;resize:vertical}
+    .ctl input,.ctl select,.ctl textarea{background:var(--surface2);border:1px solid var(--line);border-radius:8px;color:var(--txt);font:inherit;font-weight:600;padding:8px 10px;outline:none;resize:vertical}
     .ctl input:focus,.ctl select:focus,.ctl textarea:focus{border-color:var(--brand)}
-    .ctl input[type=color]{height:36px;padding:3px;cursor:pointer}.ctl input[type=file]{font-size:11.5px;font-weight:500}
+    .ctl input[type=color]{height:34px;padding:3px;cursor:pointer}.ctl input[type=file]{font-size:11.5px;font-weight:500}
     .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.cv{float:right;color:var(--brand);font-weight:700}
     .btn-row{display:flex;gap:5px;align-items:center}.sep{width:1px;height:22px;background:var(--line);margin:0 3px}
-    .tg{width:34px;height:34px;border-radius:8px;background:var(--surface);border:1px solid var(--line);color:var(--txt);font:inherit;font-size:14px;cursor:pointer;display:grid;place-items:center}
+    .tg{width:32px;height:32px;border-radius:8px;background:var(--surface2);border:1px solid var(--line);color:var(--txt);font:inherit;font-size:13px;cursor:pointer;display:grid;place-items:center}
     .tg.on{color:#fff;background:linear-gradient(135deg,var(--brand2),var(--brand));border-color:transparent}
     .chkrow{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--txt)}.chkrow input{width:16px;height:16px;accent-color:var(--brand)}
-    .wm-canvas{background:var(--surface2);border:1px solid var(--line);border-radius:13px;padding:14px;display:flex;align-items:center;justify-content:center;min-height:320px}
-    #canvas{max-width:100%;max-height:62vh;height:auto;border-radius:8px}
-    #canvas[hidden]{display:none}
-    .wm-canvas{cursor:pointer;transition:border-color .15s,background .15s}
+
+    .wm-canvas{background:var(--surface2);border:1px solid var(--line);border-radius:13px;display:flex;align-items:center;justify-content:center;
+      min-height:0;overflow:hidden;cursor:pointer;transition:border-color .15s,background .15s}
     .wm-canvas.drag{border-color:var(--brand);background:var(--surface)}
-    .drop-prompt{text-align:center}
-    .wm-bar{display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+    #canvas{max-width:100%;max-height:100%;height:auto;border-radius:8px;display:block}
+    #canvas[hidden]{display:none}
+    .drop-prompt{text-align:center;padding:24px}
+    .drop-ic{font-size:42px;margin-bottom:8px}.drop-t{font-size:16px;font-weight:600;color:var(--txt)}.drop-s{font-size:12.5px;color:var(--dim);margin-top:6px}
+    .linklike{background:none;border:0;color:var(--brand);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline}
+
+    .wm-bar{display:flex;align-items:center;gap:10px;flex:0 0 auto;padding:4px 0 0}
     .wm-info{font-size:12.5px;color:var(--dim)}.grow{flex:1}
-    .wm-btn{padding:11px 18px;border-radius:10px;font-weight:700;color:#fff;border:0;cursor:pointer;background:linear-gradient(135deg,var(--brand2),var(--brand))}
-    .wm-btn.ghost{background:var(--surface);color:var(--dim);border:1px solid var(--line)}
+    .wm-btn{padding:10px 18px;border-radius:10px;font-weight:700;color:#fff;border:0;cursor:pointer;background:linear-gradient(135deg,var(--brand2),var(--brand))}
+    .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line)}
+
+    @media(max-width:760px){
+      .wmapp{height:auto;min-height:0}
+      .wmapp-main{grid-template-columns:1fr}
+      .wm-scroll{overflow:visible}
+      .wm-canvas{min-height:300px}
+    }
   </style>
 
   <script is:inline>
@@ -195,6 +209,7 @@ const description = 'Add a text, logo or signature watermark to your photos in y
       }
       function thumbs(){
         var t=$('thumbs');t.innerHTML='';
+        if(!images.length){t.innerHTML='<span class="thint">Your images appear here →</span>';}
         images.forEach(function(it,i){var im=document.createElement('img');im.src=it.img.src;im.className=i===sel?'sel':'';im.title=it.name;im.onclick=function(){sel=i;render();thumbs();};t.appendChild(im);});
         $('dlall').hidden=images.length<2;
       }
@@ -209,23 +224,19 @@ const description = 'Add a text, logo or signature watermark to your photos in y
         c.toBlob(function(b){var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='watermarked-'+item.name+'.png';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);},'image/png');
       }
 
-      // tabs
       document.querySelector('.wm-tabs').addEventListener('click',function(e){
         var b=e.target.closest('.wt');if(!b)return;mode=b.dataset.m;
         document.querySelectorAll('.wt').forEach(function(x){x.classList.toggle('on',x===b);});
         document.querySelectorAll('.wm-panel').forEach(function(p){p.hidden=p.dataset.panel!==mode;});
         render();
       });
-      // toggles
       ['t_bold','t_italic'].forEach(function(id){$(id).onclick=function(){$(id).classList.toggle('on');render();};});
       document.querySelectorAll('.tg.align[data-a]').forEach(function(b){b.onclick=function(){document.querySelectorAll('.tg.align[data-a]').forEach(function(x){x.classList.remove('on');});b.classList.add('on');talign=b.dataset.a;render();};});
       document.querySelectorAll('.tg.align[data-sa]').forEach(function(b){b.onclick=function(){document.querySelectorAll('.tg.align[data-sa]').forEach(function(x){x.classList.remove('on');});b.classList.add('on');salign=b.dataset.sa;render();};});
-      // inputs
       document.querySelectorAll('.wm-panel input,.wm-panel select,.wm-panel textarea').forEach(function(el){
         if(el.id==='l_file')return; el.addEventListener('input',function(){render();});
       });
       $('l_file').onchange=function(e){var f=e.target.files[0];if(!f)return;var im=new Image();im.onload=function(){logoImg=im;render();};im.src=URL.createObjectURL(f);};
-      // upload zone (the canvas area itself)
       $('browse').onclick=function(e){e.stopPropagation();$('file').click();};
       $('dropzone').onclick=function(){ if($('canvas').hidden) $('file').click(); };
       $('file').onchange=function(e){addFiles(e.target.files);};
@@ -234,7 +245,7 @@ const description = 'Add a text, logo or signature watermark to your photos in y
       $('dropzone').addEventListener('drop',function(e){addFiles(e.dataTransfer.files);});
       $('dl').onclick=function(){if(images[sel])download(images[sel]);};
       $('dlall').onclick=function(){images.forEach(function(it,i){setTimeout(function(){download(it);},i*400);});};
-      $('reset').onclick=function(){images=[];sel=0;logoImg=null;$('l_file').value='';$('file').value='';$('thumbs').innerHTML='';$('canvas').hidden=true;$('prompt').hidden=false;$('info').textContent='Drop a photo to begin';};
+      $('reset').onclick=function(){images=[];sel=0;logoImg=null;$('l_file').value='';$('file').value='';$('canvas').hidden=true;$('prompt').hidden=false;$('info').textContent='Drop a photo to begin';thumbs();};
     })();
   </script>
 </Base>
