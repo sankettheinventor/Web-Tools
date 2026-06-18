@@ -1,0 +1,79 @@
+---
+import Base from '../../layouts/Base.astro';
+const title = 'Percentage Calculator — 3 Quick Modes (Free)';
+const description = 'Free percentage calculator. Find what is X% of Y, what percent one number is of another, and the percentage increase or decrease between two numbers. Instant results.';
+---
+<Base title={title} description={description}>
+  <header class="head"><div class="wrap">
+    <p class="kicker">Everyday Calculator</p>
+    <h1>Percentage Calculator</h1>
+    <p>Three common percentage questions, answered as you type.</p>
+  </div></header>
+
+  <div class="wrap">
+    <div class="tool">
+      <div class="pblock">
+        <div class="prow"><span>What is</span>
+          <input id="a1" class="pin" type="number" inputmode="decimal" value="15" /><span>% of</span>
+          <input id="a2" class="pin" type="number" inputmode="decimal" value="200" /><span>?</span>
+        </div>
+        <div class="pres">= <b id="r1">—</b></div>
+      </div>
+
+      <div class="pblock">
+        <div class="prow">
+          <input id="b1" class="pin" type="number" inputmode="decimal" value="45" /><span>is what % of</span>
+          <input id="b2" class="pin" type="number" inputmode="decimal" value="180" /><span>?</span>
+        </div>
+        <div class="pres">= <b id="r2">—</b></div>
+      </div>
+
+      <div class="pblock">
+        <div class="prow"><span>% change from</span>
+          <input id="c1" class="pin" type="number" inputmode="decimal" value="120" /><span>to</span>
+          <input id="c2" class="pin" type="number" inputmode="decimal" value="150" /><span>?</span>
+        </div>
+        <div class="pres">= <b id="r3">—</b></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ad">Ad space</div>
+
+  <div class="content">
+    <h2>How to calculate percentages</h2>
+    <ul>
+      <li><b>X% of Y</b> = (X ÷ 100) × Y. Example: 15% of 200 = 30.</li>
+      <li><b>A is what % of B</b> = (A ÷ B) × 100. Example: 45 of 180 = 25%.</li>
+      <li><b>% change</b> = ((New − Old) ÷ Old) × 100. A positive result is an increase, negative is a decrease.</li>
+    </ul>
+    <p>These three cover almost every everyday percentage question — discounts, tips, test scores, price changes and more.</p>
+    <div class="xlinks"><a href="/calculators/bmi">BMI Calculator →</a><a href="/#calculators">All calculators →</a></div>
+  </div>
+
+  <style>
+    .pblock{padding:16px 0;border-top:1px solid var(--line)}
+    .pblock:first-child{border-top:0;padding-top:0}
+    .prow{display:flex;flex-wrap:wrap;align-items:center;gap:9px;font-size:16px;color:var(--txt)}
+    .pin{width:96px;background:var(--surface2);border:1px solid var(--line);border-radius:9px;color:var(--txt);
+      font:inherit;font-weight:700;padding:9px 11px;outline:none;text-align:right}
+    .pin:focus{border-color:var(--brand)}
+    .pres{margin-top:10px;font-size:17px;color:var(--dim)}
+    .pres b{color:var(--brand);font-size:22px;font-weight:800}
+  </style>
+
+  <script is:inline>
+    (function () {
+      function el(id){return document.getElementById(id);}
+      function num(id){var v=parseFloat(el(id).value);return isFinite(v)?v:0;}
+      function fmt(v){return (Math.round(v*100)/100).toLocaleString();}
+      function compute(){
+        el('r1').textContent = fmt(num('a1')/100*num('a2'));
+        var b2=num('b2'); el('r2').textContent = b2!==0 ? fmt(num('b1')/b2*100)+'%' : '—';
+        var c1=num('c1'); el('r3').textContent = c1!==0 ? (num('c2')-c1)/Math.abs(c1)*100>=0?'+'+fmt((num('c2')-c1)/Math.abs(c1)*100)+'%':fmt((num('c2')-c1)/Math.abs(c1)*100)+'%' : '—';
+      }
+      ['a1','a2','b1','b2','c1','c2'].forEach(function(id){el(id).addEventListener('input',compute);});
+      compute();
+    })();
+  </script>
+</Base>

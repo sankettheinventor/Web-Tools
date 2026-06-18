@@ -1,0 +1,106 @@
+---
+import Base from '../../layouts/Base.astro';
+const title = 'BMI Calculator — Body Mass Index (Metric & Imperial)';
+const description = 'Free BMI calculator. Enter your height and weight in metric or imperial units to get your Body Mass Index and category instantly. Runs in your browser.';
+---
+<Base title={title} description={description}>
+  <header class="head"><div class="wrap">
+    <p class="kicker">Health Calculator</p>
+    <h1>BMI Calculator</h1>
+    <p>Your Body Mass Index and category, updated as you type.</p>
+  </div></header>
+
+  <div class="wrap">
+    <div class="tool">
+      <div class="field">
+        <div class="field-top"><label for="unit">Units</label></div>
+        <select id="unit" aria-label="Units">
+          <option value="metric" selected>Metric (cm, kg)</option>
+          <option value="imperial">Imperial (ft/in, lb)</option>
+        </select>
+      </div>
+
+      <div id="metric">
+        <div class="grid2">
+          <div class="field">
+            <div class="field-top"><label for="cm">Height</label>
+              <div class="valwrap"><input id="cm" type="number" inputmode="decimal" min="0" value="170" /><span>cm</span></div></div>
+            <input id="cmR" type="range" min="120" max="220" step="1" value="170" aria-label="Height in cm" />
+          </div>
+          <div class="field">
+            <div class="field-top"><label for="kg">Weight</label>
+              <div class="valwrap"><input id="kg" type="number" inputmode="decimal" min="0" value="70" /><span>kg</span></div></div>
+            <input id="kgR" type="range" min="30" max="200" step="1" value="70" aria-label="Weight in kg" />
+          </div>
+        </div>
+      </div>
+
+      <div id="imperial" style="display:none">
+        <div class="grid2">
+          <div class="field">
+            <div class="field-top"><label for="ft">Height</label>
+              <div class="valwrap"><input id="ft" type="number" inputmode="numeric" min="0" value="5" /><span>ft</span><input id="in" type="number" inputmode="numeric" min="0" max="11" value="7" style="text-align:right;width:42px" /><span>in</span></div></div>
+          </div>
+          <div class="field">
+            <div class="field-top"><label for="lb">Weight</label>
+              <div class="valwrap"><input id="lb" type="number" inputmode="decimal" min="0" value="155" /><span>lb</span></div></div>
+            <input id="lbR" type="range" min="60" max="440" step="1" value="155" aria-label="Weight in pounds" />
+          </div>
+        </div>
+      </div>
+
+      <div class="result" aria-live="polite">
+        <div class="rlabel">Your BMI</div>
+        <div class="rbig" id="bmi">—</div>
+        <div class="rsub" id="cat"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ad">Ad space</div>
+
+  <div class="content">
+    <h2>What BMI means</h2>
+    <p>Body Mass Index (BMI) is a quick screening number based on your height and weight. It's calculated as:</p>
+    <div class="formula">BMI = weight (kg) ÷ height (m)²</div>
+    <p>Standard categories: under 18.5 is underweight, 18.5–24.9 is a healthy range, 25–29.9 is overweight, and 30 or above is in the obese range.</p>
+    <h3>The limits of BMI</h3>
+    <p>BMI doesn't distinguish muscle from fat, and it doesn't account for age, sex or body composition. A very muscular person can read "overweight" while being healthy. Treat BMI as one rough indicator, not a diagnosis — talk to a healthcare professional for a full picture.</p>
+    <div class="xlinks"><a href="/#calculators">All calculators →</a></div>
+  </div>
+
+  <script is:inline>
+    (function () {
+      function el(id){return document.getElementById(id);}
+      function num(id){var v=parseFloat(el(id).value);return isFinite(v)?v:0;}
+      function pair(a,b){el(a).addEventListener('input',function(){el(b).value=el(a).value;compute();});el(b).addEventListener('input',function(){el(a).value=el(b).value;compute();});}
+      function cat(b){
+        if(b<=0)return ['',''];
+        if(b<18.5)return ['Underweight','var(--brand)'];
+        if(b<25)return ['Healthy weight','var(--ok)'];
+        if(b<30)return ['Overweight','#e6a33e'];
+        return ['Obese','var(--err)'];
+      }
+      function compute(){
+        var unit=el('unit').value, bmi=0;
+        if(unit==='metric'){
+          var m=num('cm')/100; if(m>0) bmi=num('kg')/(m*m);
+        } else {
+          var inch=num('ft')*12+num('in'); if(inch>0) bmi=703*num('lb')/(inch*inch);
+        }
+        if(!isFinite(bmi)||bmi<=0){el('bmi').textContent='—';el('cat').textContent='';return;}
+        el('bmi').textContent=bmi.toFixed(1);
+        var c=cat(bmi); el('cat').textContent=c[0]; el('cat').style.color=c[1];
+      }
+      el('unit').addEventListener('change',function(){
+        var im=el('unit').value==='imperial';
+        el('imperial').style.display=im?'block':'none';
+        el('metric').style.display=im?'none':'block';
+        compute();
+      });
+      pair('cm','cmR');pair('kg','kgR');pair('lb','lbR');
+      ['ft','in'].forEach(function(id){el(id).addEventListener('input',compute);});
+      compute();
+    })();
+  </script>
+</Base>

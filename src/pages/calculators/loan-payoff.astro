@@ -1,0 +1,100 @@
+---
+import Base from '../../layouts/Base.astro';
+const title = 'Loan Payoff Calculator — How Long to Pay Off a Loan (Free)';
+const description = 'Free loan payoff calculator. Enter your balance, interest rate and monthly payment to see how long until you are debt-free and how much interest you will pay. Add extra payments to see the impact.';
+---
+<Base title={title} description={description}>
+  <header class="head"><div class="wrap">
+    <p class="kicker">Finance Calculator</p>
+    <h1>Loan Payoff Calculator</h1>
+    <p>See how fast you'll be debt-free — and how much an extra payment saves. Live results.</p>
+  </div></header>
+
+  <div class="wrap">
+    <div class="tool">
+      <div class="field">
+        <div class="field-top"><label for="cur">Currency</label></div>
+        <select id="cur" aria-label="Currency">
+          <option value="USD" data-sym="$" data-loc="en-US" selected>$ US Dollar (USD)</option>
+          <option value="INR" data-sym="₹" data-loc="en-IN">₹ Indian Rupee (INR)</option>
+          <option value="EUR" data-sym="€" data-loc="de-DE">€ Euro (EUR)</option>
+          <option value="GBP" data-sym="£" data-loc="en-GB">£ British Pound (GBP)</option>
+        </select>
+      </div>
+      <div class="field">
+        <div class="field-top"><label for="bal">Loan balance</label>
+          <div class="valwrap"><span class="sym">$</span><input id="bal" type="number" inputmode="decimal" min="0" value="20000" /></div></div>
+        <input id="balR" type="range" min="500" max="500000" step="500" value="20000" aria-label="Loan balance" />
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <div class="field-top"><label for="rate">Interest rate</label>
+            <div class="valwrap"><input id="rate" type="number" inputmode="decimal" min="0" step="0.1" value="12" /><span>%</span></div></div>
+          <input id="rateR" type="range" min="0" max="40" step="0.1" value="12" aria-label="Interest rate" />
+        </div>
+        <div class="field">
+          <div class="field-top"><label for="pmt">Monthly payment</label>
+            <div class="valwrap"><span class="sym">$</span><input id="pmt" type="number" inputmode="decimal" min="0" value="450" /></div></div>
+          <input id="pmtR" type="range" min="50" max="10000" step="10" value="450" aria-label="Monthly payment" />
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-top"><label for="extra">Extra payment / month</label>
+          <div class="valwrap"><span class="sym">$</span><input id="extra" type="number" inputmode="decimal" min="0" value="0" /></div></div>
+        <input id="extraR" type="range" min="0" max="3000" step="10" value="0" aria-label="Extra monthly payment" />
+      </div>
+
+      <div class="result" aria-live="polite">
+        <div class="rlabel">Time to debt-free</div>
+        <div class="rbig" id="time">—</div>
+        <div class="rsub" id="sub"></div>
+        <div class="breakdown">
+          <div class="bd"><div class="k">Total interest</div><div class="v" id="bdInt">—</div></div>
+          <div class="bd"><div class="k">Total paid</div><div class="v" id="bdTot">—</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ad">Ad space</div>
+
+  <div class="content">
+    <h2>How loan payoff time is calculated</h2>
+    <p>Each month, interest is added to your balance and your payment is subtracted. The number of months to clear the balance is:</p>
+    <div class="formula">n = − ln( 1 − (r × B) ÷ PMT ) ÷ ln( 1 + r )</div>
+    <p>where <b>B</b> is the balance, <b>r</b> is the monthly interest rate and <b>PMT</b> is your total monthly payment (regular + extra). If your payment is smaller than the monthly interest, the balance never goes down — the calculator will warn you.</p>
+    <h3>Why extra payments matter so much</h3>
+    <p>Every extra dollar goes straight at the principal, so it removes all the future interest that dollar would have generated. Even a small extra payment can cut months — sometimes years — off the loan. Try the extra-payment slider and watch the time and total interest drop.</p>
+    <div class="xlinks">
+      <a href="/calculators/emi">EMI Calculator →</a>
+      <a href="/calculators/mortgage">Mortgage →</a>
+      <a href="/#calculators">All calculators →</a>
+    </div>
+  </div>
+
+  <script is:inline>
+    (function () {
+      var cur='USD', loc='en-US';
+      function el(id){return document.getElementById(id);}
+      function num(id){var v=parseFloat(el(id).value);return isFinite(v)?v:0;}
+      function money(v){try{return new Intl.NumberFormat(loc,{style:'currency',currency:cur,maximumFractionDigits:0}).format(Math.round(v));}catch(e){return Math.round(v).toLocaleString();}}
+      function pair(a,b){el(a).addEventListener('input',function(){el(b).value=el(a).value;compute();});el(b).addEventListener('input',function(){el(a).value=el(b).value;compute();});}
+      function compute(){
+        var B=num('bal'), R=num('rate'), PMT=num('pmt')+num('extra');
+        var r=R/12/100;
+        if(PMT<=0){ show('—','Enter a monthly payment','—','—'); return; }
+        if(r>0 && PMT<=B*r){ show('Never','Payment is less than monthly interest — increase it','—','—'); return; }
+        var n = (r>0) ? -Math.log(1-(r*B)/PMT)/Math.log(1+r) : B/PMT;
+        n=Math.ceil(n);
+        var totalPaid=PMT*n, interest=totalPaid-B;
+        var yrs=Math.floor(n/12), mo=n%12;
+        var t = (yrs>0?yrs+' yr ':'')+(mo>0?mo+' mo':(yrs>0?'':'0 mo'));
+        show(t.trim(), n+' monthly payments', money(interest), money(totalPaid));
+      }
+      function show(t,sub,intr,tot){el('time').textContent=t;el('sub').textContent=sub;el('bdInt').textContent=intr;el('bdTot').textContent=tot;}
+      pair('bal','balR');pair('rate','rateR');pair('pmt','pmtR');pair('extra','extraR');
+      el('cur').addEventListener('change',function(){var o=el('cur').selectedOptions[0];cur=el('cur').value;loc=o.dataset.loc;document.querySelectorAll('.valwrap .sym').forEach(function(s){s.textContent=o.dataset.sym;});compute();});
+      compute();
+    })();
+  </script>
+</Base>

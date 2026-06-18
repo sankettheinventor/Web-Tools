@@ -29,9 +29,9 @@ const ADSENSE_CLIENT = '';
     (function () {
       try {
         var t = localStorage.getItem('theme');
-        if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        if (!t) t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
         document.documentElement.setAttribute('data-theme', t);
-      } catch (e) { document.documentElement.setAttribute('data-theme', 'light'); }
+      } catch (e) { document.documentElement.setAttribute('data-theme', 'dark'); }
     })();
   </script>
   {ADSENSE_CLIENT && (
@@ -49,9 +49,31 @@ const ADSENSE_CLIENT = '';
   <nav><div class="nav-in">
     <a class="brand" href="/"><span class="logo">⚡</span> Thor Tools</a>
     <div class="nav-links">
-      <a href="/#calculators">Calculators</a>
-      <a href="/#image-tools" class="hide-sm">Image Tools</a>
+      <div class="mega-wrap">
+        <button class="mega-trigger" id="megaBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="megaPanel">Products <span class="caret" aria-hidden="true">▾</span></button>
+        <div class="mega" id="megaPanel" role="menu" aria-label="All products">
+          <div class="mega-col">
+            <div class="mega-h">💰 Finance Calculators</div>
+            <a role="menuitem" href="/calculators/emi">EMI Calculator</a>
+            <a role="menuitem" href="/calculators/mortgage">Mortgage Calculator</a>
+            <a role="menuitem" href="/calculators/sip">SIP Calculator</a>
+            <a role="menuitem" href="/calculators/compound-interest">Compound Interest</a>
+            <a role="menuitem" href="/calculators/loan-payoff">Loan Payoff</a>
+          </div>
+          <div class="mega-col">
+            <div class="mega-h">📐 Everyday Calculators</div>
+            <a role="menuitem" href="/calculators/percentage">Percentage Calculator</a>
+            <a role="menuitem" href="/calculators/bmi">BMI Calculator</a>
+            <span class="mega-soon">Age · Tip · Discount · GST — soon</span>
+          </div>
+          <div class="mega-col">
+            <div class="mega-h">🖼️ Image Tools</div>
+            <span class="mega-soon">Watermark Studio<br>Image Compressor<br>HEIC → JPG<br>Convert &amp; Resize<br><em>coming soon</em></span>
+          </div>
+        </div>
+      </div>
       <a href="/blog" class="hide-sm">Blog</a>
+      <a href="/about" class="hide-sm">About</a>
       <button id="theme-toggle" class="theme-btn" type="button" aria-label="Toggle light or dark theme" title="Toggle theme">🌙</button>
     </div>
   </div></nav>
@@ -96,6 +118,23 @@ const ADSENSE_CLIENT = '';
         try { localStorage.setItem('theme', next); } catch (e) {}
         sync();
       });
+    })();
+
+    // Products mega menu — click to open, Esc / outside-click to close (keyboard-safe)
+    (function () {
+      var mb = document.getElementById('megaBtn'), mp = document.getElementById('megaPanel');
+      if (!mb || !mp) return;
+      function close(){ mp.classList.remove('open'); mb.setAttribute('aria-expanded','false'); }
+      mb.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var open = mp.classList.toggle('open');
+        mb.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+      document.addEventListener('click', function (e) {
+        if (!mp.contains(e.target) && e.target !== mb) close();
+      });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+      mp.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', close); });
     })();
   </script>
 </body>

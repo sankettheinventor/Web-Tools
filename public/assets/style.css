@@ -1,19 +1,20 @@
 /* ===== Thor Tools — design system =====
    Light-first (trust + AdSense readability), dark optional. Restraint = trust. */
 :root{
-  --bg:#f6f7f9;--surface:#ffffff;--surface2:#f1f3f7;--line:#e5e8ef;
-  --txt:#161922;--dim:#5c6573;--brand:#5b54e6;--brand2:#7a73ff;
-  --ok:#15a06b;--okbg:#e7f7ef;--warn:#d97706;--err:#dc2626;
+  /* DARK (default) — matches the Thor Video Downloader live UI */
+  --bg:#0c0a14;--surface:#16121f;--surface2:#1f1930;--line:#2c2440;
+  --txt:#ece8f5;--dim:#8a82a3;--brand:#8b7bff;--brand2:#ff5e7e;
+  --ok:#3ddc84;--err:#ff6b6b;
   --r:14px;--maxw:1120px;--read:720px;
-  --nav-bg:rgba(255,255,255,.85);--shadow:0 10px 34px -16px rgba(28,30,60,.22);
-  --result-bg:linear-gradient(135deg,#eef0ff,#f4f0ff);
+  --nav-bg:rgba(12,10,20,.72);--shadow:0 22px 50px -24px rgba(0,0,0,.75);
+  --result-bg:linear-gradient(135deg,rgba(124,92,255,.16),rgba(255,94,126,.10));
 }
-:root[data-theme="dark"]{
-  --bg:#0e1016;--surface:#171a22;--surface2:#1e222c;--line:#2a2f3a;
-  --txt:#eef0f5;--dim:#9aa3b2;--brand:#8f88ff;--brand2:#a79fff;
-  --ok:#34d399;--okbg:rgba(52,211,153,.12);
-  --nav-bg:rgba(14,16,22,.85);--shadow:0 18px 44px -20px rgba(0,0,0,.7);
-  --result-bg:linear-gradient(135deg,rgba(123,115,255,.12),rgba(143,136,255,.07));
+:root[data-theme="light"]{
+  --bg:#f6f5fb;--surface:#ffffff;--surface2:#f2effa;--line:#e5e0f1;
+  --txt:#191425;--dim:#665f82;--brand:#6b4dff;--brand2:#ff5e7e;
+  --ok:#15a06b;--err:#dc2626;
+  --nav-bg:rgba(255,255,255,.82);--shadow:0 24px 60px -32px rgba(80,60,160,.22);
+  --result-bg:linear-gradient(135deg,#eef0ff,#fdeef4);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -42,6 +43,28 @@ nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(10px);background:var(-
   font-size:15px;cursor:pointer;display:grid;place-items:center;padding:0}
 .theme-btn:hover{border-color:var(--brand)}
 @media(max-width:620px){.nav-links a.hide-sm{display:none}.nav-links{gap:14px}}
+
+/* ---- products mega menu ---- */
+.mega-wrap{position:relative}
+.mega-trigger{background:none;border:0;color:var(--dim);font:inherit;font-size:14.5px;font-weight:500;
+  cursor:pointer;display:flex;align-items:center;gap:5px;padding:6px 0}
+.mega-trigger:hover,.mega-trigger[aria-expanded="true"]{color:var(--txt)}
+.caret{font-size:10px;transition:transform .2s}
+.mega-trigger[aria-expanded="true"] .caret{transform:rotate(180deg)}
+.mega{position:absolute;top:calc(100% + 14px);left:0;z-index:60;display:none;gap:24px;
+  background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);
+  padding:20px 22px;grid-template-columns:repeat(3,minmax(168px,1fr));min-width:580px}
+.mega.open{display:grid}
+.mega-h{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--brand);
+  margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.mega-col a{display:block;color:var(--txt);font-size:14px;padding:7px 0;border-radius:6px}
+.mega-col a:hover{color:var(--brand);text-decoration:none}
+.mega-soon{display:block;font-size:13px;color:var(--dim);line-height:1.8}
+.mega-soon em{color:var(--brand);font-style:normal;font-weight:600}
+@media(max-width:680px){
+  .mega{position:fixed;left:10px;right:10px;top:58px;min-width:0;grid-template-columns:1fr 1fr;padding:16px}
+}
+@media(max-width:440px){.mega{grid-template-columns:1fr;max-height:72vh;overflow:auto}}
 .promise{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:9px 26px;
   background:linear-gradient(135deg,rgba(255,94,126,.10),rgba(124,92,255,.13));
   border-bottom:1px solid var(--line);padding:13px 16px;font-size:15px;color:var(--dim);font-weight:500}

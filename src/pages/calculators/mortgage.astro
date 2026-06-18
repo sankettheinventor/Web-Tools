@@ -1,0 +1,115 @@
+---
+import Base from '../../layouts/Base.astro';
+const title = 'Mortgage Calculator — Monthly Home Loan Payment (Free)';
+const description = 'Free mortgage calculator with taxes and insurance. Enter home price, down payment, rate and term to see your total monthly payment instantly. Runs in your browser.';
+---
+<Base title={title} description={description}>
+  <header class="head"><div class="wrap">
+    <p class="kicker">Finance Calculator</p>
+    <h1>Mortgage Calculator</h1>
+    <p>Your full monthly home payment — principal, interest, tax and insurance. Updates live.</p>
+  </div></header>
+
+  <div class="wrap">
+    <div class="tool">
+      <div class="field">
+        <div class="field-top"><label for="cur">Currency</label></div>
+        <select id="cur" aria-label="Currency">
+          <option value="USD" data-sym="$" data-loc="en-US" selected>$ US Dollar (USD)</option>
+          <option value="INR" data-sym="₹" data-loc="en-IN">₹ Indian Rupee (INR)</option>
+          <option value="EUR" data-sym="€" data-loc="de-DE">€ Euro (EUR)</option>
+          <option value="GBP" data-sym="£" data-loc="en-GB">£ British Pound (GBP)</option>
+        </select>
+      </div>
+      <div class="field">
+        <div class="field-top"><label for="price">Home price</label>
+          <div class="valwrap"><span class="sym">$</span><input id="price" type="number" inputmode="decimal" min="0" value="350000" /></div></div>
+        <input id="priceR" type="range" min="10000" max="2000000" step="5000" value="350000" aria-label="Home price" />
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <div class="field-top"><label for="down">Down payment</label>
+            <div class="valwrap"><input id="down" type="number" inputmode="decimal" min="0" max="100" step="1" value="20" /><span>%</span></div></div>
+          <input id="downR" type="range" min="0" max="60" step="1" value="20" aria-label="Down payment percent" />
+        </div>
+        <div class="field">
+          <div class="field-top"><label for="rate">Interest rate</label>
+            <div class="valwrap"><input id="rate" type="number" inputmode="decimal" min="0" step="0.1" value="6.5" /><span>%</span></div></div>
+          <input id="rateR" type="range" min="1" max="15" step="0.1" value="6.5" aria-label="Interest rate" />
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <div class="field-top"><label for="term">Term</label>
+            <div class="valwrap"><input id="term" type="number" inputmode="numeric" min="1" value="30" /><span>yr</span></div></div>
+          <input id="termR" type="range" min="5" max="40" step="1" value="30" aria-label="Term in years" />
+        </div>
+        <div class="field">
+          <div class="field-top"><label for="tax">Property tax / yr</label>
+            <div class="valwrap"><span class="sym">$</span><input id="tax" type="number" inputmode="decimal" min="0" value="3000" /></div></div>
+          <input id="taxR" type="range" min="0" max="30000" step="100" value="3000" aria-label="Annual property tax" />
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-top"><label for="ins">Home insurance / yr</label>
+          <div class="valwrap"><span class="sym">$</span><input id="ins" type="number" inputmode="decimal" min="0" value="1200" /></div></div>
+        <input id="insR" type="range" min="0" max="12000" step="100" value="1200" aria-label="Annual home insurance" />
+      </div>
+
+      <div class="result" aria-live="polite">
+        <div class="rlabel">Total monthly payment</div>
+        <div class="rbig" id="total">—</div>
+        <div class="rsub" id="sub"></div>
+        <div class="breakdown">
+          <div class="bd"><div class="k">Principal &amp; interest</div><div class="v" id="bdPI">—</div></div>
+          <div class="bd"><div class="k">Tax + insurance</div><div class="v" id="bdTI">—</div></div>
+          <div class="bd"><div class="k">Loan amount</div><div class="v" id="bdLoan">—</div></div>
+          <div class="bd"><div class="k">Total interest</div><div class="v" id="bdInt">—</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ad">Ad space</div>
+
+  <div class="content">
+    <h2>How your mortgage payment is calculated</h2>
+    <p>A monthly mortgage payment usually has four parts, often called <b>PITI</b>: principal, interest, taxes and insurance. The principal and interest are fixed by the loan amount, rate and term using the standard amortization formula:</p>
+    <div class="formula">P&amp;I = L × r × (1 + r)ⁿ ÷ ( (1 + r)ⁿ − 1 )</div>
+    <p>where <b>L</b> is the loan amount (home price − down payment), <b>r</b> is the monthly rate (annual ÷ 12 ÷ 100) and <b>n</b> is the number of monthly payments. Property tax and home insurance are estimated yearly and divided by 12 to add to your monthly total.</p>
+    <h3>A bigger down payment helps twice</h3>
+    <p>It lowers the loan amount (smaller payments) and reduces total interest over the life of the loan. Try moving the down payment slider and watch both the monthly payment and total interest fall.</p>
+    <div class="xlinks">
+      <a href="/calculators/emi">EMI Calculator →</a>
+      <a href="/calculators/loan-payoff">Loan Payoff →</a>
+      <a href="/#calculators">All calculators →</a>
+    </div>
+  </div>
+
+  <script is:inline>
+    (function () {
+      var cur='USD', loc='en-US';
+      function el(id){return document.getElementById(id);}
+      function num(id){var v=parseFloat(el(id).value);return isFinite(v)?v:0;}
+      function money(v){try{return new Intl.NumberFormat(loc,{style:'currency',currency:cur,maximumFractionDigits:0}).format(Math.round(v));}catch(e){return Math.round(v).toLocaleString();}}
+      function pair(a,b){el(a).addEventListener('input',function(){el(b).value=el(a).value;compute();});el(b).addEventListener('input',function(){el(a).value=el(b).value;compute();});}
+      function compute(){
+        var price=num('price'), dp=num('down'), R=num('rate'), Y=num('term'), tax=num('tax'), ins=num('ins');
+        var loan=price*(1-dp/100); if(loan<0)loan=0;
+        var r=R/12/100, n=Y*12;
+        var pi=(r>0)?loan*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1):(n>0?loan/n:0);
+        if(!isFinite(pi)||pi<0)pi=0;
+        var ti=(tax+ins)/12, total=pi+ti, interest=pi*n-loan;
+        el('total').textContent=money(total);
+        el('sub').textContent=Y+' years · '+Math.round(dp)+'% down';
+        el('bdPI').textContent=money(pi);
+        el('bdTI').textContent=money(ti);
+        el('bdLoan').textContent=money(loan);
+        el('bdInt').textContent=money(interest);
+      }
+      pair('price','priceR');pair('down','downR');pair('rate','rateR');pair('term','termR');pair('tax','taxR');pair('ins','insR');
+      el('cur').addEventListener('change',function(){var o=el('cur').selectedOptions[0];cur=el('cur').value;loc=o.dataset.loc;document.querySelectorAll('.valwrap .sym').forEach(function(s){s.textContent=o.dataset.sym;});compute();});
+      compute();
+    })();
+  </script>
+</Base>

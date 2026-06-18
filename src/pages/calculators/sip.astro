@@ -1,0 +1,92 @@
+---
+import Base from '../../layouts/Base.astro';
+const title = 'SIP Calculator — Mutual Fund SIP Returns (Free, Instant)';
+const description = 'Free SIP calculator. Enter your monthly investment, expected return and duration to see the future value of your mutual fund SIP, with invested vs returns breakdown.';
+---
+<Base title={title} description={description}>
+  <header class="head"><div class="wrap">
+    <p class="kicker">Finance Calculator</p>
+    <h1>SIP Calculator</h1>
+    <p>See what your monthly investments could grow to. Change any value — results update live.</p>
+  </div></header>
+
+  <div class="wrap">
+    <div class="tool">
+      <div class="field">
+        <div class="field-top"><label for="cur">Currency</label></div>
+        <select id="cur" aria-label="Currency">
+          <option value="INR" data-sym="₹" data-loc="en-IN" selected>₹ Indian Rupee (INR)</option>
+          <option value="USD" data-sym="$" data-loc="en-US">$ US Dollar (USD)</option>
+          <option value="EUR" data-sym="€" data-loc="de-DE">€ Euro (EUR)</option>
+          <option value="GBP" data-sym="£" data-loc="en-GB">£ British Pound (GBP)</option>
+        </select>
+      </div>
+      <div class="field">
+        <div class="field-top"><label for="amt">Monthly investment</label>
+          <div class="valwrap"><span class="sym">₹</span><input id="amt" type="number" inputmode="decimal" min="0" value="5000" /></div></div>
+        <input id="amtR" type="range" min="500" max="200000" step="500" value="5000" aria-label="Monthly investment" />
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <div class="field-top"><label for="rate">Expected return</label>
+            <div class="valwrap"><input id="rate" type="number" inputmode="decimal" min="0" step="0.1" value="12" /><span>%</span></div></div>
+          <input id="rateR" type="range" min="1" max="30" step="0.5" value="12" aria-label="Expected annual return" />
+        </div>
+        <div class="field">
+          <div class="field-top"><label for="years">Duration</label>
+            <div class="valwrap"><input id="years" type="number" inputmode="numeric" min="1" value="15" /><span>yr</span></div></div>
+          <input id="yearsR" type="range" min="1" max="40" step="1" value="15" aria-label="Duration in years" />
+        </div>
+      </div>
+
+      <div class="result" aria-live="polite">
+        <div class="rlabel">Estimated future value</div>
+        <div class="rbig" id="fv">—</div>
+        <div class="rsub" id="sub"></div>
+        <div class="breakdown">
+          <div class="bd"><div class="k">You invested</div><div class="v" id="bdInv">—</div></div>
+          <div class="bd"><div class="k">Estimated returns</div><div class="v" id="bdRet">—</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ad">Ad space</div>
+
+  <div class="content">
+    <h2>How SIP returns are calculated</h2>
+    <p>A SIP (Systematic Investment Plan) invests a fixed amount every month. Each instalment buys units at that month's price and then compounds. The future value uses the standard monthly-compounding formula:</p>
+    <div class="formula">FV = P × [ ((1 + i)ⁿ − 1) ÷ i ] × (1 + i)</div>
+    <p>where <b>P</b> is the monthly investment, <b>i</b> is the monthly return (expected annual return ÷ 12 ÷ 100) and <b>n</b> is the number of months.</p>
+    <h3>Rupee-cost averaging</h3>
+    <p>Because you invest the same amount monthly, you automatically buy more units when prices are low and fewer when they're high. This averaging smooths out market ups and downs over time.</p>
+    <p><em>Returns are an estimate based on a constant expected rate. Actual market returns vary year to year and are not guaranteed.</em></p>
+    <div class="xlinks">
+      <a href="/calculators/compound-interest">Compound Interest →</a>
+      <a href="/#calculators">All calculators →</a>
+    </div>
+  </div>
+
+  <script is:inline>
+    (function () {
+      var cur='INR', loc='en-IN';
+      function el(id){return document.getElementById(id);}
+      function num(id){var v=parseFloat(el(id).value);return isFinite(v)?v:0;}
+      function money(v){try{return new Intl.NumberFormat(loc,{style:'currency',currency:cur,maximumFractionDigits:0}).format(Math.round(v));}catch(e){return Math.round(v).toLocaleString();}}
+      function pair(a,b){el(a).addEventListener('input',function(){el(b).value=el(a).value;compute();});el(b).addEventListener('input',function(){el(a).value=el(b).value;compute();});}
+      function compute(){
+        var P=num('amt'), R=num('rate'), Y=num('years');
+        var i=R/12/100, n=Y*12;
+        var fv=(i>0)?P*((Math.pow(1+i,n)-1)/i)*(1+i):P*n;
+        var invested=P*n, returns=fv-invested;
+        el('fv').textContent=money(fv);
+        el('sub').textContent=Y+' years · '+R+'% expected';
+        el('bdInv').textContent=money(invested);
+        el('bdRet').textContent=money(returns);
+      }
+      pair('amt','amtR');pair('rate','rateR');pair('years','yearsR');
+      el('cur').addEventListener('change',function(){var o=el('cur').selectedOptions[0];cur=el('cur').value;loc=o.dataset.loc;document.querySelectorAll('.valwrap .sym').forEach(function(s){s.textContent=o.dataset.sym;});compute();});
+      compute();
+    })();
+  </script>
+</Base>
