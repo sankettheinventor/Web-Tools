@@ -4,9 +4,11 @@ export async function GET(context: { site?: URL }) {
   const paths = [
     '',
     'calculators/emi', 'calculators/mortgage', 'calculators/sip',
-    'calculators/compound-interest', 'calculators/loan-payoff',
-    'calculators/percentage', 'calculators/bmi', 'calculators/income-tax',
-    'tools/watermark',
+    'calculators/compound-interest', 'calculators/fd', 'calculators/loan-payoff',
+    'calculators/income-tax', 'calculators/retirement', 'calculators/salary',
+    'calculators/percentage', 'calculators/bmi', 'calculators/age',
+    'calculators/tip', 'calculators/discount', 'calculators/unit-converter',
+    'tools/watermark', 'tools/compress', 'tools/convert', 'tools/favicon', 'tools/qr-code',
     'about', 'privacy-policy', 'terms',
   ];
   const urls = paths.map((p) => new URL(p, site).href);

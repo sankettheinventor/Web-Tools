@@ -10,11 +10,22 @@ const tools = [
   { name: 'Mortgage Calculator', url: '/calculators/mortgage' },
   { name: 'SIP Calculator', url: '/calculators/sip' },
   { name: 'Compound Interest Calculator', url: '/calculators/compound-interest' },
+  { name: 'FD Calculator', url: '/calculators/fd' },
   { name: 'Loan Payoff Calculator', url: '/calculators/loan-payoff' },
   { name: 'Income Tax Calculator', url: '/calculators/income-tax' },
+  { name: 'Retirement Calculator', url: '/calculators/retirement' },
+  { name: 'Take-Home Salary Calculator', url: '/calculators/salary' },
   { name: 'Percentage Calculator', url: '/calculators/percentage' },
   { name: 'BMI Calculator', url: '/calculators/bmi' },
+  { name: 'Age Calculator', url: '/calculators/age' },
+  { name: 'Tip Calculator', url: '/calculators/tip' },
+  { name: 'Discount & GST Calculator', url: '/calculators/discount' },
+  { name: 'Unit Converter', url: '/calculators/unit-converter' },
   { name: 'Watermark Studio', url: '/tools/watermark' },
+  { name: 'Image Compressor', url: '/tools/compress' },
+  { name: 'Image Converter & Resizer', url: '/tools/convert' },
+  { name: 'Favicon Generator', url: '/tools/favicon' },
+  { name: 'QR Code Generator', url: '/tools/qr-code' },
 ];
 const itemList = {
   '@context': 'https://schema.org',
@@ -43,22 +54,15 @@ const itemList = {
       <h2>💰 Finance Calculators</h2>
       <p class="csub">Plan loans, savings and investments. Pure math, instant results, nothing stored.</p>
       <div class="tgrid">
-        <a class="tcard" href="/calculators/emi">
-          <div class="ti">🏦</div><h3>EMI Calculator</h3><p>Monthly payment for any loan, with full breakdown.</p>
-        </a>
-        <a class="tcard" href="/calculators/mortgage">
-          <div class="ti">🏠</div><h3>Mortgage Calculator</h3><p>Home-loan payment incl. tax &amp; insurance.</p>
-        </a>
-        <a class="tcard" href="/calculators/sip">
-          <div class="ti">📊</div><h3>SIP Calculator</h3><p>Mutual-fund SIP returns over time.</p>
-        </a>
-        <a class="tcard" href="/calculators/compound-interest">
-          <div class="ti">📈</div><h3>Compound Interest</h3><p>See how savings grow over time, any frequency.</p>
-        </a>
-        <a class="tcard" href="/calculators/loan-payoff">
-          <div class="ti">💳</div><h3>Loan Payoff</h3><p>How long to be debt-free + extra-payment impact.</p>
-        </a>
+        <a class="tcard" href="/calculators/emi"><div class="ti">🏦</div><h3>EMI Calculator</h3><p>Monthly payment for any loan, with full breakdown.</p></a>
+        <a class="tcard" href="/calculators/mortgage"><div class="ti">🏠</div><h3>Mortgage Calculator</h3><p>Home-loan payment incl. tax &amp; insurance.</p></a>
+        <a class="tcard" href="/calculators/sip"><div class="ti">📊</div><h3>SIP Calculator</h3><p>Mutual-fund SIP returns over time.</p></a>
+        <a class="tcard" href="/calculators/compound-interest"><div class="ti">📈</div><h3>Compound Interest</h3><p>See how savings grow over time.</p></a>
+        <a class="tcard" href="/calculators/fd"><div class="ti">🏧</div><h3>FD Calculator</h3><p>Fixed-deposit maturity &amp; interest.</p></a>
+        <a class="tcard" href="/calculators/loan-payoff"><div class="ti">💳</div><h3>Loan Payoff</h3><p>Time to debt-free + extra-payment impact.</p></a>
         <a class="tcard" href="/calculators/income-tax"><div class="ti">🧾</div><h3>Income Tax</h3><p>India new vs old regime, FY 2025-26.</p></a>
+        <a class="tcard" href="/calculators/retirement"><div class="ti">🌴</div><h3>Retirement</h3><p>Corpus estimate, inflation-adjusted.</p></a>
+        <a class="tcard" href="/calculators/salary"><div class="ti">💼</div><h3>Take-Home Salary</h3><p>Gross to net in-hand pay.</p></a>
       </div>
     </section>
 
@@ -68,8 +72,10 @@ const itemList = {
       <div class="tgrid">
         <a class="tcard" href="/calculators/percentage"><div class="ti">％</div><h3>Percentage</h3><p>X% of Y, % of total, % change.</p></a>
         <a class="tcard" href="/calculators/bmi"><div class="ti">⚖️</div><h3>BMI Calculator</h3><p>Body Mass Index, metric or imperial.</p></a>
-        <span class="tcard soon"><div class="ti">🎂</div><h3>Age Calculator</h3><p>Exact age from a date.</p><span class="badge">Soon</span></span>
-        <span class="tcard soon"><div class="ti">🏷️</div><h3>Discount &amp; GST</h3><p>Sale price, tax, tips.</p><span class="badge">Soon</span></span>
+        <a class="tcard" href="/calculators/age"><div class="ti">🎂</div><h3>Age Calculator</h3><p>Exact age in years, months, days.</p></a>
+        <a class="tcard" href="/calculators/tip"><div class="ti">🍽️</div><h3>Tip Calculator</h3><p>Tip and split the bill.</p></a>
+        <a class="tcard" href="/calculators/discount"><div class="ti">🏷️</div><h3>Discount &amp; GST</h3><p>Final price after sale &amp; tax.</p></a>
+        <a class="tcard" href="/calculators/unit-converter"><div class="ti">📏</div><h3>Unit Converter</h3><p>Length, weight, temperature.</p></a>
       </div>
     </section>
 
@@ -78,9 +84,10 @@ const itemList = {
       <p class="csub">Compress, convert and watermark images — processed locally, never uploaded.</p>
       <div class="tgrid">
         <a class="tcard" href="/tools/watermark"><div class="ti">💧</div><h3>Watermark Studio</h3><p>Text/logo watermark, batch, tiling.</p></a>
-        <span class="tcard soon"><div class="ti">🗜️</div><h3>Image Compressor</h3><p>Shrink to a target size (e.g. 100 KB).</p><span class="badge">Soon</span></span>
+        <a class="tcard" href="/tools/compress"><div class="ti">🗜️</div><h3>Image Compressor</h3><p>Shrink photos, see the size live.</p></a>
+        <a class="tcard" href="/tools/convert"><div class="ti">🔄</div><h3>Convert &amp; Resize</h3><p>JPG ↔ PNG ↔ WebP, resize.</p></a>
+        <a class="tcard" href="/tools/favicon"><div class="ti">⭐</div><h3>Favicon Generator</h3><p>All icon sizes from one image.</p></a>
         <span class="tcard soon"><div class="ti">📱</div><h3>HEIC → JPG</h3><p>Convert iPhone photos to JPG.</p><span class="badge">Soon</span></span>
-        <span class="tcard soon"><div class="ti">🔄</div><h3>Convert / Resize</h3><p>JPG ↔ PNG ↔ WebP, resize, crop.</p><span class="badge">Soon</span></span>
       </div>
     </section>
 
@@ -88,8 +95,7 @@ const itemList = {
       <h2>⚡ Quick Utilities</h2>
       <p class="csub">Little tools worth bookmarking.</p>
       <div class="tgrid">
-        <span class="tcard soon"><div class="ti">🔳</div><h3>QR Code Generator</h3><p>URL, WiFi, vCard — with logo &amp; color.</p><span class="badge">Soon</span></span>
-        <span class="tcard soon"><div class="ti">⭐</div><h3>Favicon Generator</h3><p>All icon sizes from one image.</p><span class="badge">Soon</span></span>
+        <a class="tcard" href="/tools/qr-code"><div class="ti">🔳</div><h3>QR Code Generator</h3><p>Any link or text, custom colors.</p></a>
         <span class="tcard soon"><div class="ti">📄</div><h3>PDF Tools</h3><p>Merge, split, rotate PDFs.</p><span class="badge">Soon</span></span>
         <span class="tcard soon"><div class="ti">✂️</div><h3>SVG Optimizer</h3><p>Minify &amp; clean up SVG files.</p><span class="badge">Soon</span></span>
       </div>

@@ -1,0 +1,56 @@
+---
+import Base from '../../layouts/Base.astro';
+const title = 'Discount & GST Calculator — Final Price After Sale & Tax (Free)';
+const description = 'Free discount and GST/VAT calculator. Enter a price, discount percentage and tax rate to see the final price you pay and how much you save. Instant, in your browser.';
+---
+<Base title={title} description={description}>
+  <header class="head"><div class="wrap">
+    <p class="kicker">Everyday Calculator</p><h1>Discount &amp; GST Calculator</h1>
+    <p>Work out the real price after a discount and tax.</p>
+  </div></header>
+  <div class="wrap"><div class="tool">
+    <div class="field"><div class="field-top"><label for="cur">Currency</label></div>
+      <select id="cur" aria-label="Currency">
+        <option value="USD" data-sym="$" data-loc="en-US" selected>$ US Dollar (USD)</option>
+        <option value="INR" data-sym="₹" data-loc="en-IN">₹ Indian Rupee (INR)</option>
+        <option value="EUR" data-sym="€" data-loc="de-DE">€ Euro (EUR)</option>
+        <option value="GBP" data-sym="£" data-loc="en-GB">£ British Pound (GBP)</option>
+      </select></div>
+    <div class="field"><div class="field-top"><label for="price">Original price</label>
+      <div class="valwrap"><span class="sym">$</span><input id="price" type="number" inputmode="decimal" min="0" value="100" /></div></div>
+      <input id="priceR" type="range" min="0" max="5000" step="5" value="100" aria-label="Original price" /></div>
+    <div class="grid2">
+      <div class="field"><div class="field-top"><label for="disc">Discount</label>
+        <div class="valwrap"><input id="disc" type="number" inputmode="decimal" min="0" max="100" step="1" value="20" /><span>%</span></div></div>
+        <input id="discR" type="range" min="0" max="90" step="1" value="20" aria-label="Discount percent" /></div>
+      <div class="field"><div class="field-top"><label for="tax">Tax / GST</label>
+        <div class="valwrap"><input id="tax" type="number" inputmode="decimal" min="0" max="50" step="0.5" value="18" /><span>%</span></div></div>
+        <input id="taxR" type="range" min="0" max="30" step="0.5" value="18" aria-label="Tax percent" /></div>
+    </div>
+    <div class="result" aria-live="polite">
+      <div class="rlabel">Final price you pay</div><div class="rbig" id="final">—</div><div class="rsub" id="sub"></div>
+      <div class="breakdown">
+        <div class="bd"><div class="k">You save</div><div class="v" id="bdSave">—</div></div>
+        <div class="bd"><div class="k">Tax added</div><div class="v" id="bdTax">—</div></div>
+      </div>
+    </div>
+  </div></div>
+  <div class="ad">Ad space</div>
+  <div class="content">
+    <h2>How discount and tax stack up</h2>
+    <p>First the discount comes off the original price, then tax (GST/VAT/sales tax) is applied to the discounted amount:</p>
+    <div class="formula">final = price × (1 − discount%) × (1 + tax%)</div>
+    <p>That order matters — tax is charged on what you actually pay, not the pre-discount price. Use it for sales, coupons and checkout estimates anywhere in the world.</p>
+    <div class="xlinks"><a href="/calculators/percentage">Percentage →</a><a href="/#everyday">All calculators →</a></div>
+  </div>
+  <script is:inline>
+    (function(){var cur='USD',loc='en-US';function el(i){return document.getElementById(i);}function num(i){var v=parseFloat(el(i).value);return isFinite(v)?v:0;}
+    function money(v){try{return new Intl.NumberFormat(loc,{style:'currency',currency:cur,maximumFractionDigits:2}).format(v);}catch(e){return v.toFixed(2);}}
+    function pair(a,b){el(a).addEventListener('input',function(){el(b).value=el(a).value;c();});el(b).addEventListener('input',function(){el(a).value=el(b).value;c();});}
+    function c(){var p=num('price'),d=num('disc'),t=num('tax');var discounted=p*(1-d/100);var final=discounted*(1+t/100);
+      el('final').textContent=money(final);el('sub').textContent=d+'% off + '+t+'% tax';
+      el('bdSave').textContent=money(p-discounted);el('bdTax').textContent=money(discounted*t/100);}
+    pair('price','priceR');pair('disc','discR');pair('tax','taxR');
+    el('cur').addEventListener('change',function(){var o=el('cur').selectedOptions[0];cur=el('cur').value;loc=o.dataset.loc;document.querySelectorAll('.valwrap .sym').forEach(function(s){s.textContent=o.dataset.sym;});c();});c();})();
+  </script>
+</Base>

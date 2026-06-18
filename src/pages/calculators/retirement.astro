@@ -1,0 +1,71 @@
+---
+import Base from '../../layouts/Base.astro';
+const title = 'Retirement Calculator — How Big a Corpus You Need (Free)';
+const description = 'Free retirement calculator. Enter your age, savings, monthly contribution and expected return to estimate your retirement corpus, inflation-adjusted. Runs in your browser.';
+---
+<Base title={title} description={description}>
+  <header class="head"><div class="wrap">
+    <p class="kicker">Finance Calculator</p><h1>Retirement Calculator</h1>
+    <p>Estimate the nest egg you'll have built by retirement. Live results.</p>
+  </div></header>
+  <div class="wrap"><div class="tool">
+    <div class="field"><div class="field-top"><label for="cur">Currency</label></div>
+      <select id="cur" aria-label="Currency">
+        <option value="INR" data-sym="₹" data-loc="en-IN" selected>₹ Indian Rupee (INR)</option>
+        <option value="USD" data-sym="$" data-loc="en-US">$ US Dollar (USD)</option>
+        <option value="EUR" data-sym="€" data-loc="de-DE">€ Euro (EUR)</option>
+        <option value="GBP" data-sym="£" data-loc="en-GB">£ British Pound (GBP)</option>
+      </select></div>
+    <div class="grid2">
+      <div class="field"><div class="field-top"><label for="age">Current age</label>
+        <div class="valwrap"><input id="age" type="number" inputmode="numeric" min="15" max="75" value="30" /><span>yr</span></div></div>
+        <input id="ageR" type="range" min="18" max="65" step="1" value="30" aria-label="Current age" /></div>
+      <div class="field"><div class="field-top"><label for="ret">Retirement age</label>
+        <div class="valwrap"><input id="ret" type="number" inputmode="numeric" min="40" max="80" value="60" /><span>yr</span></div></div>
+        <input id="retR" type="range" min="45" max="75" step="1" value="60" aria-label="Retirement age" /></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><div class="field-top"><label for="cur0">Current savings</label>
+        <div class="valwrap"><span class="sym">₹</span><input id="cur0" type="number" inputmode="decimal" min="0" value="500000" /></div></div>
+        <input id="cur0R" type="range" min="0" max="10000000" step="50000" value="500000" aria-label="Current savings" /></div>
+      <div class="field"><div class="field-top"><label for="mon">Monthly saving</label>
+        <div class="valwrap"><span class="sym">₹</span><input id="mon" type="number" inputmode="decimal" min="0" value="15000" /></div></div>
+        <input id="monR" type="range" min="0" max="200000" step="1000" value="15000" aria-label="Monthly saving" /></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><div class="field-top"><label for="ret2">Expected return</label>
+        <div class="valwrap"><input id="ret2" type="number" inputmode="decimal" min="0" step="0.1" value="10" /><span>%</span></div></div>
+        <input id="ret2R" type="range" min="1" max="20" step="0.5" value="10" aria-label="Expected return" /></div>
+      <div class="field"><div class="field-top"><label for="inf">Inflation</label>
+        <div class="valwrap"><input id="inf" type="number" inputmode="decimal" min="0" step="0.1" value="6" /><span>%</span></div></div>
+        <input id="infR" type="range" min="0" max="12" step="0.5" value="6" aria-label="Inflation" /></div>
+    </div>
+    <div class="result" aria-live="polite">
+      <div class="rlabel">Corpus at retirement</div><div class="rbig" id="corpus">—</div><div class="rsub" id="sub"></div>
+      <div class="breakdown">
+        <div class="bd"><div class="k">You'll invest</div><div class="v" id="bdInv">—</div></div>
+        <div class="bd"><div class="k">In today's money</div><div class="v" id="bdReal">—</div></div>
+      </div>
+    </div>
+  </div></div>
+  <div class="ad">Ad space</div>
+  <div class="content">
+    <h2>How the corpus is estimated</h2>
+    <p>Your retirement corpus has two parts: your current savings growing until retirement, plus all your future monthly contributions compounding along the way. Both grow at your expected return rate.</p>
+    <p>Because prices rise over time, the calculator also shows the corpus <b>in today's money</b> — discounted by your inflation assumption — so the big future number means something real. <em>This is an estimate using constant rates; actual returns and inflation vary.</em></p>
+    <div class="xlinks"><a href="/calculators/sip">SIP Calculator →</a><a href="/#calculators">All calculators →</a></div>
+  </div>
+  <script is:inline>
+    (function(){var cur='INR',loc='en-IN';function el(i){return document.getElementById(i);}function num(i){var v=parseFloat(el(i).value);return isFinite(v)?v:0;}
+    function money(v){try{return new Intl.NumberFormat(loc,{style:'currency',currency:cur,maximumFractionDigits:0}).format(Math.round(v));}catch(e){return Math.round(v).toLocaleString();}}
+    function pair(a,b){el(a).addEventListener('input',function(){el(b).value=el(a).value;c();});el(b).addEventListener('input',function(){el(a).value=el(b).value;c();});}
+    function c(){var age=num('age'),ret=num('ret'),P=num('cur0'),M=num('mon'),R=num('ret2'),INF=num('inf');
+      var yrs=Math.max(0,ret-age),n=yrs*12,i=R/12/100;
+      var fvP=P*Math.pow(1+i,n);var fvM=(i>0)?M*((Math.pow(1+i,n)-1)/i)*(1+i):M*n;var corpus=fvP+fvM;
+      var invested=P+M*n;var real=corpus/Math.pow(1+INF/100,yrs);
+      el('corpus').textContent=money(corpus);el('sub').textContent=yrs+' years to retirement';
+      el('bdInv').textContent=money(invested);el('bdReal').textContent=money(real);}
+    pair('age','ageR');pair('ret','retR');pair('cur0','cur0R');pair('mon','monR');pair('ret2','ret2R');pair('inf','infR');
+    el('cur').addEventListener('change',function(){var o=el('cur').selectedOptions[0];cur=el('cur').value;loc=o.dataset.loc;document.querySelectorAll('.valwrap .sym').forEach(function(s){s.textContent=o.dataset.sym;});c();});c();})();
+  </script>
+</Base>

@@ -1,0 +1,62 @@
+---
+import Base from '../../layouts/Base.astro';
+const title = 'QR Code Generator — Free, Custom Colors, No Signup';
+const description = 'Free QR code generator. Make a QR code for any link or text with custom size and colors, then download it as a PNG. Runs in your browser — nothing is uploaded.';
+---
+<Base title={title} description={description}>
+  <Fragment slot="head">
+    <script is:inline src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+  </Fragment>
+  <header class="head"><div class="wrap">
+    <p class="kicker">Utility</p><h1>QR Code Generator</h1>
+    <p>Turn any link or text into a QR code, your colors, ready to download.</p>
+  </div></header>
+  <div class="wrap"><div class="tool wm">
+    <div class="wm-grid">
+      <div class="wm-preview qr-prev"><canvas id="canvas" aria-label="QR code"></canvas></div>
+      <div class="wm-controls">
+        <label class="ctl">Link or text
+          <textarea id="text" rows="3">https://thor-tools.netlify.app</textarea></label>
+        <label class="ctl">Size <span class="cv" id="sV">320px</span>
+          <input id="size" type="range" min="120" max="800" step="20" value="320" /></label>
+        <div class="row2">
+          <label class="ctl">Dots <input id="fg" type="color" value="#16121f" /></label>
+          <label class="ctl">Background <input id="bg" type="color" value="#ffffff" /></label>
+        </div>
+        <div class="wm-actions"><button id="dl" type="button" class="wm-btn">⬇ Download PNG</button></div>
+      </div>
+    </div>
+  </div></div>
+  <div class="ad">Ad space</div>
+  <div class="content">
+    <h2>How to use the QR code generator</h2>
+    <p>Type a link, text, phone number or anything else; pick a size and colors; and download a crisp PNG. Print it on a flyer, add it to a slide, or share it digitally — any phone camera can scan it. Keep good contrast between the dots and background so it scans reliably.</p>
+    <p>Everything is generated in your browser — nothing is uploaded.</p>
+    <div class="xlinks"><a href="/tools/favicon">Favicon Generator →</a><a href="/">All tools →</a></div>
+  </div>
+  <style>
+    .wm{padding:20px}.wm-grid{display:grid;grid-template-columns:1fr 300px;gap:22px;align-items:start}
+    .qr-prev{display:flex;align-items:center;justify-content:center;background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:18px;min-height:240px}
+    #canvas{max-width:100%;height:auto;border-radius:8px}
+    .wm-controls{display:flex;flex-direction:column;gap:14px}.ctl{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:var(--dim)}
+    .ctl textarea{background:var(--surface2);border:1px solid var(--line);border-radius:9px;color:var(--txt);font:inherit;font-weight:600;padding:10px 11px;outline:none;resize:vertical}
+    .ctl textarea:focus{border-color:var(--brand)}.ctl input[type=color]{width:100%;height:38px;border:1px solid var(--line);border-radius:9px;background:var(--surface2);cursor:pointer}
+    .cv{float:right;color:var(--brand);font-weight:700}.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .wm-actions{display:flex;gap:10px}.wm-btn{flex:1;padding:12px;border-radius:10px;font-weight:700;color:#fff;border:0;cursor:pointer;background:linear-gradient(135deg,var(--brand2),var(--brand))}
+    @media(max-width:680px){.wm-grid{grid-template-columns:1fr}}
+  </style>
+  <script is:inline>
+    (function(){
+      function $(i){return document.getElementById(i);}
+      function render(){
+        if(typeof QRCode==='undefined')return;
+        var size=parseInt($('size').value,10);
+        QRCode.toCanvas($('canvas'), $('text').value||' ', {width:size, margin:2, color:{dark:$('fg').value, light:$('bg').value}}, function(){});
+        $('sV').textContent=size+'px';
+      }
+      ['text','size','fg','bg'].forEach(function(i){$(i).addEventListener('input',render);});
+      $('dl').onclick=function(){var a=document.createElement('a');a.href=$('canvas').toDataURL('image/png');a.download='qr-code.png';a.click();};
+      if(document.readyState!=='loading')render();else window.addEventListener('load',render);
+    })();
+  </script>
+</Base>

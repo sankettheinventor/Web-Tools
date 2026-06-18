@@ -1,0 +1,55 @@
+---
+import Base from '../../layouts/Base.astro';
+const title = 'Unit Converter — Length, Weight & Temperature (Free)';
+const description = 'Free unit converter for length, weight and temperature. Convert between metric and imperial units instantly in your browser — meters, feet, kg, pounds, Celsius, Fahrenheit and more.';
+---
+<Base title={title} description={description}>
+  <header class="head"><div class="wrap">
+    <p class="kicker">Everyday Tool</p><h1>Unit Converter</h1>
+    <p>Convert length, weight and temperature instantly.</p>
+  </div></header>
+  <div class="wrap"><div class="tool">
+    <div class="field"><div class="field-top"><label for="cat">Category</label></div>
+      <select id="cat" aria-label="Category">
+        <option value="length" selected>Length</option><option value="weight">Weight</option><option value="temperature">Temperature</option>
+      </select></div>
+    <div class="grid2">
+      <div class="field"><div class="field-top"><label for="from">From</label></div>
+        <div class="valwrap"><input id="val" type="number" inputmode="decimal" value="1" /></div>
+        <select id="from" class="usel" aria-label="From unit"></select></div>
+      <div class="field"><div class="field-top"><label for="to">To</label></div>
+        <div class="result" style="padding:14px;margin-top:0;text-align:left"><div class="rbig" id="out" style="font-size:28px;margin:0">—</div></div>
+        <select id="to" class="usel" aria-label="To unit"></select></div>
+    </div>
+  </div></div>
+  <div class="ad">Ad space</div>
+  <div class="content">
+    <h2>Convert between any units</h2>
+    <p>Pick a category, choose your "from" and "to" units, and type a value — the result updates instantly. Length and weight convert through a base unit (meters and kilograms); temperature uses the standard Celsius, Fahrenheit and Kelvin formulas.</p>
+    <div class="xlinks"><a href="/#everyday">All calculators →</a></div>
+  </div>
+  <style>.usel{width:100%;margin-top:10px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface2);color:var(--txt);font:inherit;font-weight:600;outline:none}.usel:focus{border-color:var(--brand)}</style>
+  <script is:inline>
+    (function(){
+      function el(i){return document.getElementById(i);}
+      var U={length:{m:1,km:1000,cm:0.01,mm:0.001,mi:1609.344,yd:0.9144,ft:0.3048,in:0.0254},
+             weight:{kg:1,g:0.001,mg:0.000001,lb:0.45359237,oz:0.0283495231,t:1000},
+             temperature:{'°C':1,'°F':1,K:1}};
+      var LABEL={m:'Meter',km:'Kilometer',cm:'Centimeter',mm:'Millimeter',mi:'Mile',yd:'Yard',ft:'Foot',in:'Inch',
+        kg:'Kilogram',g:'Gram',mg:'Milligram',lb:'Pound',oz:'Ounce',t:'Tonne','°C':'Celsius','°F':'Fahrenheit',K:'Kelvin'};
+      function fill(){
+        var cat=el('cat').value, keys=Object.keys(U[cat]);
+        ['from','to'].forEach(function(id){el(id).innerHTML=keys.map(function(k){return '<option value="'+k+'">'+LABEL[k]+' ('+k+')</option>';}).join('');});
+        el('to').selectedIndex=Math.min(1,keys.length-1);
+      }
+      function toBase(cat,u,v){if(cat!=='temperature')return v*U[cat][u];if(u==='°C')return v;if(u==='°F')return (v-32)*5/9;return v-273.15;}
+      function fromBase(cat,u,c){if(cat!=='temperature')return c/U[cat][u];if(u==='°C')return c;if(u==='°F')return c*9/5+32;return c+273.15;}
+      function c(){var cat=el('cat').value,v=parseFloat(el('val').value);if(!isFinite(v)){el('out').textContent='—';return;}
+        var base=toBase(cat,el('from').value,v),out=fromBase(cat,el('to').value,base);
+        el('out').textContent=(Math.round(out*100000)/100000).toLocaleString();}
+      el('cat').addEventListener('change',function(){fill();c();});
+      ['val','from','to'].forEach(function(i){el(i).addEventListener('input',c);});
+      fill();c();
+    })();
+  </script>
+</Base>

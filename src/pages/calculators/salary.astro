@@ -1,0 +1,59 @@
+---
+import Base from '../../layouts/Base.astro';
+const title = 'Take-Home Salary Calculator — Gross to Net Pay (Free)';
+const description = 'Free take-home salary calculator. Enter your gross pay and deductions (tax, retirement, other) to see your net monthly and annual in-hand salary instantly.';
+---
+<Base title={title} description={description}>
+  <header class="head"><div class="wrap">
+    <p class="kicker">Finance Calculator</p><h1>Take-Home Salary Calculator</h1>
+    <p>Turn gross pay into real in-hand salary. Adjust the deductions for your situation.</p>
+  </div></header>
+  <div class="wrap"><div class="tool">
+    <div class="field"><div class="field-top"><label for="cur">Currency</label></div>
+      <select id="cur" aria-label="Currency">
+        <option value="INR" data-sym="₹" data-loc="en-IN" selected>₹ Indian Rupee (INR)</option>
+        <option value="USD" data-sym="$" data-loc="en-US">$ US Dollar (USD)</option>
+        <option value="EUR" data-sym="€" data-loc="de-DE">€ Euro (EUR)</option>
+        <option value="GBP" data-sym="£" data-loc="en-GB">£ British Pound (GBP)</option>
+      </select></div>
+    <div class="field"><div class="field-top"><label for="gross">Annual gross salary</label>
+      <div class="valwrap"><span class="sym">₹</span><input id="gross" type="number" inputmode="decimal" min="0" value="1200000" /></div></div>
+      <input id="grossR" type="range" min="100000" max="10000000" step="25000" value="1200000" aria-label="Annual gross salary" /></div>
+    <div class="grid2">
+      <div class="field"><div class="field-top"><label for="tax">Income tax</label>
+        <div class="valwrap"><input id="tax" type="number" inputmode="decimal" min="0" max="60" step="0.5" value="10" /><span>%</span></div></div>
+        <input id="taxR" type="range" min="0" max="50" step="0.5" value="10" aria-label="Income tax percent" /></div>
+      <div class="field"><div class="field-top"><label for="ret">Retirement / PF</label>
+        <div class="valwrap"><input id="ret" type="number" inputmode="decimal" min="0" max="30" step="0.5" value="12" /><span>%</span></div></div>
+        <input id="retR" type="range" min="0" max="25" step="0.5" value="12" aria-label="Retirement percent" /></div>
+    </div>
+    <div class="field"><div class="field-top"><label for="other">Other deduction / month</label>
+      <div class="valwrap"><span class="sym">₹</span><input id="other" type="number" inputmode="decimal" min="0" value="0" /></div></div>
+      <input id="otherR" type="range" min="0" max="50000" step="500" value="0" aria-label="Other monthly deduction" /></div>
+    <div class="result" aria-live="polite">
+      <div class="rlabel">Monthly take-home</div><div class="rbig" id="net">—</div><div class="rsub" id="sub"></div>
+      <div class="breakdown">
+        <div class="bd"><div class="k">Annual in-hand</div><div class="v" id="bdYr">—</div></div>
+        <div class="bd"><div class="k">Total deductions</div><div class="v" id="bdDed">—</div></div>
+      </div>
+    </div>
+  </div></div>
+  <div class="ad">Ad space</div>
+  <div class="content">
+    <h2>Gross vs net pay</h2>
+    <p>Your <b>gross</b> salary is the headline figure. Your <b>net</b> (take-home) pay is what actually reaches your account after deductions — income tax, retirement/provident-fund contributions, and anything else like insurance or loan repayments.</p>
+    <p>Because tax and retirement rules differ by country, this calculator lets you enter the percentages that apply to you, so it works anywhere. <em>For an exact figure, check your payslip or a local tax tool.</em></p>
+    <div class="xlinks"><a href="/calculators/income-tax">Income Tax →</a><a href="/#calculators">All calculators →</a></div>
+  </div>
+  <script is:inline>
+    (function(){var cur='INR',loc='en-IN';function el(i){return document.getElementById(i);}function num(i){var v=parseFloat(el(i).value);return isFinite(v)?v:0;}
+    function money(v){try{return new Intl.NumberFormat(loc,{style:'currency',currency:cur,maximumFractionDigits:0}).format(Math.round(v));}catch(e){return Math.round(v).toLocaleString();}}
+    function pair(a,b){el(a).addEventListener('input',function(){el(b).value=el(a).value;c();});el(b).addEventListener('input',function(){el(a).value=el(b).value;c();});}
+    function c(){var g=num('gross'),tax=num('tax'),ret=num('ret'),other=num('other')*12;
+      var ded=g*(tax+ret)/100+other;var net=g-ded;if(net<0)net=0;
+      el('net').textContent=money(net/12);el('sub').textContent='from '+money(g)+' gross / yr';
+      el('bdYr').textContent=money(net);el('bdDed').textContent=money(ded);}
+    pair('gross','grossR');pair('tax','taxR');pair('ret','retR');pair('other','otherR');
+    el('cur').addEventListener('change',function(){var o=el('cur').selectedOptions[0];cur=el('cur').value;loc=o.dataset.loc;document.querySelectorAll('.valwrap .sym').forEach(function(s){s.textContent=o.dataset.sym;});c();});c();})();
+  </script>
+</Base>

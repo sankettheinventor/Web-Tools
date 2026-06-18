@@ -1,0 +1,61 @@
+---
+import Base from '../../layouts/Base.astro';
+const title = 'FD Calculator — Fixed Deposit Maturity & Interest (Free)';
+const description = 'Free fixed deposit (FD) calculator. Enter your deposit, interest rate, tenure and compounding frequency to see the maturity amount and interest earned instantly.';
+---
+<Base title={title} description={description}>
+  <header class="head"><div class="wrap">
+    <p class="kicker">Finance Calculator</p><h1>FD Calculator</h1>
+    <p>Your fixed-deposit maturity amount and interest, updated live.</p>
+  </div></header>
+  <div class="wrap"><div class="tool">
+    <div class="field"><div class="field-top"><label for="cur">Currency</label></div>
+      <select id="cur" aria-label="Currency">
+        <option value="INR" data-sym="₹" data-loc="en-IN" selected>₹ Indian Rupee (INR)</option>
+        <option value="USD" data-sym="$" data-loc="en-US">$ US Dollar (USD)</option>
+        <option value="EUR" data-sym="€" data-loc="de-DE">€ Euro (EUR)</option>
+        <option value="GBP" data-sym="£" data-loc="en-GB">£ British Pound (GBP)</option>
+      </select></div>
+    <div class="field"><div class="field-top"><label for="amt">Deposit amount</label>
+      <div class="valwrap"><span class="sym">₹</span><input id="amt" type="number" inputmode="decimal" min="0" value="100000" /></div></div>
+      <input id="amtR" type="range" min="1000" max="5000000" step="1000" value="100000" aria-label="Deposit amount" /></div>
+    <div class="grid2">
+      <div class="field"><div class="field-top"><label for="rate">Interest rate</label>
+        <div class="valwrap"><input id="rate" type="number" inputmode="decimal" min="0" step="0.1" value="7" /><span>%</span></div></div>
+        <input id="rateR" type="range" min="1" max="15" step="0.1" value="7" aria-label="Interest rate" /></div>
+      <div class="field"><div class="field-top"><label for="years">Tenure</label>
+        <div class="valwrap"><input id="years" type="number" inputmode="decimal" min="0" step="0.5" value="5" /><span>yr</span></div></div>
+        <input id="yearsR" type="range" min="0.5" max="20" step="0.5" value="5" aria-label="Tenure in years" /></div>
+    </div>
+    <div class="field"><div class="field-top"><label for="freq">Compounding</label></div>
+      <select id="freq" aria-label="Compounding frequency">
+        <option value="4" selected>Quarterly</option><option value="12">Monthly</option><option value="2">Half-yearly</option><option value="1">Yearly</option>
+      </select></div>
+    <div class="result" aria-live="polite">
+      <div class="rlabel">Maturity amount</div><div class="rbig" id="mat">—</div><div class="rsub" id="sub"></div>
+      <div class="breakdown">
+        <div class="bd"><div class="k">Deposited</div><div class="v" id="bdP">—</div></div>
+        <div class="bd"><div class="k">Interest earned</div><div class="v" id="bdI">—</div></div>
+      </div>
+    </div>
+  </div></div>
+  <div class="ad">Ad space</div>
+  <div class="content">
+    <h2>How FD maturity is calculated</h2>
+    <p>A fixed deposit earns compound interest. The maturity value uses:</p>
+    <div class="formula">A = P × (1 + r/n)^(n·t)</div>
+    <p>where <b>P</b> is your deposit, <b>r</b> is the annual rate (as a decimal), <b>n</b> is how many times a year interest compounds, and <b>t</b> is the tenure in years. Most banks compound FDs quarterly, so that's the default here.</p>
+    <p>The more frequently interest compounds, the slightly higher your maturity amount for the same rate. <em>Interest on FDs may be taxable depending on your country and income — this estimate is before tax.</em></p>
+    <div class="xlinks"><a href="/calculators/compound-interest">Compound Interest →</a><a href="/#calculators">All calculators →</a></div>
+  </div>
+  <script is:inline>
+    (function(){var cur='INR',loc='en-IN';function el(i){return document.getElementById(i);}function num(i){var v=parseFloat(el(i).value);return isFinite(v)?v:0;}
+    function money(v){try{return new Intl.NumberFormat(loc,{style:'currency',currency:cur,maximumFractionDigits:0}).format(Math.round(v));}catch(e){return Math.round(v).toLocaleString();}}
+    function pair(a,b){el(a).addEventListener('input',function(){el(b).value=el(a).value;c();});el(b).addEventListener('input',function(){el(a).value=el(b).value;c();});}
+    function c(){var P=num('amt'),R=num('rate'),Y=num('years'),n=parseInt(el('freq').value,10);var A=P*Math.pow(1+R/100/n,n*Y);
+      el('mat').textContent=money(A);el('sub').textContent=Y+' yr · '+el('freq').selectedOptions[0].textContent.toLowerCase();
+      el('bdP').textContent=money(P);el('bdI').textContent=money(A-P);}
+    pair('amt','amtR');pair('rate','rateR');pair('years','yearsR');el('freq').addEventListener('change',c);
+    el('cur').addEventListener('change',function(){var o=el('cur').selectedOptions[0];cur=el('cur').value;loc=o.dataset.loc;document.querySelectorAll('.valwrap .sym').forEach(function(s){s.textContent=o.dataset.sym;});c();});c();})();
+  </script>
+</Base>

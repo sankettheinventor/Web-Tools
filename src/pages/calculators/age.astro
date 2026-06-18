@@ -1,0 +1,59 @@
+---
+import Base from '../../layouts/Base.astro';
+const title = 'Age Calculator — Exact Age in Years, Months & Days (Free)';
+const description = 'Free age calculator. Enter your date of birth to find your exact age in years, months and days — plus total months, weeks and days. Runs in your browser.';
+---
+<Base title={title} description={description}>
+  <header class="head"><div class="wrap">
+    <p class="kicker">Everyday Calculator</p><h1>Age Calculator</h1>
+    <p>Your exact age, down to the day.</p>
+  </div></header>
+  <div class="wrap"><div class="tool">
+    <div class="grid2">
+      <div class="field"><div class="field-top"><label for="dob">Date of birth</label></div>
+        <input id="dob" type="date" class="dateinput" /></div>
+      <div class="field"><div class="field-top"><label for="asof">Age at date</label></div>
+        <input id="asof" type="date" class="dateinput" /></div>
+    </div>
+    <div class="result" aria-live="polite">
+      <div class="rlabel">Your age</div><div class="rbig" id="age">—</div>
+      <div class="breakdown">
+        <div class="bd"><div class="k">Total months</div><div class="v" id="bdM">—</div></div>
+        <div class="bd"><div class="k">Total weeks</div><div class="v" id="bdW">—</div></div>
+        <div class="bd"><div class="k">Total days</div><div class="v" id="bdD">—</div></div>
+        <div class="bd"><div class="k">Next birthday</div><div class="v" id="bdB">—</div></div>
+      </div>
+    </div>
+  </div></div>
+  <div class="ad">Ad space</div>
+  <div class="content">
+    <h2>How age is calculated</h2>
+    <p>Your age is the time between your date of birth and a chosen date (today by default). The calculator counts complete years, then the remaining months, then the remaining days — the same way you'd say "32 years, 4 months and 9 days".</p>
+    <p>It also shows your age expressed entirely in months, weeks and days, and counts down to your next birthday.</p>
+    <div class="xlinks"><a href="/#everyday">All calculators →</a></div>
+  </div>
+  <style>.dateinput{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface2);color:var(--txt);font:inherit;font-weight:600;outline:none}.dateinput:focus{border-color:var(--brand)}</style>
+  <script is:inline>
+    (function(){
+      function el(i){return document.getElementById(i);}
+      function pad(d){return d.toISOString().slice(0,10);}
+      var today=new Date(); el('asof').value=pad(today);
+      var d18=new Date(today.getFullYear()-25,today.getMonth(),today.getDate()); el('dob').value=pad(d18);
+      function c(){
+        var b=new Date(el('dob').value), a=new Date(el('asof').value);
+        if(isNaN(b)||isNaN(a)||a<b){el('age').textContent='—';el('bdM').textContent=el('bdW').textContent=el('bdD').textContent=el('bdB').textContent='—';return;}
+        var y=a.getFullYear()-b.getFullYear(), m=a.getMonth()-b.getMonth(), d=a.getDate()-b.getDate();
+        if(d<0){m--;d+=new Date(a.getFullYear(),a.getMonth(),0).getDate();}
+        if(m<0){y--;m+=12;}
+        el('age').textContent=y+' yr '+m+' mo '+d+' d';
+        var days=Math.floor((a-b)/86400000);
+        el('bdM').textContent=(y*12+m).toLocaleString();
+        el('bdW').textContent=Math.floor(days/7).toLocaleString();
+        el('bdD').textContent=days.toLocaleString();
+        var nb=new Date(a.getFullYear(),b.getMonth(),b.getDate()); if(nb<a)nb.setFullYear(a.getFullYear()+1);
+        el('bdB').textContent=Math.ceil((nb-a)/86400000)+' days';
+      }
+      ['dob','asof'].forEach(function(i){el(i).addEventListener('input',c);});c();
+    })();
+  </script>
+</Base>

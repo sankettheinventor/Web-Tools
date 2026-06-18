@@ -1,0 +1,82 @@
+---
+import Base from '../../layouts/Base.astro';
+const title = 'Image Converter & Resizer — JPG, PNG, WebP (Free, Private)';
+const description = 'Free image converter and resizer. Convert between JPG, PNG and WebP and resize images in your browser. Fast, private — your files are never uploaded.';
+---
+<Base title={title} description={description}>
+  <header class="head"><div class="wrap">
+    <p class="kicker">Image Tool</p><h1>Image Converter &amp; Resizer</h1>
+    <p>Convert between JPG, PNG and WebP, and resize — all in your browser.</p>
+  </div></header>
+  <div class="wrap"><div class="tool wm">
+    <div id="drop" class="drop"><input id="file" type="file" accept="image/*" hidden />
+      <div class="drop-ic">🔄</div><p class="drop-t">Drop an image, or <button id="browse" type="button" class="linklike">browse</button></p>
+      <p class="drop-s">JPG · PNG · WebP · 🔒 nothing leaves your device</p></div>
+    <div id="editor" hidden>
+      <div class="wm-grid">
+        <div class="wm-preview"><canvas id="canvas" aria-label="Preview"></canvas></div>
+        <div class="wm-controls">
+          <label class="ctl">Convert to
+            <select id="fmt"><option value="image/png">PNG</option><option value="image/jpeg" selected>JPG</option><option value="image/webp">WebP</option></select></label>
+          <div class="row2">
+            <label class="ctl">Width<input id="w" type="number" inputmode="numeric" min="1" /></label>
+            <label class="ctl">Height<input id="h" type="number" inputmode="numeric" min="1" /></label>
+          </div>
+          <label class="chkrow"><input id="lock" type="checkbox" checked /> Keep aspect ratio</label>
+          <div class="sizes"><span>New size: <b id="nSize" class="hl">—</b></span></div>
+          <div class="wm-actions">
+            <button id="dl" type="button" class="wm-btn">⬇ Download</button>
+            <button id="reset" type="button" class="wm-btn ghost">Start over</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div></div>
+  <div class="ad">Ad space</div>
+  <div class="content">
+    <h2>Convert and resize images</h2>
+    <p>Drop an image, choose the format you want, and optionally set a new width or height (aspect ratio is kept by default). <b>PNG</b> is lossless and supports transparency; <b>JPG</b> is best for photos; <b>WebP</b> gives smaller files on modern browsers. Everything runs locally — your images are never uploaded.</p>
+    <div class="xlinks"><a href="/tools/compress">Image Compressor →</a><a href="/#image-tools">All image tools →</a></div>
+  </div>
+  <style>
+    .drop{border:2px dashed var(--line);border-radius:16px;background:var(--surface2);padding:48px 24px;text-align:center;cursor:pointer}
+    .drop.drag{border-color:var(--brand)}.drop-ic{font-size:44px;margin-bottom:10px}.drop-t{font-size:17px;font-weight:600}.drop-s{font-size:13px;color:var(--dim);margin-top:8px}
+    .linklike{background:none;border:0;color:var(--brand);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline}
+    .wm{padding:20px}.wm-grid{display:grid;grid-template-columns:1fr 290px;gap:22px}.wm-preview{min-width:0}
+    #canvas{width:100%;height:auto;max-height:58vh;object-fit:contain;border:1px solid var(--line);border-radius:12px;background:var(--surface2)}
+    .wm-controls{display:flex;flex-direction:column;gap:14px}.ctl{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:var(--dim)}
+    .ctl select,.ctl input{background:var(--surface2);border:1px solid var(--line);border-radius:9px;color:var(--txt);font:inherit;font-weight:600;padding:10px 11px;outline:none}
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.chkrow{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:600;color:var(--txt)}.chkrow input{width:17px;height:17px;accent-color:var(--brand)}
+    .sizes{font-size:13.5px;color:var(--dim);background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:12px}.sizes .hl{color:var(--brand);font-weight:700}
+    .wm-actions{display:flex;gap:10px}.wm-btn{flex:1;padding:12px;border-radius:10px;font-weight:700;color:#fff;border:0;cursor:pointer;background:linear-gradient(135deg,var(--brand2),var(--brand))}
+    .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line);flex:0 0 auto}
+    @media(max-width:680px){.wm-grid{grid-template-columns:1fr}}
+  </style>
+  <script is:inline>
+    (function(){
+      var img=null, ar=1, lastBlob=null, name='image';
+      function $(i){return document.getElementById(i);}
+      function fmtKB(b){return b>1048576?(b/1048576).toFixed(2)+' MB':Math.round(b/1024)+' KB';}
+      function render(){
+        if(!img)return;
+        var w=parseInt($('w').value,10)||img.naturalWidth, h=parseInt($('h').value,10)||img.naturalHeight;
+        var c=$('canvas'); c.width=w; c.height=h;
+        if($('fmt').value==='image/jpeg'){var x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,w,h);}
+        c.getContext('2d').drawImage(img,0,0,w,h);
+        c.toBlob(function(b){lastBlob=b;$('nSize').textContent=fmtKB(b.size);}, $('fmt').value, 0.92);
+      }
+      function load(f){name=f.name.replace(/\.[^.]+$/,'');var im=new Image();im.onload=function(){img=im;ar=im.naturalWidth/im.naturalHeight;$('w').value=im.naturalWidth;$('h').value=im.naturalHeight;$('drop').hidden=true;$('editor').hidden=false;render();};im.src=URL.createObjectURL(f);}
+      $('browse').onclick=function(){$('file').click();};
+      $('drop').onclick=function(e){if(e.target.id==='drop'||e.target.className.indexOf('drop-')===0)$('file').click();};
+      $('file').onchange=function(e){if(e.target.files[0])load(e.target.files[0]);};
+      ['dragover','dragenter'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.add('drag');});});
+      ['dragleave','drop'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.remove('drag');});});
+      $('drop').addEventListener('drop',function(e){if(e.dataTransfer.files[0])load(e.dataTransfer.files[0]);});
+      $('w').addEventListener('input',function(){if($('lock').checked&&img){$('h').value=Math.round((parseInt($('w').value,10)||0)/ar);}render();});
+      $('h').addEventListener('input',function(){if($('lock').checked&&img){$('w').value=Math.round((parseInt($('h').value,10)||0)*ar);}render();});
+      $('fmt').addEventListener('change',render);
+      $('dl').onclick=function(){if(!lastBlob)return;var ext=$('fmt').value.split('/')[1].replace('jpeg','jpg');var a=document.createElement('a');a.href=URL.createObjectURL(lastBlob);a.download=name+'.'+ext;a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);};
+      $('reset').onclick=function(){img=null;lastBlob=null;$('file').value='';$('editor').hidden=true;$('drop').hidden=false;};
+    })();
+  </script>
+</Base>
