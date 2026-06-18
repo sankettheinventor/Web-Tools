@@ -1,9 +1,35 @@
 ---
 import Base from '../layouts/Base.astro';
 const title = 'Thor Tools — Free Online Calculators & Image Tools (No Signup, No Upload)';
-const description = 'Free, fast, private online calculators and image tools. EMI, compound interest, image compress, watermark and more — all run in your browser. Nothing is uploaded.';
+const description = 'Free, fast, private online calculators and image tools. EMI, mortgage, SIP, income tax, compound interest, watermark and more — all run in your browser. Nothing is uploaded.';
+
+// Every tool is its own indexable page. This ItemList tells Google + AI
+// engines the full catalogue and each tool's URL (SEO + GEO).
+const tools = [
+  { name: 'EMI Calculator', url: '/calculators/emi' },
+  { name: 'Mortgage Calculator', url: '/calculators/mortgage' },
+  { name: 'SIP Calculator', url: '/calculators/sip' },
+  { name: 'Compound Interest Calculator', url: '/calculators/compound-interest' },
+  { name: 'Loan Payoff Calculator', url: '/calculators/loan-payoff' },
+  { name: 'Income Tax Calculator', url: '/calculators/income-tax' },
+  { name: 'Percentage Calculator', url: '/calculators/percentage' },
+  { name: 'BMI Calculator', url: '/calculators/bmi' },
+  { name: 'Watermark Studio', url: '/tools/watermark' },
+];
+const itemList = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'Free Online Tools — Thor Tools',
+  itemListElement: tools.map((t, i) => ({
+    '@type': 'ListItem', position: i + 1, name: t.name,
+    url: new URL(t.url, Astro.site).href,
+  })),
+};
 ---
 <Base title={title} description={description}>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(itemList)} />
+  </Fragment>
   <header class="head">
     <div class="wrap">
       <p class="kicker">Free · Private · Instant</p>
