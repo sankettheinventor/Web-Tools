@@ -169,6 +169,14 @@ select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:1
 .tcard .badge{display:inline-block;margin-top:9px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
   color:var(--dim);background:var(--surface2);border:1px solid var(--line);border-radius:20px;padding:2px 8px}
 
+/* ---- trust / compliance strip ---- */
+.trust-strip{border-top:1px solid var(--line);background:var(--surface2)}
+.trust-in{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;padding:20px}
+.trust-lead{font-size:14.5px;color:var(--dim);max-width:430px}.trust-lead b{color:var(--txt)}
+.trust-badges{display:flex;flex-wrap:wrap;gap:10px}
+.tb{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--txt);
+  background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:7px 13px}
+
 /* ---- footer ---- */
 footer{border-top:1px solid var(--line);margin-top:54px;padding:34px 0;color:var(--dim);font-size:13.5px}
 .foot-in{display:flex;flex-wrap:wrap;gap:22px;justify-content:space-between}

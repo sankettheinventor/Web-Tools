@@ -1,62 +1,173 @@
 ---
 import Base from '../../layouts/Base.astro';
-const title = 'QR Code Generator — Free, Custom Colors, No Signup';
-const description = 'Free QR code generator. Make a QR code for any link or text with custom size and colors, then download it as a PNG. Runs in your browser — nothing is uploaded.';
+const title = 'QR Code Generator — URL, WiFi, vCard, Email & More (Free)';
+const description = 'Free QR code generator. Make QR codes for a URL, WiFi, contact card (vCard), email, phone, SMS or text — styled with your colors and logo. Download PNG or SVG. Nothing uploaded.';
 ---
 <Base title={title} description={description}>
   <Fragment slot="head">
-    <script is:inline src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+    <script is:inline src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.6.0/lib/qr-code-styling.js"></script>
   </Fragment>
   <header class="head"><div class="wrap">
     <p class="kicker">Utility</p><h1>QR Code Generator</h1>
-    <p>Turn any link or text into a QR code, your colors, ready to download.</p>
+    <p>Make a QR code for a link, WiFi, contact card and more — your colors, your logo.</p>
   </div></header>
-  <div class="wrap"><div class="tool wm">
-    <div class="wm-grid">
-      <div class="wm-preview qr-prev"><canvas id="canvas" aria-label="QR code"></canvas></div>
-      <div class="wm-controls">
-        <label class="ctl">Link or text
-          <textarea id="text" rows="3">https://thor-tools.netlify.app</textarea></label>
-        <label class="ctl">Size <span class="cv" id="sV">320px</span>
-          <input id="size" type="range" min="120" max="800" step="20" value="320" /></label>
-        <div class="row2">
-          <label class="ctl">Dots <input id="fg" type="color" value="#16121f" /></label>
-          <label class="ctl">Background <input id="bg" type="color" value="#ffffff" /></label>
+
+  <div class="wrap"><div class="tool qr">
+    <div class="qr-grid">
+      <div class="qr-left">
+        <div class="qr-tabs" id="tabs">
+          <button type="button" class="qt on" data-t="url">🔗 URL</button>
+          <button type="button" class="qt" data-t="text">📝 Text</button>
+          <button type="button" class="qt" data-t="wifi">📶 WiFi</button>
+          <button type="button" class="qt" data-t="email">✉️ Email</button>
+          <button type="button" class="qt" data-t="phone">📞 Phone</button>
+          <button type="button" class="qt" data-t="sms">💬 SMS</button>
+          <button type="button" class="qt" data-t="vcard">👤 Contact</button>
         </div>
-        <div class="wm-actions"><button id="dl" type="button" class="wm-btn">⬇ Download PNG</button></div>
+
+        <div class="qp" data-p="url">
+          <label class="ctl">Website URL<input id="u_url" type="url" value="https://thor-tools.netlify.app" /></label>
+        </div>
+        <div class="qp" data-p="text" hidden>
+          <label class="ctl">Text<textarea id="t_text" rows="3">Hello from Thor Tools!</textarea></label>
+        </div>
+        <div class="qp" data-p="wifi" hidden>
+          <div class="row2"><label class="ctl">Network name (SSID)<input id="w_ssid" type="text" /></label>
+            <label class="ctl">Password<input id="w_pass" type="text" /></label></div>
+          <div class="row2"><label class="ctl">Security<select id="w_enc"><option value="WPA" selected>WPA/WPA2</option><option value="WEP">WEP</option><option value="nopass">None</option></select></label>
+            <label class="chkrow" style="align-self:end"><input id="w_hidden" type="checkbox" /> Hidden network</label></div>
+        </div>
+        <div class="qp" data-p="email" hidden>
+          <label class="ctl">To<input id="e_to" type="email" /></label>
+          <label class="ctl">Subject<input id="e_sub" type="text" /></label>
+          <label class="ctl">Message<textarea id="e_body" rows="2"></textarea></label>
+        </div>
+        <div class="qp" data-p="phone" hidden>
+          <label class="ctl">Phone number<input id="p_num" type="tel" placeholder="+1 555 123 4567" /></label>
+        </div>
+        <div class="qp" data-p="sms" hidden>
+          <label class="ctl">Phone number<input id="s_num" type="tel" /></label>
+          <label class="ctl">Message<textarea id="s_msg" rows="2"></textarea></label>
+        </div>
+        <div class="qp" data-p="vcard" hidden>
+          <div class="row2"><label class="ctl">Full name<input id="v_name" type="text" /></label>
+            <label class="ctl">Phone<input id="v_phone" type="tel" /></label></div>
+          <div class="row2"><label class="ctl">Email<input id="v_email" type="email" /></label>
+            <label class="ctl">Company<input id="v_org" type="text" /></label></div>
+          <label class="ctl">Website<input id="v_url" type="url" /></label>
+        </div>
+
+        <div class="qr-style">
+          <div class="row2">
+            <label class="ctl">Dot style<select id="dot"><option value="square">Square</option><option value="rounded" selected>Rounded</option><option value="dots">Dots</option><option value="classy">Classy</option><option value="extra-rounded">Extra rounded</option></select></label>
+            <label class="ctl">Corners<select id="corner"><option value="square">Square</option><option value="extra-rounded" selected>Rounded</option><option value="dot">Dot</option></select></label>
+          </div>
+          <div class="row2">
+            <label class="ctl">Dots color<input id="fg" type="color" value="#16121f" /></label>
+            <label class="ctl">Background<input id="bg" type="color" value="#ffffff" /></label>
+          </div>
+          <div class="row2">
+            <label class="ctl">Center logo<input id="logo" type="file" accept="image/*" /></label>
+            <label class="ctl">Size <span class="cv" id="sV">320</span><input id="size" type="range" min="160" max="800" step="20" value="320" /></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="qr-right">
+        <div id="preview" class="qr-preview"></div>
+        <div class="qr-actions">
+          <button id="png" type="button" class="wm-btn">⬇ PNG</button>
+          <button id="svg" type="button" class="wm-btn ghost">SVG</button>
+          <button id="copy" type="button" class="wm-btn ghost">Copy</button>
+        </div>
       </div>
     </div>
   </div></div>
+
   <div class="ad">Ad space</div>
   <div class="content">
-    <h2>How to use the QR code generator</h2>
-    <p>Type a link, text, phone number or anything else; pick a size and colors; and download a crisp PNG. Print it on a flyer, add it to a slide, or share it digitally — any phone camera can scan it. Keep good contrast between the dots and background so it scans reliably.</p>
-    <p>Everything is generated in your browser — nothing is uploaded.</p>
+    <h2>One QR code generator for everything</h2>
+    <p>Pick a type, fill it in, and your QR code updates live. Beyond a plain link, you can encode <b>WiFi credentials</b> (guests connect by scanning), a <b>contact card</b> (vCard — saves straight to a phone), or an <b>email, phone, SMS</b> or any text. Style it with rounded dots, your brand colours and a center logo, then download a crisp <b>PNG</b> or scalable <b>SVG</b>.</p>
+    <p>Everything is generated in your browser — nothing is uploaded. Keep strong contrast between the dots and background, and don't shrink it too small, so it scans reliably.</p>
+    <p><em>Note: live scan tracking ("dynamic QR") needs a hosted redirect server, which this private, on-device tool doesn't use — so the codes here are static (they never expire, but can't be tracked).</em></p>
     <div class="xlinks"><a href="/tools/favicon">Favicon Generator →</a><a href="/">All tools →</a></div>
   </div>
+
   <style>
-    .wm{padding:20px}.wm-grid{display:grid;grid-template-columns:1fr 300px;gap:22px;align-items:start}
-    .qr-prev{display:flex;align-items:center;justify-content:center;background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:18px;min-height:240px}
-    #canvas{max-width:100%;height:auto;border-radius:8px}
-    .wm-controls{display:flex;flex-direction:column;gap:14px}.ctl{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:var(--dim)}
-    .ctl textarea{background:var(--surface2);border:1px solid var(--line);border-radius:9px;color:var(--txt);font:inherit;font-weight:600;padding:10px 11px;outline:none;resize:vertical}
-    .ctl textarea:focus{border-color:var(--brand)}.ctl input[type=color]{width:100%;height:38px;border:1px solid var(--line);border-radius:9px;background:var(--surface2);cursor:pointer}
-    .cv{float:right;color:var(--brand);font-weight:700}.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .wm-actions{display:flex;gap:10px}.wm-btn{flex:1;padding:12px;border-radius:10px;font-weight:700;color:#fff;border:0;cursor:pointer;background:linear-gradient(135deg,var(--brand2),var(--brand))}
-    @media(max-width:680px){.wm-grid{grid-template-columns:1fr}}
+    .qr{padding:20px}.qr-grid{display:grid;grid-template-columns:1fr 320px;gap:24px}@media(max-width:760px){.qr-grid{grid-template-columns:1fr}}
+    .qr-tabs{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px}
+    .qt{background:var(--surface2);border:1px solid var(--line);border-radius:9px;padding:8px 12px;font:inherit;font-size:13px;font-weight:600;color:var(--dim);cursor:pointer}
+    .qt.on{color:#fff;background:linear-gradient(135deg,var(--brand2),var(--brand));border-color:transparent}
+    .qp{display:flex;flex-direction:column;gap:12px;margin-bottom:8px}
+    .ctl{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:var(--dim)}
+    .ctl input,.ctl select,.ctl textarea{background:var(--surface2);border:1px solid var(--line);border-radius:9px;color:var(--txt);font:inherit;font-weight:600;padding:10px 11px;outline:none;resize:vertical}
+    .ctl input:focus,.ctl select:focus,.ctl textarea:focus{border-color:var(--brand)}
+    .ctl input[type=color]{height:38px;padding:3px;cursor:pointer}.ctl input[type=file]{font-size:12px;font-weight:500}
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.chkrow{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--txt)}.chkrow input{width:16px;height:16px;accent-color:var(--brand)}
+    .qr-style{margin-top:16px;padding-top:16px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:12px}
+    .cv{float:right;color:var(--brand);font-weight:700}
+    .qr-right{display:flex;flex-direction:column;gap:14px}
+    .qr-preview{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;align-items:center;justify-content:center;min-height:240px}
+    .qr-preview canvas,.qr-preview svg{max-width:100%;height:auto}
+    .qr-actions{display:flex;gap:10px}.wm-btn{flex:1;padding:12px;border-radius:10px;font-weight:700;color:#fff;border:0;cursor:pointer;background:linear-gradient(135deg,var(--brand2),var(--brand))}
+    .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line)}
   </style>
+
   <script is:inline>
-    (function(){
+    (function () {
+      var active = 'url', logoData = null, qr = null;
       function $(i){return document.getElementById(i);}
-      function render(){
-        if(typeof QRCode==='undefined')return;
-        var size=parseInt($('size').value,10);
-        QRCode.toCanvas($('canvas'), $('text').value||' ', {width:size, margin:2, color:{dark:$('fg').value, light:$('bg').value}}, function(){});
-        $('sV').textContent=size+'px';
+      function v(i){var e=$(i);return e?e.value:'';}
+      function enc(s){return encodeURIComponent(s||'');}
+      function data(){
+        if(active==='url')return v('u_url');
+        if(active==='text')return v('t_text');
+        if(active==='wifi')return 'WIFI:T:'+v('w_enc')+';S:'+v('w_ssid')+';P:'+v('w_pass')+';'+($('w_hidden').checked?'H:true;':'')+';';
+        if(active==='email')return 'mailto:'+v('e_to')+'?subject='+enc(v('e_sub'))+'&body='+enc(v('e_body'));
+        if(active==='phone')return 'tel:'+v('p_num');
+        if(active==='sms')return 'SMSTO:'+v('s_num')+':'+v('s_msg');
+        if(active==='vcard')return 'BEGIN:VCARD\nVERSION:3.0\nFN:'+v('v_name')+'\nTEL:'+v('v_phone')+'\nEMAIL:'+v('v_email')+'\nORG:'+v('v_org')+'\nURL:'+v('v_url')+'\nEND:VCARD';
+        return '';
       }
-      ['text','size','fg','bg'].forEach(function(i){$(i).addEventListener('input',render);});
-      $('dl').onclick=function(){var a=document.createElement('a');a.href=$('canvas').toDataURL('image/png');a.download='qr-code.png';a.click();};
-      if(document.readyState!=='loading')render();else window.addEventListener('load',render);
+      function opts(){
+        var s=parseInt($('size').value,10);
+        return {width:s,height:s,type:'canvas',data:data()||' ',image:logoData||undefined,
+          qrOptions:{errorCorrectionLevel:'H'},
+          dotsOptions:{color:$('fg').value,type:$('dot').value},
+          backgroundOptions:{color:$('bg').value},
+          cornersSquareOptions:{color:$('fg').value,type:$('corner').value},
+          imageOptions:{crossOrigin:'anonymous',margin:6,imageSize:0.32}};
+      }
+      function render(){ $('sV').textContent=$('size').value; if(qr)qr.update(opts()); }
+      function start(){
+        if(typeof QRCodeStyling==='undefined'){return setTimeout(start,150);}
+        qr=new QRCodeStyling(opts()); qr.append($('preview'));
+      }
+      // tabs
+      $('tabs').addEventListener('click',function(e){
+        var b=e.target.closest('.qt'); if(!b)return;
+        active=b.dataset.t;
+        document.querySelectorAll('.qt').forEach(function(x){x.classList.toggle('on',x===b);});
+        document.querySelectorAll('.qp').forEach(function(p){p.hidden=p.dataset.p!==active;});
+        render();
+      });
+      // inputs
+      document.querySelectorAll('.qp input,.qp select,.qp textarea,.qr-style input,.qr-style select').forEach(function(el){
+        if(el.id==='logo')return; el.addEventListener('input',render);
+      });
+      $('logo').addEventListener('change',function(e){
+        var f=e.target.files[0]; if(!f){logoData=null;render();return;}
+        var r=new FileReader(); r.onload=function(){logoData=r.result;render();}; r.readAsDataURL(f);
+      });
+      $('png').onclick=function(){qr&&qr.download({name:'qr-code',extension:'png'});};
+      $('svg').onclick=function(){qr&&qr.download({name:'qr-code',extension:'svg'});};
+      $('copy').onclick=function(){
+        if(!qr||!qr.getRawData)return;
+        qr.getRawData('png').then(function(blob){
+          if(navigator.clipboard&&window.ClipboardItem){navigator.clipboard.write([new ClipboardItem({'image/png':blob})]).then(function(){$('copy').textContent='Copied!';setTimeout(function(){$('copy').textContent='Copy';},1200);});}
+        });
+      };
+      start();
     })();
   </script>
 </Base>
