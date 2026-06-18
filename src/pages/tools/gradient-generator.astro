@@ -1,0 +1,55 @@
+---
+import Base from '../../layouts/Base.astro';
+const title = 'CSS Gradient Generator — Free, Live Preview & Copy';
+const description = 'Free CSS gradient generator. Pick colors, angle and type (linear or radial), preview live, and copy the CSS. Runs in your browser.';
+---
+<Base title={title} description={description}>
+  <header class="head"><div class="wrap">
+    <p class="kicker">Color Tool</p><h1>CSS Gradient Generator</h1>
+    <p>Design a gradient and copy the CSS — live preview as you tweak.</p>
+  </div></header>
+  <div class="wrap"><div class="tool">
+    <div class="grad-prev" id="prev"></div>
+    <div class="row2" style="margin-top:16px">
+      <label class="ctl">Color 1<input id="c1" type="color" value="#6b4dff" /></label>
+      <label class="ctl">Color 2<input id="c2" type="color" value="#ff5e7e" /></label>
+    </div>
+    <div class="row2">
+      <label class="ctl">Type<select id="type"><option value="linear" selected>Linear</option><option value="radial">Radial</option></select></label>
+      <label class="ctl">Angle <span class="cv" id="angV">135°</span><input id="ang" type="range" min="0" max="360" step="5" value="135" /></label>
+    </div>
+    <div class="cin"><input id="css" type="text" readonly /><button class="cpy" id="copy">Copy CSS</button></div>
+    <button id="rand" class="randbtn" type="button">🎲 Random gradient</button>
+  </div></div>
+  <div class="ad">Ad space</div>
+  <div class="content">
+    <h2>About CSS gradients</h2>
+    <p>A gradient blends two or more colours. <b>Linear</b> gradients run along an angle (0° points up, 90° points right); <b>radial</b> gradients spread out from the centre. Use the angle slider to aim a linear gradient, then copy the <code>background</code> CSS straight into your stylesheet.</p>
+    <div class="xlinks"><a href="/tools/color-converter">Color Converter →</a><a href="/tools/palette-extractor">Palette Extractor →</a></div>
+  </div>
+  <style>
+    .grad-prev{height:200px;border-radius:14px;border:1px solid var(--line)}
+    .ctl{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:var(--dim);margin-bottom:12px}
+    .ctl input,.ctl select{background:var(--surface2);border:1px solid var(--line);border-radius:9px;color:var(--txt);font:inherit;font-weight:600;padding:10px 11px;outline:none}
+    .ctl input[type=color]{height:40px;padding:3px;cursor:pointer}.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.cv{float:right;color:var(--brand);font-weight:700}
+    .cin{display:flex;gap:8px;margin-top:6px}.cin input{flex:1;background:var(--surface2);border:1px solid var(--line);border-radius:9px;color:var(--txt);font:inherit;font-weight:600;padding:10px 11px;outline:none;font-family:ui-monospace,monospace;font-size:13px}
+    .cpy{padding:0 14px;border-radius:9px;border:1px solid var(--line);background:var(--surface2);color:var(--dim);font:inherit;font-weight:700;font-size:13px;cursor:pointer}.cpy:hover{color:var(--brand);border-color:var(--brand)}
+    .randbtn{margin-top:12px;width:100%;padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--surface2);color:var(--txt);font:inherit;font-weight:700;cursor:pointer}
+    code{background:var(--surface2);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+  </style>
+  <script is:inline>
+    (function(){
+      function $(i){return document.getElementById(i);}
+      function css(){
+        var c1=$('c1').value,c2=$('c2').value;
+        return $('type').value==='radial' ? 'radial-gradient(circle, '+c1+', '+c2+')'
+          : 'linear-gradient('+$('ang').value+'deg, '+c1+', '+c2+')';
+      }
+      function render(){var g=css();$('prev').style.background=g;$('css').value='background: '+g+';';$('angV').textContent=$('ang').value+'°';}
+      ['c1','c2','type','ang'].forEach(function(id){$(id).addEventListener('input',render);});
+      $('copy').onclick=function(){navigator.clipboard&&navigator.clipboard.writeText($('css').value);$('copy').textContent='Copied!';setTimeout(function(){$('copy').textContent='Copy CSS';},1000);};
+      $('rand').onclick=function(){function rc(){return '#'+Math.floor(Math.random()*16777215).toString(16).padStart(6,'0');}$('c1').value=rc();$('c2').value=rc();$('ang').value=Math.floor(Math.random()*72)*5;render();};
+      render();
+    })();
+  </script>
+</Base>

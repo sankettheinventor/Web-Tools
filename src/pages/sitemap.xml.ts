@@ -12,6 +12,7 @@ export async function GET(context: { site?: URL }) {
     'tools/heic-to-jpg', 'tools/pdf-tools', 'tools/svg-optimizer',
     'tools/jpg-to-png', 'tools/png-to-jpg', 'tools/webp-to-png',
     'tools/png-to-webp', 'tools/jpg-to-webp', 'tools/webp-to-jpg',
+    'tools/color-picker', 'tools/palette-extractor', 'tools/color-converter', 'tools/gradient-generator',
     'about', 'privacy-policy', 'terms',
   ];
   const urls = paths.map((p) => new URL(p, site).href);

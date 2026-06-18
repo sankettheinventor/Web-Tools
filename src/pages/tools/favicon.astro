@@ -1,72 +1,188 @@
 ---
 import Base from '../../layouts/Base.astro';
-const title = 'Favicon Generator — Make a Favicon From Any Image (Free)';
-const description = 'Free favicon generator. Turn any image into favicon PNGs in all the sizes you need (16, 32, 48, 180, 512) right in your browser, with the HTML to paste. Nothing uploaded.';
+const title = 'Favicon & App Icon Generator — From Image or Emoji (Free)';
+const description = 'Free favicon and app icon generator. Make a favicon from an image, text or emoji — get every iOS & Android size plus a real favicon.ico, zipped, with the HTML to paste. Runs in your browser.';
 ---
 <Base title={title} description={description}>
+  <Fragment slot="head">
+    <script is:inline src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  </Fragment>
   <header class="head"><div class="wrap">
-    <p class="kicker">Image Tool</p><h1>Favicon Generator</h1>
-    <p>Turn any image into favicons in every size you need — generated in your browser.</p>
+    <p class="kicker">Image Tool</p><h1>Favicon &amp; App Icon Generator</h1>
+    <p>From an image, text or emoji — get every favicon, iOS &amp; Android size and a real <code>.ico</code>, all in your browser.</p>
   </div></header>
-  <div class="wrap"><div class="tool wm">
-    <div id="drop" class="drop"><input id="file" type="file" accept="image/*" hidden />
-      <div class="drop-ic">⭐</div><p class="drop-t">Drop a square image, or <button id="browse" type="button" class="linklike">browse</button></p>
-      <p class="drop-s">PNG · JPG · 🔒 nothing leaves your device</p></div>
-    <div id="editor" hidden>
-      <div class="fav-grid" id="grid"></div>
-      <div class="wm-actions"><button id="dlall" type="button" class="wm-btn">⬇ Download all sizes</button>
-        <button id="reset" type="button" class="wm-btn ghost">Start over</button></div>
-      <div class="snippet"><div class="snip-h">Paste into your site's &lt;head&gt;:</div>
-        <pre id="code">&lt;link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"&gt;
-&lt;link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"&gt;
-&lt;link rel="apple-touch-icon" sizes="180x180" href="/favicon-180.png"&gt;</pre></div>
+
+  <div class="wrap"><div class="tool fav">
+    <div class="fav-tabs">
+      <button type="button" class="ft on" data-s="image"><span>🖼</span>From image</button>
+      <button type="button" class="ft" data-s="text"><span>🔤</span>From text / emoji</button>
+    </div>
+
+    <div class="fav-grid2">
+      <div class="fav-controls">
+        <div class="src" data-src="image">
+          <div id="drop" class="drop"><input id="file" type="file" accept="image/*" hidden />
+            <div class="drop-ic">🖼️</div><p class="drop-t">Drop a square image, or <button id="browse" type="button" class="linklike">browse</button></p>
+            <p class="drop-s">PNG · JPG · SVG · 🔒 nothing leaves your device</p></div>
+        </div>
+        <div class="src" data-src="text" hidden>
+          <label class="ctl">Letter or emoji<input id="char" type="text" maxlength="3" value="T" /></label>
+          <div class="row2">
+            <label class="ctl">Text color<input id="tcolor" type="color" value="#ffffff" /></label>
+            <label class="ctl">Background<input id="bcolor" type="color" value="#6b4dff" /></label>
+          </div>
+          <label class="ctl">Shape<select id="shape"><option value="rounded" selected>Rounded square</option><option value="square">Square</option><option value="circle">Circle</option></select></label>
+        </div>
+        <div class="snippet">
+          <div class="snip-h">Paste into your site's &lt;head&gt;:</div>
+          <pre id="code">&lt;link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png"&gt;
+&lt;link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"&gt;
+&lt;link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"&gt;
+&lt;link rel="icon" href="/favicon.ico" sizes="any"&gt;</pre>
+        </div>
+      </div>
+
+      <div class="fav-out">
+        <div class="fav-preview" id="preview"></div>
+        <div class="fav-actions">
+          <button id="ico" type="button" class="wm-btn">⬇ favicon.ico</button>
+          <button id="zip" type="button" class="wm-btn">⬇ All sizes (.zip)</button>
+        </div>
+        <p class="fav-note" id="note">11 sizes: favicon (16/32/48/96), Apple touch (120/152/167/180), Android &amp; PWA (192/512), App Store (1024).</p>
+      </div>
     </div>
   </div></div>
+
   <div class="ad">Ad space</div>
   <div class="content">
-    <h2>How to add a favicon</h2>
-    <p>Drop in a square image (a logo or icon works best). The generator renders it at every common favicon size — 16, 32, 48, 180 and 512 pixels — which you can download individually or all at once. Then paste the snippet above into your site's <code>&lt;head&gt;</code> and put the files in your site root.</p>
-    <p>Everything runs locally; your image is never uploaded.</p>
+    <h2>Everything you need for icons, in one go</h2>
+    <p>Designers and developers need a small zoo of icon files for a modern website or app. This tool makes them all at once from a single source:</p>
+    <ul>
+      <li><b>Favicon:</b> 16, 32, 48, 96 px PNGs + a real multi-resolution <code>favicon.ico</code>.</li>
+      <li><b>Apple touch icons:</b> 120, 152, 167, 180 px for iPhone &amp; iPad home screens.</li>
+      <li><b>Android / PWA:</b> 192 and 512 px for the web app manifest.</li>
+      <li><b>App Store:</b> 1024 px master.</li>
+    </ul>
+    <p>Start from an <b>image</b>, or type a <b>letter or emoji</b> and pick colours. Download the <code>.ico</code> on its own, or grab everything zipped with the HTML snippet ready to paste. It all runs locally — nothing is uploaded.</p>
     <div class="xlinks"><a href="/tools/convert">Convert &amp; Resize →</a><a href="/#image-tools">All image tools →</a></div>
   </div>
+
   <style>
-    .drop{border:2px dashed var(--line);border-radius:16px;background:var(--surface2);padding:48px 24px;text-align:center;cursor:pointer}
-    .drop.drag{border-color:var(--brand)}.drop-ic{font-size:44px;margin-bottom:10px}.drop-t{font-size:17px;font-weight:600}.drop-s{font-size:13px;color:var(--dim);margin-top:8px}
+    .fav{padding:20px}
+    .fav-tabs{display:flex;gap:8px;margin-bottom:18px}
+    .ft{flex:1;max-width:200px;display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;background:var(--surface2);border:1px solid var(--line);border-radius:10px;font:inherit;font-size:14px;font-weight:700;color:var(--dim);cursor:pointer}
+    .ft span{font-size:16px}.ft.on{color:#fff;background:linear-gradient(135deg,var(--brand2),var(--brand));border-color:transparent}
+    .fav-grid2{display:grid;grid-template-columns:1fr 300px;gap:22px}@media(max-width:760px){.fav-grid2{grid-template-columns:1fr}}
+    .fav-controls{display:flex;flex-direction:column;gap:16px;min-width:0}
+    .drop{border:2px dashed var(--line);border-radius:14px;background:var(--surface2);padding:38px 20px;text-align:center;cursor:pointer}
+    .drop.drag{border-color:var(--brand)}.drop-ic{font-size:40px;margin-bottom:8px}.drop-t{font-size:16px;font-weight:600}.drop-s{font-size:13px;color:var(--dim);margin-top:6px}
     .linklike{background:none;border:0;color:var(--brand);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline}
-    .wm{padding:20px}.fav-grid{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;justify-content:center;margin-bottom:18px}
-    .fav{text-align:center}.fav canvas{border:1px solid var(--line);border-radius:8px;background:var(--surface2);display:block}
-    .fav .fl{font-size:12px;color:var(--dim);margin-top:6px}.fav button{margin-top:6px;font-size:11px;font-weight:700;color:var(--brand);background:none;border:0;cursor:pointer}
-    .wm-actions{display:flex;gap:10px;justify-content:center}.wm-btn{padding:12px 18px;border-radius:10px;font-weight:700;color:#fff;border:0;cursor:pointer;background:linear-gradient(135deg,var(--brand2),var(--brand))}
-    .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line)}
-    .snippet{margin-top:18px}.snip-h{font-size:13px;color:var(--dim);font-weight:600;margin-bottom:6px}
-    pre{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:13px;font-size:12.5px;overflow-x:auto;color:var(--txt)}
+    .ctl{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:var(--dim)}
+    .ctl input,.ctl select{background:var(--surface2);border:1px solid var(--line);border-radius:9px;color:var(--txt);font:inherit;font-weight:600;padding:10px 11px;outline:none}
+    .ctl input[type=color]{height:38px;padding:3px}.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .snippet .snip-h{font-size:13px;color:var(--dim);font-weight:600;margin-bottom:6px}
+    pre{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:12px;font-size:12px;overflow-x:auto;color:var(--txt);line-height:1.6}
+    .fav-out{display:flex;flex-direction:column;gap:14px}
+    .fav-preview{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;justify-content:center;background:var(--surface2);border:1px solid var(--line);border-radius:13px;padding:18px;min-height:140px}
+    .fav-cell{text-align:center}.fav-cell canvas{border:1px solid var(--line);border-radius:7px;background:#fff;display:block}
+    .fav-cell .fl{font-size:11px;color:var(--dim);margin-top:5px}
+    .fav-actions{display:flex;gap:10px}.wm-btn{flex:1;padding:11px;border-radius:10px;font-weight:700;color:#fff;border:0;cursor:pointer;background:linear-gradient(135deg,var(--brand2),var(--brand))}
+    .fav-note{font-size:12px;color:var(--dim);line-height:1.6}
+    code{background:var(--surface2);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
   </style>
+
   <script is:inline>
-    (function(){
-      var SIZES=[16,32,48,180,512], img=null;
+    (function () {
+      var SIZES=[
+        {s:16,name:'favicon-16x16.png'},{s:32,name:'favicon-32x32.png'},{s:48,name:'favicon-48x48.png'},{s:96,name:'favicon-96x96.png'},
+        {s:120,name:'apple-touch-120.png'},{s:152,name:'apple-touch-152.png'},{s:167,name:'apple-touch-167.png'},{s:180,name:'apple-touch-icon.png'},
+        {s:192,name:'android-chrome-192x192.png'},{s:512,name:'android-chrome-512x512.png'},{s:1024,name:'app-store-1024.png'}
+      ];
+      var PREVIEW=[16,32,48,180,512];
+      var source='image', img=null;
       function $(i){return document.getElementById(i);}
-      function draw(c,s){c.width=s;c.height=s;var x=c.getContext('2d');x.clearRect(0,0,s,s);x.drawImage(img,0,0,s,s);}
-      function dl(c,s){c.toBlob(function(b){var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='favicon-'+s+'.png';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);},'image/png');}
-      function build(){
-        var g=$('grid');g.innerHTML='';
-        SIZES.forEach(function(s){
-          var wrap=document.createElement('div');wrap.className='fav';
-          var c=document.createElement('canvas');var disp=Math.min(s,72);c.style.width=disp+'px';c.style.height=disp+'px';
-          draw(c,s);
-          var lbl=document.createElement('div');lbl.className='fl';lbl.textContent=s+'×'+s;
-          var btn=document.createElement('button');btn.textContent='Download';btn.onclick=function(){dl(c,s);};
-          wrap.appendChild(c);wrap.appendChild(lbl);wrap.appendChild(btn);g.appendChild(wrap);
+      function ready(){ return source==='image' ? !!img : true; }
+
+      function paint(c,size){
+        c.width=size;c.height=size;var x=c.getContext('2d');x.clearRect(0,0,size,size);
+        if(source==='image'){ if(img) x.drawImage(img,0,0,size,size); return; }
+        // text / emoji
+        var shape=$('shape').value, r=size*0.18;
+        x.fillStyle=$('bcolor').value;
+        if(shape==='circle'){x.beginPath();x.arc(size/2,size/2,size/2,0,7);x.fill();}
+        else if(shape==='rounded'){rr(x,0,0,size,size,r);x.fill();}
+        else x.fillRect(0,0,size,size);
+        x.fillStyle=$('tcolor').value;x.textAlign='center';x.textBaseline='middle';
+        x.font='700 '+Math.round(size*0.62)+'px -apple-system,Segoe UI,sans-serif';
+        x.fillText(($('char').value||'').slice(0,2),size/2,size/2+size*0.04);
+      }
+      function rr(x,a,b,w,h,r){x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath();}
+      function render(){
+        var p=$('preview');p.innerHTML='';
+        if(!ready()){p.innerHTML='<p class="drop-s" style="color:var(--dim)">Add an image or type a character to see your icons.</p>';return;}
+        PREVIEW.forEach(function(s){
+          var cell=document.createElement('div');cell.className='fav-cell';
+          var c=document.createElement('canvas');var disp=Math.min(s,64);c.style.width=disp+'px';c.style.height=disp+'px';paint(c,s);
+          var l=document.createElement('div');l.className='fl';l.textContent=s+'×'+s;
+          cell.appendChild(c);cell.appendChild(l);p.appendChild(cell);
         });
       }
-      function load(f){var im=new Image();im.onload=function(){img=im;$('drop').hidden=true;$('editor').hidden=false;build();};im.src=URL.createObjectURL(f);}
-      $('browse').onclick=function(){$('file').click();};
+      function blobFor(size){return new Promise(function(res){var c=document.createElement('canvas');paint(c,size);c.toBlob(res,'image/png');});}
+      function buf(b){return b.arrayBuffer();}
+
+      // multi-size .ico encoder (PNG-embedded)
+      function makeIco(entries){ // entries: [{size, buffer}]
+        var n=entries.length, head=6+16*n, total=head, i;
+        for(i=0;i<n;i++) total+=entries[i].buffer.byteLength;
+        var out=new ArrayBuffer(total), dv=new DataView(out), u8=new Uint8Array(out);
+        dv.setUint16(0,0,true);dv.setUint16(2,1,true);dv.setUint16(4,n,true);
+        var off=head;
+        for(i=0;i<n;i++){
+          var e=entries[i], d=6+16*i, s=e.size>=256?0:e.size;
+          dv.setUint8(d,s);dv.setUint8(d+1,s);dv.setUint8(d+2,0);dv.setUint8(d+3,0);
+          dv.setUint16(d+4,1,true);dv.setUint16(d+6,32,true);
+          dv.setUint32(d+8,e.buffer.byteLength,true);dv.setUint32(d+12,off,true);
+          u8.set(new Uint8Array(e.buffer),off);off+=e.buffer.byteLength;
+        }
+        return new Blob([out],{type:'image/x-icon'});
+      }
+      function dl(blob,name){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);}
+
+      $('ico').onclick=async function(){
+        if(!ready())return;
+        var entries=[];
+        for(var s of [16,32,48]){ entries.push({size:s,buffer:await buf(await blobFor(s))}); }
+        dl(makeIco(entries),'favicon.ico');
+      };
+      $('zip').onclick=async function(){
+        if(!ready()||typeof JSZip==='undefined')return;
+        $('zip').textContent='Zipping…';
+        var zip=new JSZip();
+        for(var i=0;i<SIZES.length;i++){ zip.file(SIZES[i].name, await blobFor(SIZES[i].s)); }
+        var icoEntries=[]; for(var s of [16,32,48]){ icoEntries.push({size:s,buffer:await buf(await blobFor(s))}); }
+        zip.file('favicon.ico', makeIco(icoEntries));
+        zip.file('head-snippet.html', $('code').textContent);
+        var blob=await zip.generateAsync({type:'blob'});
+        dl(blob,'thor-icons.zip'); $('zip').textContent='⬇ All sizes (.zip)';
+      };
+
+      // tabs
+      document.querySelector('.fav-tabs').addEventListener('click',function(e){
+        var b=e.target.closest('.ft');if(!b)return;source=b.dataset.s;
+        document.querySelectorAll('.ft').forEach(function(x){x.classList.toggle('on',x===b);});
+        document.querySelectorAll('.src').forEach(function(s){s.hidden=s.dataset.src!==source;});
+        render();
+      });
+      document.querySelectorAll('.src[data-src="text"] input,.src[data-src="text"] select').forEach(function(el){el.addEventListener('input',render);});
+      // image upload
+      function load(f){var im=new Image();im.onload=function(){img=im;render();};im.src=URL.createObjectURL(f);}
+      $('browse').onclick=function(e){e.stopPropagation();$('file').click();};
       $('drop').onclick=function(e){if(e.target.id==='drop'||e.target.className.indexOf('drop-')===0)$('file').click();};
       $('file').onchange=function(e){if(e.target.files[0])load(e.target.files[0]);};
       ['dragover','dragenter'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.add('drag');});});
       ['dragleave','drop'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.remove('drag');});});
       $('drop').addEventListener('drop',function(e){if(e.dataTransfer.files[0])load(e.dataTransfer.files[0]);});
-      $('dlall').onclick=function(){SIZES.forEach(function(s,i){setTimeout(function(){var c=document.createElement('canvas');draw(c,s);dl(c,s);},i*350);});};
-      $('reset').onclick=function(){img=null;$('file').value='';$('editor').hidden=true;$('drop').hidden=false;};
+      render();
     })();
   </script>
 </Base>
