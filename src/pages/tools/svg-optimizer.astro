@@ -1,0 +1,82 @@
+---
+import Base from '../../layouts/Base.astro';
+const title = 'SVG Optimizer — Minify & Clean SVG Files Online (Free)';
+const description = 'Free SVG optimizer. Paste or upload an SVG to strip comments, editor metadata and whitespace, shrinking the file — all in your browser, nothing uploaded.';
+---
+<Base title={title} description={description}>
+  <header class="head"><div class="wrap">
+    <p class="kicker">Utility</p><h1>SVG Optimizer</h1>
+    <p>Clean and shrink SVG code — paste it in, copy it out.</p>
+  </div></header>
+  <div class="wrap"><div class="tool">
+    <div class="svg-grid">
+      <label class="ctl">Input SVG
+        <textarea id="in" rows="10" placeholder="Paste your SVG markup here, or upload a file…"></textarea></label>
+      <label class="ctl">Optimized <span class="cv" id="saved"></span>
+        <textarea id="out" rows="10" readonly></textarea></label>
+    </div>
+    <div class="svg-actions">
+      <input id="file" type="file" accept=".svg,image/svg+xml" hidden />
+      <button id="upload" type="button" class="wm-btn ghost">Upload .svg</button>
+      <button id="copy" type="button" class="wm-btn ghost">Copy result</button>
+      <button id="dl" type="button" class="wm-btn">⬇ Download</button>
+    </div>
+    <div class="sizes"><span>Before: <b id="b">—</b></span><span>After: <b id="a" class="hl">—</b></span></div>
+  </div></div>
+  <div class="ad">Ad space</div>
+  <div class="content">
+    <h2>What the optimizer does</h2>
+    <p>SVG files exported from design tools (Figma, Illustrator, Inkscape) carry a lot of invisible weight — comments, editor metadata, extra namespaces and whitespace. This optimizer safely strips that out and collapses the markup, often cutting the file size noticeably without changing how the graphic looks.</p>
+    <ul>
+      <li>Removes comments, <code>&lt;?xml?&gt;</code> and <code>&lt;!DOCTYPE&gt;</code></li>
+      <li>Removes editor metadata and Inkscape/Sodipodi cruft</li>
+      <li>Collapses whitespace between tags</li>
+    </ul>
+    <p>Everything runs locally — your SVG is never uploaded.</p>
+    <div class="xlinks"><a href="/tools/convert">Convert &amp; Resize →</a><a href="/">All tools →</a></div>
+  </div>
+  <style>
+    .svg-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:680px){.svg-grid{grid-template-columns:1fr}}
+    .ctl{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:var(--dim)}.cv{float:right;color:var(--brand);font-weight:700}
+    .ctl textarea{background:var(--surface2);border:1px solid var(--line);border-radius:9px;color:var(--txt);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;padding:11px;outline:none;resize:vertical}
+    .ctl textarea:focus{border-color:var(--brand)}
+    .svg-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+    .wm-btn{padding:11px 16px;border-radius:10px;font-weight:700;color:#fff;border:0;cursor:pointer;background:linear-gradient(135deg,var(--brand2),var(--brand))}
+    .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line)}
+    .sizes{display:flex;gap:22px;margin-top:14px;font-size:13.5px;color:var(--dim);background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:12px}.sizes .hl{color:var(--brand);font-weight:700}
+  </style>
+  <script is:inline>
+    (function(){
+      function $(i){return document.getElementById(i);}
+      function bytes(s){return new Blob([s]).size;}
+      function fmt(b){return b>1024?(b/1024).toFixed(1)+' KB':b+' B';}
+      function optimize(svg){
+        if(!svg)return '';
+        return svg
+          .replace(/<!--[\s\S]*?-->/g,'')                         // comments
+          .replace(/<\?xml[\s\S]*?\?>/g,'')                        // xml decl
+          .replace(/<!DOCTYPE[\s\S]*?>/gi,'')                      // doctype
+          .replace(/<metadata[\s\S]*?<\/metadata>/gi,'')           // metadata
+          .replace(/<(sodipodi|inkscape):[\s\S]*?\/>/gi,'')        // editor nodes
+          .replace(/\s(sodipodi|inkscape|xmlns:(sodipodi|inkscape|dc|cc|rdf)):[\w:-]+="[^"]*"/gi,'') // editor attrs/ns
+          .replace(/>\s+</g,'><')                                  // whitespace between tags
+          .replace(/\s{2,}/g,' ')                                  // collapse spaces
+          .replace(/\s+\/>/g,'/>')
+          .trim();
+      }
+      function run(){
+        var src=$('in').value, out=optimize(src);
+        $('out').value=out;
+        var bb=bytes(src), ab=bytes(out);
+        $('b').textContent=src?fmt(bb):'—'; $('a').textContent=out?fmt(ab):'—';
+        $('saved').textContent = (src&&ab<bb)?('−'+Math.round((1-ab/bb)*100)+'%'):'';
+      }
+      $('in').addEventListener('input',run);
+      $('upload').onclick=function(){$('file').click();};
+      $('file').onchange=function(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(){$('in').value=r.result;run();};r.readAsText(f);};
+      $('copy').onclick=function(){$('out').select();try{document.execCommand('copy');}catch(e){}};
+      $('dl').onclick=function(){var blob=new Blob([$('out').value],{type:'image/svg+xml'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='optimized.svg';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);};
+      run();
+    })();
+  </script>
+</Base>

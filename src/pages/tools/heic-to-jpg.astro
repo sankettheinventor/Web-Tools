@@ -1,0 +1,79 @@
+---
+import Base from '../../layouts/Base.astro';
+const title = 'HEIC to JPG Converter — Free, Private, In Your Browser';
+const description = 'Free HEIC to JPG converter. Turn iPhone HEIC/HEIF photos into JPG right in your browser — batch supported, adjustable quality, and nothing is ever uploaded.';
+---
+<Base title={title} description={description}>
+  <Fragment slot="head">
+    <script is:inline src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+  </Fragment>
+  <header class="head"><div class="wrap">
+    <p class="kicker">Image Tool</p><h1>HEIC to JPG Converter</h1>
+    <p>Convert iPhone HEIC photos to JPG — in your browser, nothing uploaded.</p>
+  </div></header>
+  <div class="wrap"><div class="tool wm">
+    <div id="drop" class="drop"><input id="file" type="file" accept=".heic,.heif,image/heic,image/heif" multiple hidden />
+      <div class="drop-ic">📱</div><p class="drop-t">Drop HEIC photos, or <button id="browse" type="button" class="linklike">browse</button></p>
+      <p class="drop-s">Batch supported · 🔒 nothing leaves your device</p></div>
+    <div id="editor" hidden>
+      <label class="ctl wq">Quality <span class="cv" id="qV">85%</span><input id="q" type="range" min="40" max="100" step="5" value="85" /></label>
+      <div class="grid" id="grid"></div>
+      <div class="wm-actions"><button id="dlall" type="button" class="wm-btn" hidden>⬇ Download all</button>
+        <button id="reset" type="button" class="wm-btn ghost">Start over</button></div>
+      <p id="status" class="status"></p>
+    </div>
+  </div></div>
+  <div class="ad">Ad space</div>
+  <div class="content">
+    <h2>Why HEIC photos won't open</h2>
+    <p>Modern iPhones save photos as <b>HEIC</b> (High Efficiency Image Container) to save space. It's great on Apple devices but often won't open on Windows, older Androids or many websites. Converting to <b>JPG</b> makes the photo work everywhere.</p>
+    <p>Drop your HEIC files above, pick a quality, and download the JPGs. It all happens locally — your photos are never uploaded, so even private images stay private.</p>
+    <div class="xlinks"><a href="/tools/compress">Image Compressor →</a><a href="/#image-tools">All image tools →</a></div>
+  </div>
+  <style>
+    .drop{border:2px dashed var(--line);border-radius:16px;background:var(--surface2);padding:48px 24px;text-align:center;cursor:pointer}
+    .drop.drag{border-color:var(--brand)}.drop-ic{font-size:44px;margin-bottom:10px}.drop-t{font-size:17px;font-weight:600}.drop-s{font-size:13px;color:var(--dim);margin-top:8px}
+    .linklike{background:none;border:0;color:var(--brand);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline}
+    .wm{padding:20px}.wq{margin-bottom:16px}.ctl{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:var(--dim)}.cv{float:right;color:var(--brand);font-weight:700}
+    .grid{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:16px}
+    .cv-item{width:140px;text-align:center}.cv-item img{width:140px;height:110px;object-fit:cover;border:1px solid var(--line);border-radius:10px;background:var(--surface2)}
+    .cv-item .nm{font-size:11.5px;color:var(--dim);margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cv-item button{margin-top:5px;font-size:11px;font-weight:700;color:var(--brand);background:none;border:0;cursor:pointer}
+    .wm-actions{display:flex;gap:10px}.wm-btn{padding:12px 18px;border-radius:10px;font-weight:700;color:#fff;border:0;cursor:pointer;background:linear-gradient(135deg,var(--brand2),var(--brand))}
+    .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line)}.status{margin-top:10px;font-size:13px;color:var(--dim)}
+  </style>
+  <script is:inline>
+    (function(){
+      var results=[];
+      function $(i){return document.getElementById(i);}
+      function dl(blob,name){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);}
+      function add(blob,name){
+        var item={blob:blob,name:name.replace(/\.(heic|heif)$/i,'')+'.jpg'};results.push(item);
+        var w=document.createElement('div');w.className='cv-item';
+        var im=document.createElement('img');im.src=URL.createObjectURL(blob);
+        var nm=document.createElement('div');nm.className='nm';nm.textContent=item.name;
+        var b=document.createElement('button');b.textContent='Download';b.onclick=function(){dl(item.blob,item.name);};
+        w.appendChild(im);w.appendChild(nm);w.appendChild(b);$('grid').appendChild(w);
+        $('dlall').hidden=results.length<2;
+      }
+      async function convert(files){
+        $('drop').hidden=true;$('editor').hidden=false;
+        var q=parseInt($('q').value,10)/100, arr=Array.prototype.slice.call(files);
+        for(var i=0;i<arr.length;i++){
+          $('status').textContent='Converting '+(i+1)+' of '+arr.length+'…';
+          try{ var out=await heic2any({blob:arr[i],toType:'image/jpeg',quality:q}); add(Array.isArray(out)?out[0]:out, arr[i].name); }
+          catch(e){ $('status').textContent='One file could not be converted (not a HEIC?).'; }
+        }
+        $('status').textContent='Done — '+results.length+' converted.';
+      }
+      $('browse').onclick=function(){$('file').click();};
+      $('drop').onclick=function(e){if(e.target.id==='drop'||e.target.className.indexOf('drop-')===0)$('file').click();};
+      $('file').onchange=function(e){if(e.target.files.length)convert(e.target.files);};
+      ['dragover','dragenter'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.add('drag');});});
+      ['dragleave','drop'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.remove('drag');});});
+      $('drop').addEventListener('drop',function(e){if(e.dataTransfer.files.length)convert(e.dataTransfer.files);});
+      $('q').addEventListener('input',function(){$('qV').textContent=$('q').value+'%';});
+      $('dlall').onclick=function(){results.forEach(function(it,i){setTimeout(function(){dl(it.blob,it.name);},i*350);});};
+      $('reset').onclick=function(){results=[];$('grid').innerHTML='';$('file').value='';$('status').textContent='';$('editor').hidden=true;$('drop').hidden=false;};
+    })();
+  </script>
+</Base>

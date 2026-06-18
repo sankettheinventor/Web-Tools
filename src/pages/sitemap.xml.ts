@@ -9,6 +9,7 @@ export async function GET(context: { site?: URL }) {
     'calculators/percentage', 'calculators/bmi', 'calculators/age',
     'calculators/tip', 'calculators/discount', 'calculators/unit-converter',
     'tools/watermark', 'tools/compress', 'tools/convert', 'tools/favicon', 'tools/qr-code',
+    'tools/heic-to-jpg', 'tools/pdf-tools', 'tools/svg-optimizer',
     'about', 'privacy-policy', 'terms',
   ];
   const urls = paths.map((p) => new URL(p, site).href);
