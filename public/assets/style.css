@@ -65,7 +65,8 @@ nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(10px);background:var(-
 .theme-btn{background:var(--surface2);border:1px solid var(--line);border-radius:var(--r-sm);width:36px;height:36px;
   font-size:15px;cursor:pointer;display:grid;place-items:center;padding:0}
 .theme-btn:hover{border-color:var(--brand)}
-@media(max-width:620px){.nav-links a.hide-sm{display:none}.nav-links{gap:var(--s4)}}
+@media(max-width:880px){.nav-links a.hide-md{display:none}}
+@media(max-width:780px){.nav-links a.hide-sm{display:none}.nav-links{gap:var(--s4)}}
 
 /* ---- products mega menu ---- */
 .mega-wrap{position:relative}

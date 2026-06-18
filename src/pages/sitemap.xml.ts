@@ -18,6 +18,8 @@ export async function GET(context: { site?: URL }) {
     'tools/color-picker', 'tools/palette-extractor', 'tools/color-converter', 'tools/gradient-generator',
     'tools/word-counter', 'tools/character-counter', 'tools/case-converter', 'tools/text-to-pdf',
     'tools/jpg-to-pdf', 'tools/pdf-to-jpg',
+    'tools/split-pdf', 'tools/remove-pages', 'tools/extract-pages',
+    'tools/rotate-pdf', 'tools/add-page-numbers', 'tools/watermark-pdf',
     'about', 'privacy-policy', 'terms',
   ];
   const urls = [

@@ -1,0 +1,59 @@
+---
+import Base from '../../layouts/Base.astro';
+const title = 'Split PDF — Separate PDF Pages (Free, Private)';
+const description = 'Free split PDF tool. Break a PDF into individual one-page PDFs and download them zipped — in your browser, nothing uploaded.';
+---
+<Base title={title} description={description}>
+  <Fragment slot="head">
+    <script is:inline src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script is:inline src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  </Fragment>
+  <header class="head"><div class="wrap"><p class="kicker">PDF Tool</p><h1>Split PDF</h1>
+    <p>Break a PDF into separate pages — in your browser, never uploaded.</p></div></header>
+  <div class="wrap"><div class="tool pdf">
+    <div id="drop" class="drop"><input id="file" type="file" accept="application/pdf,.pdf" hidden />
+      <div class="drop-ic">📄</div><p class="drop-t">Drop a PDF, or <button id="browse" type="button" class="linklike">browse</button></p>
+      <p class="drop-s">🔒 nothing leaves your device</p></div>
+    <div id="editor" hidden>
+      <p class="info" id="info"></p>
+      <div class="acts"><button id="go" class="wm-btn">⬇ Split &amp; download (.zip)</button>
+        <button id="reset" class="wm-btn ghost">New PDF</button></div>
+      <p id="status" class="status"></p>
+    </div>
+  </div></div>
+  <div class="ad">Advertisement</div>
+  <div class="content">
+    <h2>How to split a PDF</h2>
+    <p>Drop in a PDF and we'll separate it into individual one-page PDF files, bundled into a single zip you can download. It's the quickest way to pull pages apart for sending separately or reorganising. Everything happens in your browser — your document is never uploaded.</p>
+    <div class="xlinks"><a href="/tools/pdf-tools">Merge PDF →</a><a href="/tools/extract-pages">Extract Pages →</a></div>
+  </div>
+  <style>
+    .drop{border:2px dashed var(--line);border-radius:14px;background:var(--surface2);padding:40px 20px;text-align:center;cursor:pointer}
+    .drop.drag{border-color:var(--brand)}.drop-ic{font-size:40px;margin-bottom:8px}.drop-t{font-size:16px;font-weight:600}.drop-s{font-size:13px;color:var(--dim);margin-top:6px}
+    .linklike{background:none;border:0;color:var(--brand);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline}
+    .pdf{padding:20px}.info{font-size:14px;font-weight:600;margin-bottom:14px}
+    .acts{display:flex;gap:10px}.wm-btn{padding:11px 18px;border-radius:10px;font-weight:700;color:#fff;border:0;cursor:pointer;background:linear-gradient(135deg,var(--brand2),var(--brand))}
+    .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line)}.status{margin-top:10px;font-size:13px;color:var(--dim)}
+  </style>
+  <script is:inline>
+    (function(){
+      var bytes=null,count=0;
+      function $(i){return document.getElementById(i);}
+      async function load(f){bytes=await f.arrayBuffer();var doc=await PDFLib.PDFDocument.load(bytes,{ignoreEncryption:true});count=doc.getPageCount();$('drop').hidden=true;$('editor').hidden=false;$('info').textContent=f.name+' · '+count+' pages';}
+      async function go(){
+        if(!bytes||typeof PDFLib==='undefined')return;$('status').textContent='Splitting…';
+        var src=await PDFLib.PDFDocument.load(bytes,{ignoreEncryption:true}),zip=new JSZip();
+        for(var i=0;i<count;i++){var d=await PDFLib.PDFDocument.create();var[p]=await d.copyPages(src,[i]);d.addPage(p);zip.file('page-'+(i+1)+'.pdf',await d.save());}
+        var blob=await zip.generateAsync({type:'blob'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='split-pages.zip';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);
+        $('status').textContent='Done — '+count+' pages.';
+      }
+      $('browse').onclick=function(e){e.stopPropagation();$('file').click();};
+      $('drop').onclick=function(e){if(e.target.id==='drop'||e.target.className.indexOf('drop-')===0)$('file').click();};
+      $('file').onchange=function(e){if(e.target.files[0])load(e.target.files[0]);};
+      ['dragover','dragenter'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.add('drag');});});
+      ['dragleave','drop'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.remove('drag');});});
+      $('drop').addEventListener('drop',function(e){if(e.dataTransfer.files[0])load(e.dataTransfer.files[0]);});
+      $('go').onclick=go;$('reset').onclick=function(){bytes=null;$('file').value='';$('status').textContent='';$('editor').hidden=true;$('drop').hidden=false;};
+    })();
+  </script>
+</Base>
