@@ -35,15 +35,20 @@ nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(10px);background:var(-
 .brand{display:flex;align-items:center;gap:9px;font-weight:800;font-size:18px;color:var(--txt)}
 .brand:hover{text-decoration:none}
 .logo{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;font-size:17px;color:#fff;
-  background:linear-gradient(135deg,var(--brand),var(--brand2))}
+  background:linear-gradient(135deg,#ff5e7e,#7c5cff);box-shadow:0 6px 18px -8px #7c5cff}
 .nav-links{display:flex;align-items:center;gap:20px;font-size:14.5px}
 .nav-links a{color:var(--dim)}.nav-links a:hover{color:var(--txt);text-decoration:none}
 .theme-btn{background:var(--surface2);border:1px solid var(--line);border-radius:8px;width:36px;height:36px;
   font-size:15px;cursor:pointer;display:grid;place-items:center;padding:0}
 .theme-btn:hover{border-color:var(--brand)}
 @media(max-width:620px){.nav-links a.hide-sm{display:none}.nav-links{gap:14px}}
-.promise{background:var(--surface2);border-bottom:1px solid var(--line);text-align:center;font-size:12.5px;color:var(--dim);padding:7px 16px}
-.promise b{color:var(--txt)}
+.promise{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:9px 26px;
+  background:linear-gradient(135deg,rgba(255,94,126,.10),rgba(124,92,255,.13));
+  border-bottom:1px solid var(--line);padding:13px 16px;font-size:15px;color:var(--dim);font-weight:500}
+.promise .pi{display:inline-flex;align-items:center;gap:7px}
+.promise .pi::before{content:"✓";color:var(--brand);font-weight:800;font-size:14px}
+.promise .strong{color:var(--txt);font-weight:700}
+@media(max-width:560px){.promise{font-size:13.5px;gap:7px 16px;padding:11px 14px}}
 
 /* ---- page header ---- */
 .head{text-align:center;padding:46px 0 26px}

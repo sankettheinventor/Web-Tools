@@ -23,7 +23,7 @@ const ADSENSE_CLIENT = '';
   <meta property="og:description" content={description} />
   <meta property="og:type" content="website" />
   <meta name="theme-color" content="#5b54e6" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>" />
   <link rel="stylesheet" href="/assets/style.css" />
   <script is:inline>
     (function () {
@@ -40,9 +40,14 @@ const ADSENSE_CLIENT = '';
   <slot name="head" />
 </head>
 <body>
-  <div class="promise"><b>Free.</b> No signup · No upload · <b>Your data never leaves your device.</b></div>
+  <div class="promise">
+    <span class="pi">Free</span>
+    <span class="pi">No signup</span>
+    <span class="pi">No upload</span>
+    <span class="pi strong">Your data never leaves your device</span>
+  </div>
   <nav><div class="nav-in">
-    <a class="brand" href="/"><span class="logo">🛠️</span> Thor Tools</a>
+    <a class="brand" href="/"><span class="logo">⚡</span> Thor Tools</a>
     <div class="nav-links">
       <a href="/#calculators">Calculators</a>
       <a href="/#image-tools" class="hide-sm">Image Tools</a>
@@ -56,7 +61,7 @@ const ADSENSE_CLIENT = '';
   <footer>
     <div class="wrap foot-in">
       <div class="foot-col" style="max-width:300px">
-        <a class="brand" href="/" style="margin-bottom:10px"><span class="logo">🛠️</span> Thor Tools</a>
+        <a class="brand" href="/" style="margin-bottom:10px"><span class="logo">⚡</span> Thor Tools</a>
         <p style="color:var(--dim)">Free online calculators &amp; image tools that run 100% in your browser. Nothing is uploaded.</p>
       </div>
       <div class="foot-col">
