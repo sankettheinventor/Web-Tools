@@ -1,7 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 const title = 'QR Code Generator — URL, WiFi, vCard, Email & More (Free)';
-const description = 'Free QR code generator. Make QR codes for a URL, WiFi, contact card (vCard), email, phone, SMS or text — styled with your colors and logo. Download PNG or SVG. Nothing uploaded.';
+const description = 'Free QR code generator. Make QR codes for a URL, PDF link, WiFi, contact card (vCard), email, phone, SMS or text — styled with presets, your colors and a logo. Download PNG or SVG. Nothing uploaded.';
 ---
 <Base title={title} description={description}>
   <Fragment slot="head">
@@ -9,56 +9,57 @@ const description = 'Free QR code generator. Make QR codes for a URL, WiFi, cont
   </Fragment>
   <header class="head"><div class="wrap">
     <p class="kicker">Utility</p><h1>QR Code Generator</h1>
-    <p>Make a QR code for a link, WiFi, contact card and more — your colors, your logo.</p>
+    <p>Pick a type, style it, and download — all in your browser, nothing uploaded.</p>
   </div></header>
 
   <div class="wrap"><div class="tool qr">
+    <div class="qr-tabs" id="tabs" role="tablist">
+      <button type="button" class="qt on" data-t="url" role="tab"><span class="qi">🔗</span>URL</button>
+      <button type="button" class="qt" data-t="text" role="tab"><span class="qi">📝</span>Text</button>
+      <button type="button" class="qt" data-t="pdf" role="tab"><span class="qi">📄</span>PDF</button>
+      <button type="button" class="qt" data-t="wifi" role="tab"><span class="qi">📶</span>WiFi</button>
+      <button type="button" class="qt" data-t="email" role="tab"><span class="qi">✉️</span>Email</button>
+      <button type="button" class="qt" data-t="sms" role="tab"><span class="qi">💬</span>SMS</button>
+      <button type="button" class="qt" data-t="phone" role="tab"><span class="qi">📞</span>Phone</button>
+      <button type="button" class="qt" data-t="vcard" role="tab"><span class="qi">👤</span>Contact</button>
+    </div>
+
     <div class="qr-grid">
       <div class="qr-left">
-        <div class="qr-tabs" id="tabs">
-          <button type="button" class="qt on" data-t="url">🔗 URL</button>
-          <button type="button" class="qt" data-t="text">📝 Text</button>
-          <button type="button" class="qt" data-t="wifi">📶 WiFi</button>
-          <button type="button" class="qt" data-t="email">✉️ Email</button>
-          <button type="button" class="qt" data-t="phone">📞 Phone</button>
-          <button type="button" class="qt" data-t="sms">💬 SMS</button>
-          <button type="button" class="qt" data-t="vcard">👤 Contact</button>
-        </div>
-
-        <div class="qp" data-p="url">
-          <label class="ctl">Website URL<input id="u_url" type="url" value="https://thor-tools.netlify.app" /></label>
-        </div>
-        <div class="qp" data-p="text" hidden>
-          <label class="ctl">Text<textarea id="t_text" rows="3">Hello from Thor Tools!</textarea></label>
-        </div>
-        <div class="qp" data-p="wifi" hidden>
+        <div class="qp" data-p="url"><div class="qhint">Redirect to an existing web link.</div>
+          <label class="ctl">Website URL<input id="u_url" type="url" value="https://thor-tools.netlify.app" /></label></div>
+        <div class="qp" data-p="text" hidden><div class="qhint">Show a short message when scanned.</div>
+          <label class="ctl">Text<textarea id="t_text" rows="3">Hello from Thor Tools!</textarea></label></div>
+        <div class="qp" data-p="pdf" hidden><div class="qhint">Host your PDF (Google Drive, your site…) and paste its share link.</div>
+          <label class="ctl">PDF link<input id="pdf_url" type="url" placeholder="https://…/document.pdf" /></label></div>
+        <div class="qp" data-p="wifi" hidden><div class="qhint">Let guests join your WiFi by scanning.</div>
           <div class="row2"><label class="ctl">Network name (SSID)<input id="w_ssid" type="text" /></label>
             <label class="ctl">Password<input id="w_pass" type="text" /></label></div>
           <div class="row2"><label class="ctl">Security<select id="w_enc"><option value="WPA" selected>WPA/WPA2</option><option value="WEP">WEP</option><option value="nopass">None</option></select></label>
-            <label class="chkrow" style="align-self:end"><input id="w_hidden" type="checkbox" /> Hidden network</label></div>
-        </div>
-        <div class="qp" data-p="email" hidden>
+            <label class="chkrow" style="align-self:end"><input id="w_hidden" type="checkbox" /> Hidden network</label></div></div>
+        <div class="qp" data-p="email" hidden><div class="qhint">Open the email app ready to send.</div>
           <label class="ctl">To<input id="e_to" type="email" /></label>
-          <label class="ctl">Subject<input id="e_sub" type="text" /></label>
-          <label class="ctl">Message<textarea id="e_body" rows="2"></textarea></label>
-        </div>
-        <div class="qp" data-p="phone" hidden>
-          <label class="ctl">Phone number<input id="p_num" type="tel" placeholder="+1 555 123 4567" /></label>
-        </div>
-        <div class="qp" data-p="sms" hidden>
-          <label class="ctl">Phone number<input id="s_num" type="tel" /></label>
-          <label class="ctl">Message<textarea id="s_msg" rows="2"></textarea></label>
-        </div>
-        <div class="qp" data-p="vcard" hidden>
-          <div class="row2"><label class="ctl">Full name<input id="v_name" type="text" /></label>
-            <label class="ctl">Phone<input id="v_phone" type="tel" /></label></div>
-          <div class="row2"><label class="ctl">Email<input id="v_email" type="email" /></label>
+          <div class="row2"><label class="ctl">Subject<input id="e_sub" type="text" /></label>
+            <label class="ctl">Message<input id="e_body" type="text" /></label></div></div>
+        <div class="qp" data-p="sms" hidden><div class="qhint">Pre-fill a text message.</div>
+          <div class="row2"><label class="ctl">Phone number<input id="s_num" type="tel" /></label>
+            <label class="ctl">Message<input id="s_msg" type="text" /></label></div></div>
+        <div class="qp" data-p="phone" hidden><div class="qhint">Tap to call this number.</div>
+          <label class="ctl">Phone number<input id="p_num" type="tel" placeholder="+1 555 123 4567" /></label></div>
+        <div class="qp" data-p="vcard" hidden><div class="qhint">Saves straight into a phone's contacts.</div>
+          <div class="row2"><label class="ctl">First name<input id="v_first" type="text" /></label>
+            <label class="ctl">Last name<input id="v_last" type="text" /></label></div>
+          <div class="row2"><label class="ctl">Title<input id="v_title" type="text" /></label>
             <label class="ctl">Company<input id="v_org" type="text" /></label></div>
-          <label class="ctl">Website<input id="v_url" type="url" /></label>
-        </div>
+          <div class="row2"><label class="ctl">Phone<input id="v_phone" type="tel" /></label>
+            <label class="ctl">Mobile<input id="v_mobile" type="tel" /></label></div>
+          <div class="row2"><label class="ctl">Email<input id="v_email" type="email" /></label>
+            <label class="ctl">Website<input id="v_url" type="url" /></label></div></div>
 
         <div class="qr-style">
-          <div class="row2">
+          <div class="ctl" style="margin-bottom:4px">Style presets</div>
+          <div class="presets" id="presets"></div>
+          <div class="row2" style="margin-top:12px">
             <label class="ctl">Dot style<select id="dot"><option value="square">Square</option><option value="rounded" selected>Rounded</option><option value="dots">Dots</option><option value="classy">Classy</option><option value="extra-rounded">Extra rounded</option></select></label>
             <label class="ctl">Corners<select id="corner"><option value="square">Square</option><option value="extra-rounded" selected>Rounded</option><option value="dot">Dot</option></select></label>
           </div>
@@ -87,24 +88,32 @@ const description = 'Free QR code generator. Make QR codes for a URL, WiFi, cont
   <div class="ad">Ad space</div>
   <div class="content">
     <h2>One QR code generator for everything</h2>
-    <p>Pick a type, fill it in, and your QR code updates live. Beyond a plain link, you can encode <b>WiFi credentials</b> (guests connect by scanning), a <b>contact card</b> (vCard — saves straight to a phone), or an <b>email, phone, SMS</b> or any text. Style it with rounded dots, your brand colours and a center logo, then download a crisp <b>PNG</b> or scalable <b>SVG</b>.</p>
-    <p>Everything is generated in your browser — nothing is uploaded. Keep strong contrast between the dots and background, and don't shrink it too small, so it scans reliably.</p>
-    <p><em>Note: live scan tracking ("dynamic QR") needs a hosted redirect server, which this private, on-device tool doesn't use — so the codes here are static (they never expire, but can't be tracked).</em></p>
+    <p>Pick a type and your QR code updates live. Encode a <b>website</b>, a <b>PDF link</b>, <b>WiFi credentials</b> (guests connect by scanning), a <b>contact card</b> (vCard saves straight to a phone), or an <b>email, SMS, phone</b> or any text. Choose a style preset, your brand colours and a center logo, then download a crisp <b>PNG</b> or scalable <b>SVG</b>.</p>
+    <p>Everything is generated on your device — nothing is uploaded. Keep strong contrast and don't shrink it too small so it scans reliably.</p>
+    <p><em>Note: "dynamic" features — live scan tracking, editable PDF/multi-link/app codes — need a hosted redirect server, which this private on-device tool doesn't use. The codes here are static: they never expire, but can't be edited or tracked after creation.</em></p>
     <div class="xlinks"><a href="/tools/favicon">Favicon Generator →</a><a href="/">All tools →</a></div>
   </div>
 
   <style>
-    .qr{padding:20px}.qr-grid{display:grid;grid-template-columns:1fr 320px;gap:24px}@media(max-width:760px){.qr-grid{grid-template-columns:1fr}}
-    .qr-tabs{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px}
-    .qt{background:var(--surface2);border:1px solid var(--line);border-radius:9px;padding:8px 12px;font:inherit;font-size:13px;font-weight:600;color:var(--dim);cursor:pointer}
+    .qr{padding:20px}
+    .qr-tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:18px}
+    .qt{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:72px;padding:10px 8px;
+      background:var(--surface2);border:1px solid var(--line);border-radius:11px;font:inherit;font-size:12px;font-weight:600;color:var(--dim);cursor:pointer;transition:.12s}
+    .qt .qi{font-size:19px;line-height:1}
+    .qt:hover{color:var(--txt);border-color:var(--brand)}
     .qt.on{color:#fff;background:linear-gradient(135deg,var(--brand2),var(--brand));border-color:transparent}
-    .qp{display:flex;flex-direction:column;gap:12px;margin-bottom:8px}
+    .qr-grid{display:grid;grid-template-columns:1fr 320px;gap:24px}@media(max-width:760px){.qr-grid{grid-template-columns:1fr}}
+    .qhint{font-size:14px;font-weight:600;color:var(--txt);margin-bottom:12px}
+    .qp{display:flex;flex-direction:column;gap:12px}
     .ctl{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:var(--dim)}
     .ctl input,.ctl select,.ctl textarea{background:var(--surface2);border:1px solid var(--line);border-radius:9px;color:var(--txt);font:inherit;font-weight:600;padding:10px 11px;outline:none;resize:vertical}
     .ctl input:focus,.ctl select:focus,.ctl textarea:focus{border-color:var(--brand)}
     .ctl input[type=color]{height:38px;padding:3px;cursor:pointer}.ctl input[type=file]{font-size:12px;font-weight:500}
     .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.chkrow{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--txt)}.chkrow input{width:16px;height:16px;accent-color:var(--brand)}
     .qr-style{margin-top:16px;padding-top:16px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:12px}
+    .presets{display:flex;flex-wrap:wrap;gap:8px}
+    .preset{width:34px;height:34px;border-radius:9px;border:2px solid var(--line);cursor:pointer;display:grid;place-items:center;font-size:0}
+    .preset .pd{width:16px;height:16px;border-radius:4px}.preset:hover{border-color:var(--brand)}
     .cv{float:right;color:var(--brand);font-weight:700}
     .qr-right{display:flex;flex-direction:column;gap:14px}
     .qr-preview{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;align-items:center;justify-content:center;min-height:240px}
@@ -119,14 +128,24 @@ const description = 'Free QR code generator. Make QR codes for a URL, WiFi, cont
       function $(i){return document.getElementById(i);}
       function v(i){var e=$(i);return e?e.value:'';}
       function enc(s){return encodeURIComponent(s||'');}
+      function vcard(){
+        var fn=(v('v_first')+' '+v('v_last')).trim();
+        return 'BEGIN:VCARD\nVERSION:3.0\nN:'+v('v_last')+';'+v('v_first')+';;;\nFN:'+fn+
+          '\nTITLE:'+v('v_title')+'\nORG:'+v('v_org')+
+          '\nTEL;TYPE=WORK:'+v('v_phone')+'\nTEL;TYPE=CELL:'+v('v_mobile')+
+          '\nEMAIL:'+v('v_email')+'\nURL:'+v('v_url')+'\nEND:VCARD';
+      }
       function data(){
-        if(active==='url')return v('u_url');
-        if(active==='text')return v('t_text');
-        if(active==='wifi')return 'WIFI:T:'+v('w_enc')+';S:'+v('w_ssid')+';P:'+v('w_pass')+';'+($('w_hidden').checked?'H:true;':'')+';';
-        if(active==='email')return 'mailto:'+v('e_to')+'?subject='+enc(v('e_sub'))+'&body='+enc(v('e_body'));
-        if(active==='phone')return 'tel:'+v('p_num');
-        if(active==='sms')return 'SMSTO:'+v('s_num')+':'+v('s_msg');
-        if(active==='vcard')return 'BEGIN:VCARD\nVERSION:3.0\nFN:'+v('v_name')+'\nTEL:'+v('v_phone')+'\nEMAIL:'+v('v_email')+'\nORG:'+v('v_org')+'\nURL:'+v('v_url')+'\nEND:VCARD';
+        switch(active){
+          case 'url': return v('u_url');
+          case 'text': return v('t_text');
+          case 'pdf': return v('pdf_url');
+          case 'wifi': return 'WIFI:T:'+v('w_enc')+';S:'+v('w_ssid')+';P:'+v('w_pass')+';'+($('w_hidden').checked?'H:true;':'')+';';
+          case 'email': return 'mailto:'+v('e_to')+'?subject='+enc(v('e_sub'))+'&body='+enc(v('e_body'));
+          case 'sms': return 'SMSTO:'+v('s_num')+':'+v('s_msg');
+          case 'phone': return 'tel:'+v('p_num');
+          case 'vcard': return vcard();
+        }
         return '';
       }
       function opts(){
@@ -139,11 +158,31 @@ const description = 'Free QR code generator. Make QR codes for a URL, WiFi, cont
           imageOptions:{crossOrigin:'anonymous',margin:6,imageSize:0.32}};
       }
       function render(){ $('sV').textContent=$('size').value; if(qr)qr.update(opts()); }
+
+      // style presets
+      var PRESETS=[
+        {fg:'#16121f',bg:'#ffffff',dot:'square',corner:'square'},
+        {fg:'#16121f',bg:'#ffffff',dot:'rounded',corner:'extra-rounded'},
+        {fg:'#16121f',bg:'#ffffff',dot:'dots',corner:'dot'},
+        {fg:'#7c5cff',bg:'#ffffff',dot:'rounded',corner:'extra-rounded'},
+        {fg:'#ff5e7e',bg:'#fff7fa',dot:'classy',corner:'extra-rounded'},
+        {fg:'#0ea5e9',bg:'#f0f9ff',dot:'rounded',corner:'extra-rounded'},
+        {fg:'#15a06b',bg:'#f0fdf4',dot:'rounded',corner:'extra-rounded'},
+        {fg:'#ffffff',bg:'#16121f',dot:'rounded',corner:'extra-rounded'},
+      ];
+      function buildPresets(){
+        PRESETS.forEach(function(p){
+          var b=document.createElement('button'); b.type='button'; b.className='preset'; b.style.background=p.bg;
+          var d=document.createElement('span'); d.className='pd'; d.style.background=p.fg; b.appendChild(d);
+          b.onclick=function(){ $('fg').value=p.fg; $('bg').value=p.bg; $('dot').value=p.dot; $('corner').value=p.corner; render(); };
+          $('presets').appendChild(b);
+        });
+      }
+
       function start(){
         if(typeof QRCodeStyling==='undefined'){return setTimeout(start,150);}
         qr=new QRCodeStyling(opts()); qr.append($('preview'));
       }
-      // tabs
       $('tabs').addEventListener('click',function(e){
         var b=e.target.closest('.qt'); if(!b)return;
         active=b.dataset.t;
@@ -151,9 +190,8 @@ const description = 'Free QR code generator. Make QR codes for a URL, WiFi, cont
         document.querySelectorAll('.qp').forEach(function(p){p.hidden=p.dataset.p!==active;});
         render();
       });
-      // inputs
-      document.querySelectorAll('.qp input,.qp select,.qp textarea,.qr-style input,.qr-style select').forEach(function(el){
-        if(el.id==='logo')return; el.addEventListener('input',render);
+      document.querySelectorAll('.qp input,.qp select,.qp textarea,.qr-style select,#fg,#bg,#size').forEach(function(el){
+        el.addEventListener('input',render);
       });
       $('logo').addEventListener('change',function(e){
         var f=e.target.files[0]; if(!f){logoData=null;render();return;}
@@ -167,7 +205,7 @@ const description = 'Free QR code generator. Make QR codes for a URL, WiFi, cont
           if(navigator.clipboard&&window.ClipboardItem){navigator.clipboard.write([new ClipboardItem({'image/png':blob})]).then(function(){$('copy').textContent='Copied!';setTimeout(function(){$('copy').textContent='Copy';},1200);});}
         });
       };
-      start();
+      buildPresets(); start();
     })();
   </script>
 </Base>
