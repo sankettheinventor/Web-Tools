@@ -1,0 +1,134 @@
+---
+import Base from '../../layouts/Base.astro';
+const title = 'Compound Interest Calculator — Free, Instant Growth Estimate';
+const description = 'Free compound interest calculator. See how a deposit plus regular contributions grow over time, at any rate and compounding frequency. Runs in your browser.';
+---
+<Base title={title} description={description}>
+  <header class="head">
+    <div class="wrap">
+      <p class="kicker">Finance Calculator</p>
+      <h1>Compound Interest Calculator</h1>
+      <p>See how your money grows. Change any value and the future balance updates live.</p>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="tool">
+      <div class="field">
+        <div class="field-top"><label for="cur">Currency</label></div>
+        <select id="cur" aria-label="Currency">
+          <option value="INR" data-sym="₹" data-loc="en-IN" selected>₹ Indian Rupee (INR)</option>
+          <option value="USD" data-sym="$" data-loc="en-US">$ US Dollar (USD)</option>
+          <option value="EUR" data-sym="€" data-loc="de-DE">€ Euro (EUR)</option>
+          <option value="GBP" data-sym="£" data-loc="en-GB">£ British Pound (GBP)</option>
+        </select>
+      </div>
+
+      <div class="grid2">
+        <div class="field">
+          <div class="field-top"><label for="principal">Initial amount</label>
+            <div class="valwrap"><span class="sym">₹</span><input id="principal" type="number" inputmode="decimal" min="0" value="10000" /></div></div>
+          <input id="principalR" type="range" min="0" max="1000000" step="1000" value="10000" aria-label="Initial amount" />
+        </div>
+        <div class="field">
+          <div class="field-top"><label for="monthly">Monthly addition</label>
+            <div class="valwrap"><span class="sym">₹</span><input id="monthly" type="number" inputmode="decimal" min="0" value="5000" /></div></div>
+          <input id="monthlyR" type="range" min="0" max="100000" step="500" value="5000" aria-label="Monthly addition" />
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="field">
+          <div class="field-top"><label for="rate">Annual rate</label>
+            <div class="valwrap"><input id="rate" type="number" inputmode="decimal" min="0" step="0.1" value="12" /><span>%</span></div></div>
+          <input id="rateR" type="range" min="1" max="30" step="0.1" value="12" aria-label="Annual rate" />
+        </div>
+        <div class="field">
+          <div class="field-top"><label for="years">Years</label>
+            <div class="valwrap"><input id="years" type="number" inputmode="numeric" min="1" value="10" /><span>yr</span></div></div>
+          <input id="yearsR" type="range" min="1" max="40" step="1" value="10" aria-label="Years" />
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-top"><label for="freq">Compounding</label></div>
+        <select id="freq" aria-label="Compounding frequency">
+          <option value="12" selected>Monthly</option>
+          <option value="4">Quarterly</option>
+          <option value="1">Yearly</option>
+        </select>
+      </div>
+
+      <div class="result" aria-live="polite">
+        <div class="rlabel">Future balance</div>
+        <div class="rbig" id="fv">—</div>
+        <div class="rsub" id="fvSub"></div>
+        <div class="breakdown">
+          <div class="bd"><div class="k">You invested</div><div class="v" id="bdC">—</div></div>
+          <div class="bd"><div class="k">Interest earned</div><div class="v" id="bdI">—</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ad">Ad space</div>
+
+  <div class="content">
+    <h2>How compound interest works</h2>
+    <p>Compound interest is interest earned on both your original money <em>and</em> the interest it has already earned. Over time this "interest on interest" snowballs — which is why starting early matters so much.</p>
+    <div class="formula">A = P × (1 + r/n)^(n·t)</div>
+    <p>where <b>P</b> is the starting amount, <b>r</b> is the annual rate (as a decimal), <b>n</b> is how many times per year interest compounds, and <b>t</b> is the number of years. This calculator also adds your monthly contributions as they happen, so the result reflects regular saving too.</p>
+
+    <h3>Why frequency matters</h3>
+    <p>The more often interest compounds, the faster your balance grows. Monthly compounding beats yearly compounding at the same rate — try switching the <b>Compounding</b> option above and watch the future balance change.</p>
+
+    <h3>Simple vs compound</h3>
+    <p>Simple interest is paid only on your original amount, so it grows in a straight line. Compound interest curves upward and pulls away over time — the longer the horizon, the bigger the gap.</p>
+
+    <div class="xlinks">
+      <a href="/calculators/emi">EMI Calculator →</a>
+      <a href="/#calculators">All calculators →</a>
+    </div>
+  </div>
+
+  <script is:inline>
+    (function () {
+      var cur = 'INR', loc = 'en-IN';
+      function el(id){ return document.getElementById(id); }
+      function num(id){ var v = parseFloat(el(id).value); return isFinite(v) ? v : 0; }
+      function money(v){
+        try { return new Intl.NumberFormat(loc, { style:'currency', currency:cur, maximumFractionDigits:0 }).format(Math.round(v)); }
+        catch(e){ return Math.round(v).toLocaleString(); }
+      }
+      function pair(a, b){
+        el(a).addEventListener('input', function(){ el(b).value = el(a).value; compute(); });
+        el(b).addEventListener('input', function(){ el(a).value = el(b).value; compute(); });
+      }
+      function compute(){
+        var P = num('principal'), PMT = num('monthly'), R = num('rate'), Y = num('years');
+        var n = parseInt(el('freq').value, 10) || 12;     // compounds per year
+        var monthsPerPeriod = 12 / n;
+        var periodRate = R/100/n;
+        var balance = P, contributed = P, months = Y*12;
+        for (var m = 1; m <= months; m++){
+          balance += PMT; contributed += PMT;
+          if (m % monthsPerPeriod === 0) balance *= (1 + periodRate);
+        }
+        var interest = balance - contributed;
+        el('fv').textContent = money(balance);
+        el('fvSub').textContent = Y + ' years · ' + el('freq').selectedOptions[0].textContent.toLowerCase() + ' compounding';
+        el('bdC').textContent = money(contributed);
+        el('bdI').textContent = money(interest);
+      }
+      pair('principal','principalR'); pair('monthly','monthlyR'); pair('rate','rateR'); pair('years','yearsR');
+      el('freq').addEventListener('change', compute);
+      el('cur').addEventListener('change', function(){
+        var o = el('cur').selectedOptions[0];
+        cur = el('cur').value; loc = o.dataset.loc;
+        document.querySelectorAll('.valwrap .sym').forEach(function(s){ s.textContent = o.dataset.sym; });
+        compute();
+      });
+      compute();
+    })();
+  </script>
+</Base>

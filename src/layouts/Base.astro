@@ -1,0 +1,97 @@
+---
+const {
+  title = 'Thor Tools — Free Online Calculators & Image Tools',
+  description = 'Free, fast, private online tools. Calculators and image utilities that run entirely in your browser — no signup, no upload, your data never leaves your device.',
+} = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+
+// ===== AdSense: paste your publisher ID here once approved (e.g. ca-pub-1234567890123456)
+// Leaving it empty keeps ads OFF site-wide (placeholders show instead). Hybrid model:
+// this enables Google Auto Ads (ML placement); manual <AdSlot/> components add controlled spots.
+const ADSENSE_CLIENT = '';
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonical} />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:type" content="website" />
+  <meta name="theme-color" content="#5b54e6" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>" />
+  <link rel="stylesheet" href="/assets/style.css" />
+  <script is:inline>
+    (function () {
+      try {
+        var t = localStorage.getItem('theme');
+        if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) { document.documentElement.setAttribute('data-theme', 'light'); }
+    })();
+  </script>
+  {ADSENSE_CLIENT && (
+    <script async src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`} crossorigin="anonymous"></script>
+  )}
+  <slot name="head" />
+</head>
+<body>
+  <div class="promise"><b>Free.</b> No signup · No upload · <b>Your data never leaves your device.</b></div>
+  <nav><div class="nav-in">
+    <a class="brand" href="/"><span class="logo">🛠️</span> Thor Tools</a>
+    <div class="nav-links">
+      <a href="/#calculators">Calculators</a>
+      <a href="/#image-tools" class="hide-sm">Image Tools</a>
+      <a href="/blog" class="hide-sm">Blog</a>
+      <button id="theme-toggle" class="theme-btn" type="button" aria-label="Toggle light or dark theme" title="Toggle theme">🌙</button>
+    </div>
+  </div></nav>
+
+  <slot />
+
+  <footer>
+    <div class="wrap foot-in">
+      <div class="foot-col" style="max-width:300px">
+        <a class="brand" href="/" style="margin-bottom:10px"><span class="logo">🛠️</span> Thor Tools</a>
+        <p style="color:var(--dim)">Free online calculators &amp; image tools that run 100% in your browser. Nothing is uploaded.</p>
+      </div>
+      <div class="foot-col">
+        <h4>Calculators</h4>
+        <a href="/calculators/emi">EMI Calculator</a>
+        <a href="/calculators/compound-interest">Compound Interest</a>
+        <a href="/#calculators">All calculators</a>
+      </div>
+      <div class="foot-col">
+        <h4>Image Tools</h4>
+        <a href="/#image-tools">Watermark, Compress, Convert</a>
+      </div>
+      <div class="foot-col">
+        <h4>Company</h4>
+        <a href="/about">About</a>
+        <a href="/privacy-policy">Privacy</a>
+        <a href="/terms">Terms</a>
+      </div>
+    </div>
+    <p class="legal">© 2026 Thor Tools. All tools run locally in your browser; no files or inputs are uploaded to any server. Calculator results are estimates for general information only and are not financial advice.</p>
+  </footer>
+
+  <script is:inline>
+    (function () {
+      var btn = document.getElementById('theme-toggle');
+      if (!btn) return;
+      function sync(){ btn.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙'; }
+      sync();
+      btn.addEventListener('click', function () {
+        var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        try { localStorage.setItem('theme', next); } catch (e) {}
+        sync();
+      });
+    })();
+  </script>
+</body>
+</html>

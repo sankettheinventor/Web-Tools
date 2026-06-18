@@ -1,0 +1,138 @@
+---
+import Base from '../../layouts/Base.astro';
+const title = 'EMI Calculator — Monthly Loan Payment (Free, Instant)';
+const description = 'Free EMI calculator. Enter loan amount, interest rate and tenure to see your monthly EMI, total interest and total payment instantly. Works for home, car & personal loans.';
+---
+<Base title={title} description={description}>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+        {"@type":"Question","name":"How is EMI calculated?","acceptedAnswer":{"@type":"Answer","text":"EMI = P × r × (1+r)^n ÷ ((1+r)^n − 1), where P is the principal, r is the monthly interest rate (annual rate ÷ 12 ÷ 100) and n is the number of monthly instalments."}},
+        {"@type":"Question","name":"Is this EMI calculator free?","acceptedAnswer":{"@type":"Answer","text":"Yes. It is completely free, requires no signup, and runs entirely in your browser — none of your numbers are uploaded anywhere."}}
+      ]})} />
+  </Fragment>
+
+  <header class="head">
+    <div class="wrap">
+      <p class="kicker">Finance Calculator</p>
+      <h1>EMI Calculator</h1>
+      <p>Your monthly loan payment, instantly. Drag a slider or type a number — the result updates live.</p>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="tool">
+      <div class="field">
+        <div class="field-top"><label for="cur">Currency</label></div>
+        <select id="cur" aria-label="Currency">
+          <option value="INR" data-sym="₹" data-loc="en-IN" selected>₹ Indian Rupee (INR)</option>
+          <option value="USD" data-sym="$" data-loc="en-US">$ US Dollar (USD)</option>
+          <option value="EUR" data-sym="€" data-loc="de-DE">€ Euro (EUR)</option>
+          <option value="GBP" data-sym="£" data-loc="en-GB">£ British Pound (GBP)</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <div class="field-top">
+          <label for="amount">Loan amount</label>
+          <div class="valwrap"><span class="sym">₹</span><input id="amount" type="number" inputmode="decimal" min="0" value="1000000" /></div>
+        </div>
+        <input id="amountR" type="range" min="10000" max="20000000" step="10000" value="1000000" aria-label="Loan amount" />
+      </div>
+
+      <div class="grid2">
+        <div class="field">
+          <div class="field-top">
+            <label for="rate">Interest rate</label>
+            <div class="valwrap"><input id="rate" type="number" inputmode="decimal" min="0" step="0.1" value="8.5" /><span>%</span></div>
+          </div>
+          <input id="rateR" type="range" min="1" max="30" step="0.1" value="8.5" aria-label="Interest rate" />
+        </div>
+        <div class="field">
+          <div class="field-top">
+            <label for="tenure">Tenure</label>
+            <div class="valwrap"><input id="tenure" type="number" inputmode="numeric" min="1" value="20" /><span>yr</span></div>
+          </div>
+          <input id="tenureR" type="range" min="1" max="30" step="1" value="20" aria-label="Tenure in years" />
+        </div>
+      </div>
+
+      <div class="result" aria-live="polite">
+        <div class="rlabel">Monthly EMI</div>
+        <div class="rbig" id="emi">—</div>
+        <div class="rsub" id="emiSub"></div>
+        <div class="breakdown">
+          <div class="bd"><div class="k">Principal</div><div class="v" id="bdP">—</div></div>
+          <div class="bd"><div class="k">Total interest</div><div class="v" id="bdI">—</div></div>
+          <div class="bd"><div class="k">Total payment</div><div class="v" id="bdT">—</div></div>
+          <div class="bd"><div class="k">Interest share</div><div class="v" id="bdPct">—</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ad AFTER the result (UX rule: tool usable first, never beside action controls) -->
+  <div class="ad">Ad space</div>
+
+  <div class="content">
+    <h2>How EMI is calculated</h2>
+    <p>EMI (Equated Monthly Instalment) is the fixed amount you pay each month until a loan is fully repaid. Every EMI covers part interest and part principal. It's calculated with the standard reducing-balance formula:</p>
+    <div class="formula">EMI = P × r × (1 + r)ⁿ ÷ ( (1 + r)ⁿ − 1 )</div>
+    <p>where <b>P</b> is the loan amount (principal), <b>r</b> is the monthly interest rate (annual rate ÷ 12 ÷ 100), and <b>n</b> is the number of monthly instalments (years × 12).</p>
+
+    <h3>Flat vs reducing balance</h3>
+    <p>This calculator uses <b>reducing balance</b> — interest is charged only on the outstanding principal, which falls every month. That's how almost all home, car and personal loans actually work. A "flat rate" charges interest on the full original amount the whole term, which makes the effective rate much higher for the same headline number — always compare on reducing balance.</p>
+
+    <h3>How to lower your EMI</h3>
+    <ul>
+      <li><b>Longer tenure</b> lowers the monthly EMI but increases total interest paid.</li>
+      <li><b>A lower rate</b> reduces both EMI and total interest — even 0.5% matters over years.</li>
+      <li><b>Prepayments</b> cut the outstanding principal, shrinking future interest.</li>
+    </ul>
+
+    <p>Try changing the tenure above and watch the <b>total interest</b> move — it's often the most eye-opening number.</p>
+
+    <div class="xlinks">
+      <a href="/calculators/compound-interest">Compound Interest Calculator →</a>
+      <a href="/#calculators">All calculators →</a>
+    </div>
+  </div>
+
+  <script is:inline>
+    (function () {
+      var cur = 'INR', loc = 'en-IN';
+      function el(id){ return document.getElementById(id); }
+      function num(id){ var v = parseFloat(el(id).value); return isFinite(v) ? v : 0; }
+      function money(v){
+        try { return new Intl.NumberFormat(loc, { style:'currency', currency:cur, maximumFractionDigits:0 }).format(Math.round(v)); }
+        catch(e){ return Math.round(v).toLocaleString(); }
+      }
+      // keep a number input and its slider in sync
+      function pair(a, b){
+        el(a).addEventListener('input', function(){ el(b).value = el(a).value; compute(); });
+        el(b).addEventListener('input', function(){ el(a).value = el(b).value; compute(); });
+      }
+      function compute(){
+        var P = num('amount'), R = num('rate'), Y = num('tenure');
+        var r = R/12/100, n = Y*12;
+        var emi = (r > 0) ? P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1) : (n>0 ? P/n : 0);
+        if (!isFinite(emi) || emi < 0) emi = 0;
+        var total = emi*n, interest = total - P;
+        el('emi').textContent = money(emi);
+        el('emiSub').textContent = Y + ' years · ' + n + ' payments';
+        el('bdP').textContent = money(P);
+        el('bdI').textContent = money(interest);
+        el('bdT').textContent = money(total);
+        el('bdPct').textContent = total > 0 ? Math.round(interest/total*100) + '%' : '—';
+      }
+      pair('amount','amountR'); pair('rate','rateR'); pair('tenure','tenureR');
+      el('cur').addEventListener('change', function(){
+        var o = el('cur').selectedOptions[0];
+        cur = el('cur').value; loc = o.dataset.loc;
+        document.querySelector('.valwrap .sym').textContent = o.dataset.sym;
+        compute();
+      });
+      compute(); // pre-filled defaults → answer is on screen immediately
+    })();
+  </script>
+</Base>

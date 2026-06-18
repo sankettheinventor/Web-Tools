@@ -1,0 +1,55 @@
+---
+import Base from '../layouts/Base.astro';
+const title = 'Thor Tools — Free Online Calculators & Image Tools (No Signup, No Upload)';
+const description = 'Free, fast, private online calculators and image tools. EMI, compound interest, image compress, watermark and more — all run in your browser. Nothing is uploaded.';
+---
+<Base title={title} description={description}>
+  <header class="head">
+    <div class="wrap">
+      <p class="kicker">Free · Private · Instant</p>
+      <h1>Simple tools that just work</h1>
+      <p>Calculators and image utilities that run <b>entirely in your browser</b>. No signup, no upload, no waiting — your data never leaves your device.</p>
+    </div>
+  </header>
+
+  <div class="wrap cats">
+    <section class="cat" id="calculators">
+      <h2>💰 Finance Calculators</h2>
+      <p class="csub">Plan loans, savings and investments. Pure math, instant results, nothing stored.</p>
+      <div class="tgrid">
+        <a class="tcard" href="/calculators/emi">
+          <div class="ti">🏦</div><h3>EMI Calculator</h3><p>Monthly payment for any loan, with full breakdown.</p>
+        </a>
+        <a class="tcard" href="/calculators/compound-interest">
+          <div class="ti">📈</div><h3>Compound Interest</h3><p>See how savings grow over time, any frequency.</p>
+        </a>
+        <span class="tcard soon"><div class="ti">🏠</div><h3>Mortgage Calculator</h3><p>Home-loan payments + amortization.</p><span class="badge">Soon</span></span>
+        <span class="tcard soon"><div class="ti">📊</div><h3>SIP Calculator</h3><p>Mutual-fund SIP returns over time.</p><span class="badge">Soon</span></span>
+        <span class="tcard soon"><div class="ti">💳</div><h3>Loan Payoff</h3><p>Snowball vs avalanche payoff plans.</p><span class="badge">Soon</span></span>
+        <span class="tcard soon"><div class="ti">🧾</div><h3>Income Tax Estimator</h3><p>Estimate tax by bracket/slab.</p><span class="badge">Soon</span></span>
+      </div>
+    </section>
+
+    <section class="cat" id="image-tools">
+      <h2>🖼️ Image Tools</h2>
+      <p class="csub">Compress, convert and watermark images — processed locally, never uploaded.</p>
+      <div class="tgrid">
+        <span class="tcard soon"><div class="ti">💧</div><h3>Watermark Studio</h3><p>Text/logo watermark, batch, tiling.</p><span class="badge">Soon</span></span>
+        <span class="tcard soon"><div class="ti">🗜️</div><h3>Image Compressor</h3><p>Shrink to a target size (e.g. 100 KB).</p><span class="badge">Soon</span></span>
+        <span class="tcard soon"><div class="ti">📱</div><h3>HEIC → JPG</h3><p>Convert iPhone photos to JPG.</p><span class="badge">Soon</span></span>
+        <span class="tcard soon"><div class="ti">🔄</div><h3>Convert / Resize</h3><p>JPG ↔ PNG ↔ WebP, resize, crop.</p><span class="badge">Soon</span></span>
+      </div>
+    </section>
+
+    <section class="cat" id="utilities">
+      <h2>⚡ Quick Utilities</h2>
+      <p class="csub">Little tools worth bookmarking.</p>
+      <div class="tgrid">
+        <span class="tcard soon"><div class="ti">🔳</div><h3>QR Code Generator</h3><p>URL, WiFi, vCard — with logo &amp; color.</p><span class="badge">Soon</span></span>
+        <span class="tcard soon"><div class="ti">⭐</div><h3>Favicon Generator</h3><p>All icon sizes from one image.</p><span class="badge">Soon</span></span>
+        <span class="tcard soon"><div class="ti">📄</div><h3>PDF Tools</h3><p>Merge, split, rotate PDFs.</p><span class="badge">Soon</span></span>
+        <span class="tcard soon"><div class="ti">✂️</div><h3>SVG Optimizer</h3><p>Minify &amp; clean up SVG files.</p><span class="badge">Soon</span></span>
+      </div>
+    </section>
+  </div>
+</Base>
