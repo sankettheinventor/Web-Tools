@@ -195,7 +195,11 @@ footer{border-top:1px solid var(--line);margin-top:var(--s8);padding:var(--s6) 0
 .foot-col h4{color:var(--txt);font-size:var(--t-sm);margin-bottom:var(--s2)}
 .foot-col a{display:block;color:var(--dim);margin-bottom:var(--s2)}
 .foot-col a:hover{color:var(--txt)}
-.legal{max-width:var(--maxw);margin:var(--s5) auto 0;padding:0 var(--s5);font-size:var(--t-xs);color:var(--dim);line-height:1.6}
+.foot-bottom{max-width:var(--maxw);margin:var(--s5) auto 0;padding:var(--s5) var(--s5) 0;border-top:1px solid var(--line);
+  display:flex;flex-wrap:wrap;gap:var(--s4);align-items:center;justify-content:space-between}
+.legal{font-size:var(--t-xs);color:var(--dim);line-height:1.6;flex:1;min-width:260px;margin:0}
+.foot-legal{display:flex;gap:var(--s5)}
+.foot-legal a{color:var(--dim);font-size:var(--t-sm)}.foot-legal a:hover{color:var(--txt)}
 
 /* ---- cloud import (Google Drive / Dropbox) ---- */
 .cloud{display:flex;gap:var(--s2);justify-content:center;margin-top:var(--s4);flex-wrap:wrap}
