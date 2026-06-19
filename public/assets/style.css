@@ -205,8 +205,9 @@ footer{border-top:1px solid var(--line);margin-top:var(--s8);padding:var(--s6) 0
 .foot-bottom{max-width:var(--maxw);margin:var(--s5) auto 0;padding:var(--s5) var(--s5) 0;border-top:1px solid var(--line);
   display:flex;flex-wrap:wrap;gap:var(--s4);align-items:center;justify-content:space-between}
 .legal{font-size:var(--t-xs);color:var(--dim);line-height:1.6;flex:1;min-width:260px;margin:0}
-.foot-legal{display:flex;gap:var(--s5)}
+.foot-legal{display:flex;flex-wrap:wrap;gap:8px var(--s4);margin-top:14px}
 .foot-legal a{color:var(--dim);font-size:var(--t-sm)}.foot-legal a:hover{color:var(--txt)}
+.foot-bottom{justify-content:flex-start}
 
 /* ---- cookie consent banner ---- */
 /* Dark notice in BOTH themes so it always stands out and never blends in */
