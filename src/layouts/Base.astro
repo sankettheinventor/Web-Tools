@@ -119,8 +119,8 @@ const ADSENSE_CLIENT = '';
       <div class="trust-lead">🛡️ <b>Built for privacy.</b> Every tool runs entirely on your device — your files and data never reach a server.</div>
       <div class="trust-badges">
         <span class="tb">🔒 On-device processing</span>
-        <span class="tb">🚫 No data collected</span>
-        <span class="tb">🇪🇺 GDPR-friendly</span>
+        <span class="tb">🙈 We never see your files</span>
+        <span class="tb">🇪🇺 GDPR &amp; DPDP friendly</span>
         <span class="tb">✅ No sign-up</span>
       </div>
     </div>
@@ -172,6 +172,14 @@ const ADSENSE_CLIENT = '';
     </div>
   </footer>
 
+  <div id="cookie-banner" class="cookie-banner" hidden>
+    <p class="cb-text">SnapJar processes your files <b>on your device</b>. We use essential cookies, and — with your consent — advertising cookies to keep the tools free. See our <a href="/privacy-policy">Privacy Policy</a>.</p>
+    <div class="cb-actions">
+      <button id="cb-decline" type="button" class="cb-btn ghost">Decline</button>
+      <button id="cb-accept" type="button" class="cb-btn">Accept</button>
+    </div>
+  </div>
+
   <script is:inline>
     (function () {
       var btn = document.getElementById('theme-toggle');
@@ -201,6 +209,21 @@ const ADSENSE_CLIENT = '';
       });
       document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
       mp.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', close); });
+    })();
+  </script>
+
+  <script is:inline>
+    // Cookie consent — records the choice and gates non-essential (ad) cookies.
+    (function () {
+      var KEY = 'snapjar-consent', saved = null;
+      try { saved = localStorage.getItem(KEY); } catch (e) {}
+      window.__consent = saved;
+      var b = document.getElementById('cookie-banner');
+      if (!saved && b) b.hidden = false;
+      function set(v) { try { localStorage.setItem(KEY, v); } catch (e) {} window.__consent = v; if (b) b.hidden = true; }
+      var a = document.getElementById('cb-accept'), d = document.getElementById('cb-decline');
+      if (a) a.onclick = function () { set('accepted'); };
+      if (d) d.onclick = function () { set('declined'); };
     })();
   </script>
 

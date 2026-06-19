@@ -207,6 +207,16 @@ footer{border-top:1px solid var(--line);margin-top:var(--s8);padding:var(--s6) 0
 .foot-legal{display:flex;gap:var(--s5)}
 .foot-legal a{color:var(--dim);font-size:var(--t-sm)}.foot-legal a:hover{color:var(--txt)}
 
+/* ---- cookie consent banner ---- */
+.cookie-banner{position:fixed;left:var(--s4);right:var(--s4);bottom:var(--s4);z-index:80;max-width:760px;margin:0 auto;
+  display:flex;flex-wrap:wrap;align-items:center;gap:var(--s4);
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);padding:var(--s4) var(--s5)}
+.cb-text{flex:1;min-width:240px;font-size:var(--t-sm);color:var(--dim);line-height:1.5}.cb-text b{color:var(--txt)}
+.cb-actions{display:flex;gap:var(--s2)}
+.cb-btn{padding:var(--s2) var(--s5);border-radius:var(--r);font-weight:700;font-size:var(--t-sm);border:0;cursor:pointer;color:#fff;background:linear-gradient(135deg,var(--brand2),var(--brand))}
+.cb-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line)}
+@media(max-width:560px){.cookie-banner{left:var(--s2);right:var(--s2);bottom:var(--s2);padding:var(--s4)}.cb-actions{width:100%}.cb-btn{flex:1}}
+
 /* ---- cloud import (Google Drive / Dropbox) ---- */
 .cloud{display:flex;gap:var(--s2);justify-content:center;margin-top:var(--s4);flex-wrap:wrap}
 .cloud-btn{display:inline-flex;align-items:center;gap:var(--s2);background:var(--surface);border:1px solid var(--line);
