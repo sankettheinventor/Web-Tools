@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'Take-Home Salary Calculator — Gross to Net Pay (Free)';
 const description = 'Free take-home salary calculator. Enter your gross pay and deductions (tax, retirement, other) to see your net monthly and annual in-hand salary instantly.';
+const faqItems = [
+  { q: 'How do I calculate my take-home pay from gross salary?', a: 'Enter your annual gross salary, then set your income tax, retirement/PF percentages and any fixed monthly deduction. The calculator subtracts those from your gross and shows your monthly and annual in-hand salary instantly.' },
+  { q: 'What deductions does this calculator account for?', a: 'It subtracts income tax (as a percentage), retirement or provident-fund contributions (as a percentage), and one flexible monthly "other" amount for things like insurance or loan repayments. You enter the percentages that apply to you.' },
+  { q: 'Which currencies are supported?', a: 'You can switch between Indian Rupee (INR), US Dollar (USD), Euro (EUR) and British Pound (GBP). Changing the currency updates the symbol and number formatting throughout the results.' },
+  { q: 'Is this an exact figure for my country tax?', a: 'No. Because tax and retirement rules differ by country, it uses the percentages you enter rather than official slabs. For an exact figure, check your payslip or a local tax tool.' },
+  { q: 'Is my salary data uploaded or stored?', a: 'No. Everything is processed locally in your browser. Your salary and deduction figures are never uploaded, stored, or shared with any server.' }
+];
 ---
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
@@ -45,6 +53,7 @@ const description = 'Free take-home salary calculator. Enter your gross pay and 
     <p>Because tax and retirement rules differ by country, this calculator lets you enter the percentages that apply to you, so it works anywhere. <em>For an exact figure, check your payslip or a local tax tool.</em></p>
     <div class="xlinks"><a href="/calculators/income-tax">Income Tax →</a><a href="/#calculators">All calculators →</a></div>
   </div>
+  <Faq items={faqItems} />
   <script is:inline>
     (function(){var cur='INR',loc='en-IN';function el(i){return document.getElementById(i);}function num(i){var v=parseFloat(el(i).value);return isFinite(v)?v:0;}
     function money(v){try{return new Intl.NumberFormat(loc,{style:'currency',currency:cur,maximumFractionDigits:0}).format(Math.round(v));}catch(e){return Math.round(v).toLocaleString();}}

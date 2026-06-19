@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'Extract Pages from PDF — Save Selected Pages Free';
 const description = 'Free tool to extract pages from a PDF. Enter the pages to keep (e.g. 1, 3-5) and download a new PDF with just those pages. Runs in your browser.';
+const faqItems = [
+  { q: 'How do I choose which pages to extract?', a: 'Type the pages you want to keep in the box, using single page numbers and ranges separated by commas — for example 1, 3-5. The new PDF includes only those pages, in the order you list them.' },
+  { q: 'Does it keep the page order I type?', a: 'Yes. Pages are added to the new PDF in the exact order you enter them, so you can also use the tool to reorder pages while extracting.' },
+  { q: 'Is my PDF uploaded or stored anywhere?', a: 'No. The entire process runs locally in your browser using JavaScript. Your file is never uploaded, stored, or shared — nothing leaves your device.' },
+  { q: 'Can it extract pages from a password-protected PDF?', a: 'It can open PDFs that have basic owner-level encryption, but it cannot extract pages from a file that requires a password to open. Remove the password first, then use the tool.' },
+  { q: 'Is there a file size or page limit?', a: 'There is no fixed limit set by the tool. Because everything is processed in your browser, very large PDFs depend on your device memory, but typical documents work quickly.' }
+];
 ---
 <Base title={title} description={description}>
   <Fragment slot="head"><script is:inline src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script></Fragment>
@@ -36,6 +44,7 @@ const description = 'Free tool to extract pages from a PDF. Enter the pages to k
     .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line)}.status{margin-top:10px;font-size:13px;color:var(--dim)}
     code{background:var(--surface2);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
   </style>
+  <Faq items={faqItems} />
   <script is:inline>
     (function(){
       var bytes=null,count=0;

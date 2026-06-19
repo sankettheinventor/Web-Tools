@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'Favicon & App Icon Generator — From Image or Emoji (Free)';
-const description = 'Free favicon and app icon generator. Make a favicon from an image, text or emoji — get every iOS & Android size plus a real favicon.ico, zipped, with the HTML to paste. Runs in your browser.';
+const description = 'Free favicon & app icon generator. Make icons from an image, text or emoji — every iOS & Android size plus a real favicon.ico. Runs in your browser.';
+const faqItems = [
+  { q: 'What files does this favicon generator create?', a: 'It generates 11 PNG sizes (16, 32, 48, 96, 120, 152, 167, 180, 192, 512 and 1024 px) plus a real multi-resolution favicon.ico that bundles the 16, 32 and 48 px icons. You can download the .ico on its own or grab everything in a single .zip.' },
+  { q: 'Can I make a favicon without an image?', a: 'Yes. Switch to the "From text / emoji" tab, type a letter or emoji, then pick a text colour, background colour and shape (rounded square, square or circle) to build an icon from scratch.' },
+  { q: 'Does it give me the HTML to add the favicon to my site?', a: 'Yes. The tool shows a ready-to-paste <head> snippet with the link tags for the 16 and 32 px favicons, the Apple touch icon and favicon.ico, and the same snippet is saved as head-snippet.html inside the .zip download.' },
+  { q: 'Why does my icon look blurry?', a: 'Icons are scaled from your source, so start with a square image that is at least 512 px (ideally 1024 px) for crisp results. Small or non-square images get stretched, which can make the smaller sizes look soft.' },
+  { q: 'Is my image uploaded or stored anywhere?', a: 'No. Everything runs locally in your browser using a canvas, so your image and the generated icons are never uploaded, stored or shared. Nothing leaves your device.' },
+];
 ---
 <Base title={title} description={description}>
   <Fragment slot="head">
@@ -90,6 +98,8 @@ const description = 'Free favicon and app icon generator. Make a favicon from an
     .fav-note{font-size:12px;color:var(--dim);line-height:1.6}
     code{background:var(--surface2);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
   </style>
+
+  <Faq items={faqItems} />
 
   <script is:inline>
     (function () {

@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'Retirement Calculator — How Big a Corpus You Need (Free)';
-const description = 'Free retirement calculator. Enter your age, savings, monthly contribution and expected return to estimate your retirement corpus, inflation-adjusted. Runs in your browser.';
+const description = 'Free retirement calculator: estimate your inflation-adjusted retirement corpus from age, savings, contributions and return. Runs in your browser.';
+const faqItems = [
+  { q: 'How does this retirement calculator estimate my corpus?', a: 'It grows your current savings until retirement and adds the future value of every monthly contribution, all compounding at your expected annual return. The two parts are summed to give the projected corpus at your retirement age.' },
+  { q: 'What does "in today’s money" mean?', a: 'It shows your future corpus discounted by your inflation assumption, so a large future number is expressed in the spending power it would have today. This makes the result easier to judge realistically.' },
+  { q: 'Why do I enter both an expected return and inflation rate?', a: 'The expected return grows your savings and contributions over time, while the inflation rate is used to convert the final corpus back into today’s purchasing power. Both are applied as constant annual rates.' },
+  { q: 'How accurate is the projection?', a: 'It is an estimate based on the constant rates you enter. Real-world returns and inflation vary year to year, so treat the figure as a planning guide rather than a guarantee.' },
+  { q: 'Is my data uploaded or stored anywhere?', a: 'No. Every calculation runs entirely in your browser, and nothing you enter is uploaded, stored, or shared.' },
+];
 ---
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
@@ -55,6 +63,7 @@ const description = 'Free retirement calculator. Enter your age, savings, monthl
     <p>Because prices rise over time, the calculator also shows the corpus <b>in today's money</b> — discounted by your inflation assumption — so the big future number means something real. <em>This is an estimate using constant rates; actual returns and inflation vary.</em></p>
     <div class="xlinks"><a href="/calculators/sip">SIP Calculator →</a><a href="/#calculators">All calculators →</a></div>
   </div>
+  <Faq items={faqItems} />
   <script is:inline>
     (function(){var cur='INR',loc='en-IN';function el(i){return document.getElementById(i);}function num(i){var v=parseFloat(el(i).value);return isFinite(v)?v:0;}
     function money(v){try{return new Intl.NumberFormat(loc,{style:'currency',currency:cur,maximumFractionDigits:0}).format(Math.round(v));}catch(e){return Math.round(v).toLocaleString();}}

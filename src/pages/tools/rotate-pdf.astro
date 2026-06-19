@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'Rotate PDF — Turn PDF Pages Free (Private)';
 const description = 'Free rotate PDF tool. Turn every page of a PDF 90, 180 or 270 degrees and download the fixed file — in your browser, nothing uploaded.';
+const faqItems = [
+  { q: 'How do I rotate a PDF?', a: 'Drop or browse to your PDF, pick how far to turn it (90° right, 180°, or 90° left), then click Rotate & download. Every page is rotated by the same amount and saved into a new file.' },
+  { q: 'Does it rotate all pages or just one?', a: 'This tool rotates every page in the PDF by the same angle in one go. It does not currently rotate individual pages separately.' },
+  { q: 'Is the rotation saved permanently in the file?', a: 'Yes. The rotation is written into the PDF itself, so the document opens the right way up in any viewer, not just in this browser.' },
+  { q: 'Is there a file size or page limit?', a: 'There is no fixed limit set by the tool. Because everything runs in your browser using your device memory, very large PDFs may process more slowly on lower-powered devices.' },
+  { q: 'Is my PDF uploaded or stored anywhere?', a: 'No. Your PDF is processed entirely in your browser. Nothing is uploaded, stored, or shared — the file never leaves your device.' },
+];
 ---
 <Base title={title} description={description}>
   <Fragment slot="head"><script is:inline src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script></Fragment>
@@ -35,6 +43,7 @@ const description = 'Free rotate PDF tool. Turn every page of a PDF 90, 180 or 2
     .acts{display:flex;gap:10px}.wm-btn{padding:11px 18px;border-radius:10px;font-weight:700;color:#fff;border:0;cursor:pointer;background:linear-gradient(135deg,var(--brand2),var(--brand))}
     .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line)}.status{margin-top:10px;font-size:13px;color:var(--dim)}
   </style>
+  <Faq items={faqItems} />
   <script is:inline>
     (function(){
       var bytes=null;

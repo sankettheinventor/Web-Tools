@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'Tip Calculator — Tip & Bill Split (Free, Instant)';
 const description = 'Free tip calculator. Enter the bill, choose a tip percentage and split between people to see the tip, total and amount per person instantly.';
+const faqItems = [
+  { q: 'How does this tip calculator work?', a: 'It multiplies your bill by the tip percentage to get the tip amount, adds that to the bill for the total, then divides by the number of people. Results update instantly as you type or drag the sliders.' },
+  { q: 'How much should I tip?', a: 'In the US, 15-20% is common for good service in restaurants, while many other countries tip less or not at all. Adjust the tip slider to match your local custom and the quality of service.' },
+  { q: 'Can I split the bill between several people?', a: 'Yes. Set the "Split between" field to the number of people and the calculator shows how much each person pays, including their share of the tip.' },
+  { q: 'Which currencies are supported?', a: 'You can choose US Dollar, Indian Rupee, Euro or British Pound, and the results are formatted with the matching currency symbol and number style.' },
+  { q: 'Is my bill data uploaded or stored?', a: 'No. Everything is calculated locally in your browser. Nothing you enter is uploaded, stored or shared.' },
+];
 ---
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
@@ -43,6 +51,7 @@ const description = 'Free tip calculator. Enter the bill, choose a tip percentag
     <p>Common tips are 15–20% in the US for good service; many other countries tip less or not at all. Adjust the slider to match your situation.</p>
     <div class="xlinks"><a href="/calculators/percentage">Percentage →</a><a href="/#everyday">All calculators →</a></div>
   </div>
+  <Faq items={faqItems} />
   <script is:inline>
     (function(){var cur='USD',loc='en-US';function el(i){return document.getElementById(i);}function num(i){var v=parseFloat(el(i).value);return isFinite(v)?v:0;}
     function money(v){try{return new Intl.NumberFormat(loc,{style:'currency',currency:cur,maximumFractionDigits:2}).format(v);}catch(e){return v.toFixed(2);}}

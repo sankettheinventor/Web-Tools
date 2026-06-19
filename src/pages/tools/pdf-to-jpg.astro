@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'PDF to JPG — Convert PDF Pages to Images (Free, Private)';
 const description = 'Free PDF to JPG converter. Turn each page of a PDF into a JPG image right in your browser, then download them zipped. Nothing is uploaded.';
+const faqItems = [
+  { q: 'How do I convert a PDF to JPG?', a: 'Drop a PDF onto the page or click browse to pick one. Each page is rendered to a JPG that you can download individually, or grab them all at once as a single zip file.' },
+  { q: 'Is my PDF uploaded or stored anywhere?', a: 'No. The entire conversion runs locally in your browser using JavaScript, so your PDF is never uploaded, stored, or shared. It stays on your device the whole time.' },
+  { q: 'Does each PDF page become a separate JPG?', a: 'Yes. Every page in the PDF is rendered to its own page-1.jpg, page-2.jpg and so on, so a 10-page PDF gives you 10 separate JPG images.' },
+  { q: 'What quality are the converted JPG images?', a: 'Pages are rendered at 2x scale and saved as JPGs at 90% quality, which keeps text and figures crisp while keeping file sizes reasonable.' },
+  { q: 'Can I download all the images at once?', a: 'Yes. When a PDF has two or more pages, a "Download all (.zip)" button appears so you can save every page image in one zip archive instead of one at a time.' },
+];
 ---
 <Base title={title} description={description}>
   <Fragment slot="head">
@@ -29,6 +37,7 @@ const description = 'Free PDF to JPG converter. Turn each page of a PDF into a J
     <p>Drop in a PDF and each page is rendered to a high-quality JPG you can download — individually or all at once as a zip. Handy for pulling a figure out of a report, sharing a single page as an image, or posting a PDF page where only images are allowed. It all runs locally in your browser, so your document is never uploaded.</p>
     <div class="xlinks"><a href="/tools/jpg-to-pdf">JPG to PDF →</a><a href="/tools/pdf-tools">Merge PDF →</a></div>
   </div>
+  <Faq items={faqItems} />
   <style>
     .drop{border:2px dashed var(--line);border-radius:14px;background:var(--surface2);padding:40px 20px;text-align:center;cursor:pointer}
     .drop.drag{border-color:var(--brand)}.drop-ic{font-size:40px;margin-bottom:8px}.drop-t{font-size:16px;font-weight:600}.drop-s{font-size:13px;color:var(--dim);margin-top:6px}

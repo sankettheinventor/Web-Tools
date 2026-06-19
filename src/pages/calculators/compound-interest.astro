@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'Compound Interest Calculator — Free, Instant Growth Estimate';
 const description = 'Free compound interest calculator. See how a deposit plus regular contributions grow over time, at any rate and compounding frequency. Runs in your browser.';
+const faqItems = [
+  { q: 'How does this compound interest calculator work?', a: 'It takes your initial amount, monthly addition, annual rate, time period and compounding frequency, then adds each monthly contribution and applies compound growth period by period. The future balance, total invested and interest earned update live as you change any value.' },
+  { q: 'Does it account for regular monthly contributions?', a: 'Yes. The calculator adds your monthly addition every month and compounds the running balance, so the result reflects ongoing saving on top of your starting deposit, not just a one-time lump sum.' },
+  { q: 'What does compounding frequency change?', a: 'You can compound monthly, quarterly or yearly. The more often interest compounds at the same annual rate, the faster the balance grows, so monthly compounding produces a higher future balance than yearly.' },
+  { q: 'Can I use it for different currencies?', a: 'Yes. You can switch between Indian Rupee, US Dollar, Euro and British Pound, and the results are formatted in the currency and locale you select.' },
+  { q: 'Is my data uploaded or stored anywhere?', a: 'No. Every calculation runs entirely in your browser. Nothing you enter is uploaded, stored or shared, and the numbers never leave your device.' }
+];
 ---
 <Base title={title} description={description}>
   <header class="head">
@@ -90,6 +98,8 @@ const description = 'Free compound interest calculator. See how a deposit plus r
       <a href="/#calculators">All calculators →</a>
     </div>
   </div>
+
+  <Faq items={faqItems} />
 
   <script is:inline>
     (function () {

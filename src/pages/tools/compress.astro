@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'Image Compressor — Reduce Photo Size Online (Free, Private)';
-const description = 'Free image compressor. Shrink JPG, PNG and WebP photos to a smaller size right in your browser — adjust quality, see the new size live, and download. Nothing is uploaded.';
+const description = 'Free image compressor. Shrink JPG, PNG and WebP photos right in your browser — adjust quality, watch the size drop, and download. Nothing is uploaded.';
+const faqItems = [
+  { q: 'How do I make an image file smaller?', a: 'Drop in a photo, choose an output format, then drag the quality slider down until the new file size and look are right. The new size updates live, and you can also lower the max width to shrink large photos further before downloading.' },
+  { q: 'Which format gives the smallest file?', a: 'JPEG usually produces the smallest files for photos, and WebP is often even smaller on modern browsers. PNG stays lossless, which is best for graphics and screenshots but generally larger than JPEG or WebP.' },
+  { q: 'Will compressing reduce the image quality?', a: 'JPEG and WebP are lossy, so lower quality settings make smaller files but can add visible artifacts. Use the live preview and size readout to find a balance, or keep PNG if you need no quality loss at all.' },
+  { q: 'Does it work on JPG, PNG and WebP images?', a: 'Yes. You can load JPG, PNG or WebP images and export to JPEG, WebP or PNG. The tool reads any common browser-supported image and lets you pick the output format independently.' },
+  { q: 'Is my image uploaded or stored anywhere?', a: 'No. Everything is processed locally in your browser using a canvas — your image is never uploaded, stored, or shared, and nothing leaves your device.' }
+];
 ---
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
@@ -51,6 +59,7 @@ const description = 'Free image compressor. Shrink JPG, PNG and WebP photos to a
     .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line);flex:0 0 auto}
     @media(max-width:680px){.wm-grid{grid-template-columns:1fr}}
   </style>
+  <Faq items={faqItems} />
   <script is:inline>
     (function(){
       var img=null, origSize=0, lastBlob=null, name='image';

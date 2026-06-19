@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'Remove Pages from PDF — Delete PDF Pages Free';
 const description = 'Free tool to remove pages from a PDF. Enter the pages to delete (e.g. 2, 5-7) and download the trimmed PDF — in your browser, nothing uploaded.';
+const faqItems = [
+  { q: 'How do I select which pages to remove?', a: 'Type the page numbers in the box, separating individual pages with commas and using a dash for ranges — for example, 2, 5-7 removes page 2 plus pages 5 through 7.' },
+  { q: 'Can I remove a range of pages at once?', a: 'Yes. Use a dash to delete a continuous range, like 5-7, and combine it with single pages such as 2, 5-7. Only pages that exist in your PDF are removed.' },
+  { q: 'Is my PDF uploaded or stored anywhere?', a: 'No. The entire process runs locally in your browser using JavaScript, so your PDF is never uploaded, stored, or shared. Nothing leaves your device.' },
+  { q: 'Does it work on password-protected or encrypted PDFs?', a: 'It attempts to open encrypted PDFs by ignoring encryption, so many files will work, but PDFs requiring a password to view may not load correctly.' },
+  { q: 'What happens if I try to remove every page?', a: 'The tool blocks that and shows a message, because a PDF must keep at least one page. Remove fewer pages so something remains in the file.' },
+];
 ---
 <Base title={title} description={description}>
   <Fragment slot="head"><script is:inline src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script></Fragment>
@@ -36,6 +44,7 @@ const description = 'Free tool to remove pages from a PDF. Enter the pages to de
     .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line)}.status{margin-top:10px;font-size:13px;color:var(--dim)}
     code{background:var(--surface2);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
   </style>
+  <Faq items={faqItems} />
   <script is:inline>
     (function(){
       var bytes=null,count=0;

@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'Color Picker from Image — Eyedropper Tool (Free)';
-const description = 'Free color picker. Upload an image and click to pick any color — get HEX, RGB and HSL with one-click copy. Includes a screen eyedropper where supported. Runs in your browser.';
+const description = 'Free color picker: upload an image and click to grab any color as HEX, RGB and HSL with one-click copy. Runs in your browser — nothing is uploaded.';
+const faqItems = [
+  { q: 'How do I pick a color from an image?', a: 'Drop in or browse for an image, then click anywhere on it. The tool reads the exact pixel under your cursor and shows it as HEX, RGB and HSL. You can also drag with the mouse button held down to sample colors as you move.' },
+  { q: 'What color formats does it give me?', a: 'Every pick is shown as a HEX code, an RGB value and an HSL value at the same time. Each one has its own Copy button so you can grab the format you need.' },
+  { q: 'Can I pick a color from anywhere on my screen?', a: 'Yes, on supported browsers. If your browser includes the EyeDropper API, a "pick from screen" option appears that lets you sample any color on your display, not just the loaded image.' },
+  { q: 'Is my image uploaded or stored anywhere?', a: 'No. Your image is processed entirely in your browser using a local canvas — it is never uploaded, stored or shared. Nothing leaves your device.' },
+  { q: 'What image formats can I use?', a: 'Any image format your browser can display works, including JPG, PNG, WebP and GIF. The picker reads pixels from the image after it loads.' },
+];
 ---
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
@@ -43,6 +51,7 @@ const description = 'Free color picker. Upload an image and click to pick any co
     .cpy{padding:0 12px;border-radius:9px;border:1px solid var(--line);background:var(--surface2);color:var(--dim);font:inherit;font-weight:700;font-size:12px;cursor:pointer}.cpy:hover{color:var(--brand);border-color:var(--brand)}
     .randbtn{margin-top:6px;padding:10px;border-radius:9px;border:1px solid var(--line);background:var(--surface2);color:var(--txt);font:inherit;font-weight:700;cursor:pointer}
   </style>
+  <Faq items={faqItems} />
   <script is:inline>
     (function(){
       function $(i){return document.getElementById(i);}

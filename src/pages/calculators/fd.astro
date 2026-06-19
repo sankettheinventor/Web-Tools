@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'FD Calculator — Fixed Deposit Maturity & Interest (Free)';
-const description = 'Free fixed deposit (FD) calculator. Enter your deposit, interest rate, tenure and compounding frequency to see the maturity amount and interest earned instantly.';
+const description = 'Free fixed deposit (FD) calculator: get maturity amount and interest from your deposit, rate, tenure and compounding. Runs in your browser, nothing uploaded.';
+const faqItems = [
+  { q: 'How does this FD calculator work?', a: 'It applies the compound interest formula A = P x (1 + r/n)^(n x t) using your deposit, annual interest rate, tenure in years and compounding frequency. Results update live as you change any input.' },
+  { q: 'Which compounding frequency should I choose?', a: 'Pick the one your bank uses. Most banks compound fixed deposits quarterly, which is the default here, but you can also select monthly, half-yearly or yearly.' },
+  { q: 'Does the maturity amount account for tax (TDS)?', a: 'No. The figure shown is the gross maturity amount before any tax. Interest on FDs may be taxable depending on your country and income, so your in-hand amount could be lower.' },
+  { q: 'Why does more frequent compounding give a higher maturity value?', a: 'With more frequent compounding, interest is added to the principal more often, so you earn interest on interest sooner. For the same rate and tenure, this slightly increases the final maturity amount.' },
+  { q: 'Is my data uploaded or stored anywhere?', a: 'No. Everything is calculated locally in your browser. Your deposit amount, rate and other inputs are never uploaded, stored or shared.' },
+];
 ---
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
@@ -48,6 +56,7 @@ const description = 'Free fixed deposit (FD) calculator. Enter your deposit, int
     <p>The more frequently interest compounds, the slightly higher your maturity amount for the same rate. <em>Interest on FDs may be taxable depending on your country and income — this estimate is before tax.</em></p>
     <div class="xlinks"><a href="/calculators/compound-interest">Compound Interest →</a><a href="/#calculators">All calculators →</a></div>
   </div>
+  <Faq items={faqItems} />
   <script is:inline>
     (function(){var cur='INR',loc='en-IN';function el(i){return document.getElementById(i);}function num(i){var v=parseFloat(el(i).value);return isFinite(v)?v:0;}
     function money(v){try{return new Intl.NumberFormat(loc,{style:'currency',currency:cur,maximumFractionDigits:0}).format(Math.round(v));}catch(e){return Math.round(v).toLocaleString();}}

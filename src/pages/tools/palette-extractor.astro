@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'Color Palette Extractor — Get Colors From a Photo (Free)';
-const description = 'Free color palette extractor. Upload a photo and pull out its dominant colors as HEX swatches you can copy. Great for moodboards and brand palettes. Runs in your browser.';
+const description = 'Free color palette extractor: pull dominant colors from any photo as copyable HEX swatches for moodboards and brands. Runs in your browser, nothing uploaded.';
+const faqItems = [
+  { q: 'How do I extract a color palette from an image?', a: 'Drop or browse to a photo and the tool instantly scans it, groups similar pixels, and shows the most common colors as a palette of HEX swatches.' },
+  { q: 'How do I copy a color code?', a: 'Click any swatch and its HEX code is copied to your clipboard. The swatch briefly shows "Copied!" to confirm.' },
+  { q: 'How many colors does it pull from a photo?', a: 'It surfaces up to 8 dominant colors, skipping near-duplicate shades so the palette stays varied and useful.' },
+  { q: 'Is my photo uploaded or stored anywhere?', a: 'No. Your image is processed entirely in your browser using a canvas. Nothing is uploaded, stored, or shared, and the photo never leaves your device.' },
+  { q: 'What image formats can I use?', a: 'Any standard image your browser can open works, including JPG, PNG, WebP, and GIF.' },
+];
 ---
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
@@ -35,6 +43,7 @@ const description = 'Free color palette extractor. Upload a photo and pull out i
     .sw:hover .hx{color:var(--brand)}
     .randbtn{margin-top:16px;padding:10px 16px;border-radius:9px;border:1px solid var(--line);background:var(--surface2);color:var(--txt);font:inherit;font-weight:700;cursor:pointer}
   </style>
+  <Faq items={faqItems} />
   <script is:inline>
     (function(){
       function $(i){return document.getElementById(i);}

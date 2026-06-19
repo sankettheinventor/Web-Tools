@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'Merge PDF — Combine PDF Files Free (Private, In Browser)';
-const description = 'Free PDF merger. Combine multiple PDF files into one in your browser, optionally rotating pages, then download. Nothing is uploaded — your documents stay private.';
+const description = 'Free PDF merger. Combine multiple PDF files into one in your browser, rotate pages, then download. Nothing is uploaded — your documents stay private.';
+const faqItems = [
+  { q: 'How do I merge multiple PDFs into one file?', a: 'Drop or browse to add two or more PDF files, and they are combined into a single document in the order you added them. Click "Merge & download" to save the combined PDF.' },
+  { q: 'In what order are the PDFs combined?', a: 'Files merge in the exact order you added them, top to bottom in the list. To change the order, clear the list and re-add the files in the sequence you want.' },
+  { q: 'Can I rotate the pages while merging?', a: 'Yes. Use the "Rotate all pages" option to turn every page 90° right, 180°, or 90° left, which is handy for scans that came in sideways. The rotation applies to all merged pages.' },
+  { q: 'Why does merging fail for some PDFs?', a: 'Merging can fail if a file is password-protected or encrypted. Remove the protection from the PDF first, then add it again to merge it.' },
+  { q: 'Are my PDF files uploaded or stored anywhere?', a: 'No. The entire merge runs locally in your browser using JavaScript, so your files are never uploaded, stored, or shared. Even confidential documents stay private on your device.' },
+];
 ---
 <Base title={title} description={description}>
   <Fragment slot="head">
@@ -31,6 +39,7 @@ const description = 'Free PDF merger. Combine multiple PDF files into one in you
     <p><b>Your documents never leave your device.</b> The merge happens entirely in your browser, so even confidential PDFs stay private.</p>
     <div class="xlinks"><a href="/">All tools →</a></div>
   </div>
+  <Faq items={faqItems} />
   <style>
     .drop{border:2px dashed var(--line);border-radius:16px;background:var(--surface2);padding:48px 24px;text-align:center;cursor:pointer}
     .drop.drag{border-color:var(--brand)}.drop-ic{font-size:44px;margin-bottom:10px}.drop-t{font-size:17px;font-weight:600}.drop-s{font-size:13px;color:var(--dim);margin-top:8px}

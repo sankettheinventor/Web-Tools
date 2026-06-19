@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'Color Converter — HEX, RGB & HSL (Free, Instant)';
 const description = 'Free color converter. Convert between HEX, RGB and HSL instantly, with a live swatch and one-click copy. Runs in your browser.';
+const faqItems = [
+  { q: 'How do I convert a HEX color to RGB or HSL?', a: 'Type or paste your HEX code (like #6B4DFF) into the HEX field, or use the color picker. The RGB and HSL fields update instantly to match, so you can copy whichever format you need.' },
+  { q: 'Does this tool support 3-digit shorthand HEX codes?', a: 'Yes. You can enter shorthand HEX like #6B5 and it will be expanded correctly (to #66BB55) before converting to RGB and HSL.' },
+  { q: 'Can I edit the RGB or HSL values directly?', a: 'You can edit the individual R, G, B and H, S, L number fields, and every other format updates live. The combined rgb() and hsl() text outputs are read-only and provided for one-click copying.' },
+  { q: 'What is the difference between HEX, RGB and HSL?', a: 'HEX is the compact web format, RGB describes a color by red, green and blue channels from 0 to 255, and HSL uses hue, saturation and lightness, which makes it easier to create tints and shades.' },
+  { q: 'Are my colors uploaded or stored anywhere?', a: 'No. All conversion happens locally in your browser using JavaScript. Nothing you enter is uploaded, stored, or shared.' },
+];
 ---
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
@@ -45,6 +53,7 @@ const description = 'Free color converter. Convert between HEX, RGB and HSL inst
     .cpy{padding:0 14px;border-radius:9px;border:1px solid var(--line);background:var(--surface2);color:var(--dim);font:inherit;font-weight:700;font-size:13px;cursor:pointer}.cpy:hover{color:var(--brand);border-color:var(--brand)}
     code{background:var(--surface2);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
   </style>
+  <Faq items={faqItems} />
   <script is:inline>
     (function(){
       function $(i){return document.getElementById(i);}

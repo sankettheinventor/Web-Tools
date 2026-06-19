@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'Unit Converter — Length, Weight & Temperature (Free)';
-const description = 'Free unit converter for length, weight and temperature. Convert between metric and imperial units instantly in your browser — meters, feet, kg, pounds, Celsius, Fahrenheit and more.';
+const description = 'Free unit converter for length, weight and temperature. Convert metric and imperial units instantly in your browser — nothing uploaded, runs locally.';
+const faqItems = [
+  { q: 'What units can I convert?', a: 'This tool covers length (meters, kilometers, centimeters, millimeters, miles, yards, feet, inches), weight (kilograms, grams, milligrams, pounds, ounces, tonnes) and temperature (Celsius, Fahrenheit, Kelvin).' },
+  { q: 'How are the conversions calculated?', a: 'Length and weight convert through a base unit — meters for length and kilograms for weight — so any unit can map to any other. Temperature uses the standard Celsius, Fahrenheit and Kelvin formulas.' },
+  { q: 'Does the result update automatically?', a: 'Yes. As soon as you change the category, the from or to unit, or the value you type, the converted result updates instantly with no button to press.' },
+  { q: 'Can it convert between metric and imperial?', a: 'Yes. You can freely convert in either direction, for example meters to feet, kilograms to pounds, or Celsius to Fahrenheit, and back again.' },
+  { q: 'Is my data uploaded or stored?', a: 'No. Every conversion runs entirely in your browser using local JavaScript. Nothing you enter is uploaded, stored, or shared.' },
+];
 ---
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
@@ -29,6 +37,7 @@ const description = 'Free unit converter for length, weight and temperature. Con
     <div class="xlinks"><a href="/#everyday">All calculators →</a></div>
   </div>
   <style>.usel{width:100%;margin-top:10px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface2);color:var(--txt);font:inherit;font-weight:600;outline:none}.usel:focus{border-color:var(--brand)}</style>
+  <Faq items={faqItems} />
   <script is:inline>
     (function(){
       function el(i){return document.getElementById(i);}

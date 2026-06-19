@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'Text to PDF — Convert Text to a PDF File (Free, Private)';
 const description = 'Free text to PDF converter. Paste your text, pick page size and font size, and download a clean PDF — generated in your browser, nothing uploaded.';
+const faqItems = [
+  { q: 'How do I convert text to a PDF?', a: 'Type or paste your text into the box, choose A4 or Letter page size and a font size, then click Download PDF. The tool wraps long lines and adds page breaks automatically, then saves the file as document.pdf.' },
+  { q: 'Is my text uploaded or stored anywhere?', a: 'No. The PDF is generated entirely in your browser using JavaScript, so your text is never uploaded, stored, or shared. Nothing leaves your device.' },
+  { q: 'What page sizes and font sizes can I choose?', a: 'You can pick A4 or Letter for the page size, and a font size of 11, 12, 14, or 16 points. The default is A4 at 12 point.' },
+  { q: 'Does it handle long text across multiple pages?', a: 'Yes. The tool automatically wraps lines to fit the page width and starts a new page whenever the text reaches the bottom margin, so long documents flow across as many pages as needed.' },
+  { q: 'Can I use it offline or for free?', a: 'It is completely free with no sign-up. Once the page has loaded the PDF engine, conversion runs locally in your browser, so it works without sending your text to any server.' }
+];
 ---
 <Base title={title} description={description}>
   <Fragment slot="head">
@@ -33,6 +41,7 @@ const description = 'Free text to PDF converter. Paste your text, pick page size
     .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
     .dlbtn{margin-top:14px;padding:12px 20px;border-radius:10px;border:0;background:linear-gradient(135deg,var(--brand2),var(--brand));color:#fff;font:inherit;font-weight:700;cursor:pointer}
   </style>
+  <Faq items={faqItems} />
   <script is:inline>
     (function(){
       function $(i){return document.getElementById(i);}

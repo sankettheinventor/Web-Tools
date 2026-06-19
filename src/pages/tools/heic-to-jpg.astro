@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'HEIC to JPG Converter — Free, Private, In Your Browser';
 const description = 'Free HEIC to JPG converter. Turn iPhone HEIC/HEIF photos into JPG right in your browser — batch supported, adjustable quality, and nothing is ever uploaded.';
+const faqItems = [
+  { q: 'What is a HEIC file and why convert it to JPG?', a: 'HEIC (High Efficiency Image Container) is the format modern iPhones use to save photos at smaller file sizes. It often won’t open on Windows, older Android devices or many websites, so converting to JPG makes your photos work almost everywhere.' },
+  { q: 'Can I convert several HEIC photos at once?', a: 'Yes. You can drop or select multiple HEIC/HEIF files at the same time and they are converted one after another. When you have more than one result, a Download all button lets you save them together.' },
+  { q: 'Can I control the JPG quality?', a: 'Yes. There is a quality slider that ranges from 40% to 100%, defaulting to 85%. Higher quality keeps more detail but produces larger files, while lower quality makes smaller files.' },
+  { q: 'Are my photos uploaded or stored anywhere?', a: 'No. Every conversion happens entirely in your browser on your own device. Your HEIC photos are never uploaded, stored or shared, so even private images stay private.' },
+  { q: 'Why did one of my files fail to convert?', a: 'The converter only handles HEIC and HEIF images. If a file is in another format or is corrupted, that file is skipped and you’ll see a short message, while your other photos still convert normally.' },
+];
 ---
 <Base title={title} description={description}>
   <Fragment slot="head">
@@ -41,6 +49,7 @@ const description = 'Free HEIC to JPG converter. Turn iPhone HEIC/HEIF photos in
     .wm-actions{display:flex;gap:10px}.wm-btn{padding:12px 18px;border-radius:10px;font-weight:700;color:#fff;border:0;cursor:pointer;background:linear-gradient(135deg,var(--brand2),var(--brand))}
     .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line)}.status{margin-top:10px;font-size:13px;color:var(--dim)}
   </style>
+  <Faq items={faqItems} />
   <script is:inline>
     (function(){
       var results=[];

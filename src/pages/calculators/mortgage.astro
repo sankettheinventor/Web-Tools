@@ -1,7 +1,14 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'Mortgage Calculator — Monthly Home Loan Payment (Free)';
-const description = 'Free mortgage calculator with taxes and insurance. Enter home price, down payment, rate and term to see your total monthly payment instantly. Runs in your browser.';
+const description = 'Free mortgage calculator with taxes and insurance. Enter home price, down payment, rate and term to see your total monthly payment instantly.';
+const faqItems = [
+  { q: 'What does this mortgage calculator include?', a: 'It calculates your full monthly payment (PITI): principal, interest, property tax and home insurance. Principal and interest use the standard amortization formula; tax and insurance are entered yearly and divided by 12.' },
+  { q: 'How much should my down payment be?', a: 'A larger down payment lowers both your monthly payment and your total interest. 20% is common because it usually avoids private mortgage insurance (PMI), but you can model any percentage with the slider.' },
+  { q: 'Why is my total interest so high?', a: 'Over a 15–30 year term, interest compounds on the remaining balance every month, so total interest can approach or exceed the loan amount at higher rates. Shortening the term or increasing the down payment both reduce it sharply.' },
+  { q: 'Is my financial data saved or uploaded?', a: 'No. The calculator runs entirely in your browser — nothing you type is sent to a server, stored, or shared. Closing the tab discards everything.' },
+];
 ---
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
@@ -85,6 +92,8 @@ const description = 'Free mortgage calculator with taxes and insurance. Enter ho
       <a href="/#calculators">All calculators →</a>
     </div>
   </div>
+
+  <Faq items={faqItems} />
 
   <script is:inline>
     (function () {

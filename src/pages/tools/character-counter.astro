@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'Character Counter — With Social & SEO Limits (Free)';
-const description = 'Free character counter. Count characters live and see how you fit against X/Twitter, SMS, Instagram, and SEO meta title/description limits. Runs in your browser.';
+const description = 'Free character counter. Count characters live and check limits for X/Twitter, SMS, Instagram and SEO meta titles. Runs in your browser.';
+const faqItems = [
+  { q: 'How do I count characters with this tool?', a: 'Type or paste your text into the box and the character count updates instantly as you go. It also shows your word count alongside the total.' },
+  { q: 'Does the counter include spaces in the total?', a: 'Yes. The character count reflects every character in your text, including spaces, line breaks, and punctuation, which matches how social platforms count characters.' },
+  { q: 'Which platform limits does it check against?', a: 'It tracks your text live against X/Twitter (280), an SMS segment (160), Instagram captions (2,200), and the SEO sweet spots for a meta title (about 60) and meta description (about 160). Each bar turns red when you go over the limit.' },
+  { q: 'Is my text uploaded or stored anywhere?', a: 'No. Everything is processed locally in your browser. Your text is never uploaded, stored, or shared, and nothing leaves your device.' },
+  { q: 'Can I also get word and sentence counts?', a: 'This tool shows characters and words. For sentences and reading time, use the word counter linked above on this page.' },
+];
 ---
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
@@ -30,6 +38,7 @@ const description = 'Free character counter. Count characters live and see how y
     .fill{height:100%;border-radius:6px;background:var(--brand);transition:width .2s}
     .fill.over{background:var(--err)}
   </style>
+  <Faq items={faqItems} />
   <script is:inline>
     (function(){
       var L=[['X / Twitter',280],['SMS segment',160],['Meta title (SEO)',60],['Meta description (SEO)',160],['Instagram caption',2200]];

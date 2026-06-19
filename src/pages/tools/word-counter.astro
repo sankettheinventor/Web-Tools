@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'Word Counter — Words, Characters, Reading Time (Free)';
-const description = 'Free word counter. Count words, characters, sentences and paragraphs as you type, with estimated reading and speaking time. Runs in your browser — nothing is uploaded.';
+const description = 'Free word counter: count words, characters, sentences, paragraphs and reading time live as you type. Runs in your browser — nothing is uploaded.';
+const faqItems = [
+  { q: 'How does the word counter count words?', a: 'It trims your text and splits it on any run of whitespace, so each block of non-space characters counts as one word. Counts update instantly as you type or paste.' },
+  { q: 'How is reading time estimated?', a: 'Reading time is based on an average of about 200 words per minute. It is shown in seconds for short text and in minutes and seconds for longer text.' },
+  { q: 'What is the difference between characters and characters without spaces?', a: 'Characters counts every character including spaces, tabs and line breaks, while "No spaces" removes all whitespace first. Many platforms count one but not the other, so both are shown.' },
+  { q: 'How are sentences and paragraphs detected?', a: 'Sentences are counted by looking for groups of text ending in a period, exclamation mark or question mark. Paragraphs are blocks of text separated by one or more line breaks.' },
+  { q: 'Is my text uploaded or stored anywhere?', a: 'No. All counting happens locally in your browser using JavaScript, and your text is never uploaded, saved or shared.' },
+];
 ---
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
@@ -32,6 +40,7 @@ const description = 'Free word counter. Count words, characters, sentences and p
     .stat{background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center}
     .sv{font-size:26px;font-weight:800;color:var(--brand)}.sk{font-size:12px;color:var(--dim);margin-top:2px;font-weight:600}
   </style>
+  <Faq items={faqItems} />
   <script is:inline>
     (function(){
       function $(i){return document.getElementById(i);}

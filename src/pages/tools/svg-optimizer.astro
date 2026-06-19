@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'SVG Optimizer — Minify & Clean SVG Files Online (Free)';
 const description = 'Free SVG optimizer. Paste or upload an SVG to strip comments, editor metadata and whitespace, shrinking the file — all in your browser, nothing uploaded.';
+const faqItems = [
+  { q: 'What does this SVG optimizer remove from my file?', a: 'It strips out comments, the XML declaration and DOCTYPE, editor metadata, Inkscape and Sodipodi cruft and namespaces, and collapses extra whitespace between tags. The visible graphic stays the same while the file gets smaller.' },
+  { q: 'Will optimizing change how my SVG looks?', a: 'No. It only removes invisible weight like comments, metadata and whitespace, so the rendered graphic looks identical. It does not alter paths, colors or shapes.' },
+  { q: 'How do I add my SVG — paste or upload?', a: 'You can do either. Paste the SVG markup straight into the input box, or click "Upload .svg" to load a file from your device; the optimized result appears instantly and can be copied or downloaded.' },
+  { q: 'Is my SVG file uploaded or stored anywhere?', a: 'No. Everything runs locally in your browser. Your SVG is never uploaded, stored or shared — it never leaves your device.' },
+  { q: 'How much smaller will my SVG get?', a: 'It depends on the source. Files exported from Figma, Illustrator or Inkscape often carry lots of metadata and whitespace, so savings can be significant; the tool shows the before and after size and the percentage saved.' },
+];
 ---
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
@@ -45,6 +53,7 @@ const description = 'Free SVG optimizer. Paste or upload an SVG to strip comment
     .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line)}
     .sizes{display:flex;gap:22px;margin-top:14px;font-size:13.5px;color:var(--dim);background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:12px}.sizes .hl{color:var(--brand);font-weight:700}
   </style>
+  <Faq items={faqItems} />
   <script is:inline>
     (function(){
       function $(i){return document.getElementById(i);}

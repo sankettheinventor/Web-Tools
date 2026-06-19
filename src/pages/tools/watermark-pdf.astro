@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'Add Watermark to PDF — Free, Private (In Browser)';
 const description = 'Free tool to add a text watermark to every page of a PDF — choose the text, opacity and angle, then download. Runs in your browser, nothing uploaded.';
+const faqItems = [
+  { q: 'How do I add a text watermark to a PDF?', a: 'Drop in your PDF, type the watermark text (such as DRAFT or CONFIDENTIAL), adjust the opacity and angle, then click Watermark & download. The text is stamped diagonally across every page of the file.' },
+  { q: 'Can I change the watermark opacity and angle?', a: 'Yes. Use the Opacity slider (5% to 60%) to control how faint or bold the watermark looks, and the Angle slider (0° to 90°) to set the rotation. The default is 15% opacity at a 45° angle.' },
+  { q: 'Does the watermark appear on every page?', a: 'Yes. The same text watermark is applied to all pages in the PDF automatically, scaled to fit each page size.' },
+  { q: 'Is my PDF uploaded or stored anywhere?', a: 'No. The entire process runs locally in your browser using JavaScript, so your PDF is never uploaded, stored, or shared. Nothing leaves your device.' },
+  { q: 'Can I add an image or logo as a watermark?', a: 'No. This tool adds a text watermark only — you choose the words, opacity, and angle. It does not support image or logo watermarks.' },
+];
 ---
 <Base title={title} description={description}>
   <Fragment slot="head"><script is:inline src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script></Fragment>
@@ -40,6 +48,7 @@ const description = 'Free tool to add a text watermark to every page of a PDF �
     .acts{display:flex;gap:10px}.wm-btn{padding:11px 18px;border-radius:10px;font-weight:700;color:#fff;border:0;cursor:pointer;background:linear-gradient(135deg,var(--brand2),var(--brand))}
     .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line)}.status{margin-top:10px;font-size:13px;color:var(--dim)}
   </style>
+  <Faq items={faqItems} />
   <script is:inline>
     (function(){
       var bytes=null;

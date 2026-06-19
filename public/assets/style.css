@@ -151,6 +151,18 @@ select{width:100%;padding:var(--s3);border:1px solid var(--line);border-radius:v
 .bd .v{font-size:var(--t-md);font-weight:700;margin-top:2px}
 @media(max-width:560px){.breakdown{grid-template-columns:1fr}}
 
+/* ---- FAQ accordion (visible + FAQPage JSON-LD via Faq.astro) ---- */
+.faq{max-width:var(--read);margin:var(--s7) auto 0;padding:0 var(--s5)}
+.faq>h2{font-size:var(--t-lg);font-weight:800;margin-bottom:var(--s4)}
+.faq-item{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);margin-bottom:var(--s3);overflow:hidden}
+.faq-item summary{cursor:pointer;padding:var(--s4);font-weight:700;font-size:var(--t-base);color:var(--txt);
+  list-style:none;display:flex;justify-content:space-between;align-items:center;gap:var(--s3)}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary::after{content:'+';color:var(--brand);font-weight:800;font-size:var(--t-lg);line-height:1;flex:0 0 auto}
+.faq-item[open] summary::after{content:'–'}
+.faq-a{padding:0 var(--s4) var(--s4);color:var(--dim);font-size:var(--t-sm);line-height:1.7}
+.faq-a a{color:var(--brand)}
+
 /* ---- ad slots ---- */
 .ad{max-width:var(--read);margin:var(--s7) auto;min-height:90px;display:flex;align-items:center;justify-content:center;
   background:repeating-linear-gradient(45deg,rgba(123,115,255,.05),rgba(123,115,255,.05) 12px,transparent 12px,transparent 24px);

@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'BMI Calculator — Body Mass Index (Metric & Imperial)';
 const description = 'Free BMI calculator. Enter your height and weight in metric or imperial units to get your Body Mass Index and category instantly. Runs in your browser.';
+const faqItems = [
+  { q: 'How is BMI calculated?', a: 'BMI is your weight divided by the square of your height. This tool uses weight (kg) divided by height (m) squared for metric, and 703 times weight (lb) divided by height (inches) squared for imperial.' },
+  { q: 'What do the BMI categories mean?', a: 'This calculator labels a BMI under 18.5 as underweight, 18.5 to 24.9 as a healthy weight, 25 to 29.9 as overweight, and 30 or above as obese.' },
+  { q: 'Can I switch between metric and imperial units?', a: 'Yes. Use the Units dropdown to toggle between metric (cm, kg) and imperial (ft/in, lb), and the result updates as you type.' },
+  { q: 'Is BMI an accurate measure of health?', a: 'BMI is only a rough screening number. It does not distinguish muscle from fat or account for age, sex or body composition, so treat it as one indicator and consult a healthcare professional for a full assessment.' },
+  { q: 'Is my height and weight data uploaded or stored?', a: 'No. Everything is calculated locally in your browser. Your height and weight are never uploaded, stored, or shared.' },
+];
 ---
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
@@ -68,6 +76,8 @@ const description = 'Free BMI calculator. Enter your height and weight in metric
     <p>BMI doesn't distinguish muscle from fat, and it doesn't account for age, sex or body composition. A very muscular person can read "overweight" while being healthy. Treat BMI as one rough indicator, not a diagnosis — talk to a healthcare professional for a full picture.</p>
     <div class="xlinks"><a href="/#calculators">All calculators →</a></div>
   </div>
+
+  <Faq items={faqItems} />
 
   <script is:inline>
     (function () {

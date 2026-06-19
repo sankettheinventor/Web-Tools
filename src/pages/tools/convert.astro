@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'Image Converter & Resizer — JPG, PNG, WebP (Free, Private)';
 const description = 'Free image converter and resizer. Convert between JPG, PNG and WebP and resize images in your browser. Fast, private — your files are never uploaded.';
+const faqItems = [
+  { q: 'Which image formats can I convert between?', a: 'You can convert any image your browser can open into JPG, PNG or WebP. PNG keeps transparency and is lossless, JPG is best for photos, and WebP usually produces the smallest files on modern browsers.' },
+  { q: 'How do I resize an image without distorting it?', a: 'Type a new width or height and the other value updates automatically because "Keep aspect ratio" is on by default. Untick that checkbox if you want to set the width and height independently.' },
+  { q: 'Are my files uploaded or stored anywhere?', a: 'No. Every conversion and resize happens locally in your browser using the canvas, so your images are never uploaded, stored or shared. Nothing leaves your device.' },
+  { q: 'Why does my converted JPG have a white background?', a: 'JPG does not support transparency, so any transparent areas are filled with white when you convert to JPG. Choose PNG or WebP instead if you need to keep a transparent background.' },
+  { q: 'Is there a file size or count limit?', a: 'There is no fixed limit because the tool runs entirely on your device. You convert one image at a time, and very large images are only constrained by your device memory and browser.' }
+];
 ---
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
@@ -52,6 +60,7 @@ const description = 'Free image converter and resizer. Convert between JPG, PNG 
     .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line);flex:0 0 auto}
     @media(max-width:680px){.wm-grid{grid-template-columns:1fr}}
   </style>
+  <Faq items={faqItems} />
   <script is:inline>
     (function(){
       var img=null, ar=1, lastBlob=null, name='image';

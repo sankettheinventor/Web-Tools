@@ -1,5 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 
 // One template → a dedicated, individually-rankable page per conversion.
 const CONVERSIONS = [
@@ -27,6 +28,29 @@ const c = Astro.props;
 const title = `${c.from} to ${c.to} Converter — Free & Private (In Your Browser)`;
 const description = `Free ${c.from} to ${c.to} converter. Convert ${c.from} images to ${c.to} instantly in your browser — batch, high quality, no signup, and nothing is uploaded.`;
 const ext = c.to.toLowerCase() === 'jpg' ? 'jpg' : c.to.toLowerCase();
+
+const faqItems = [
+  {
+    q: `Is my image uploaded or stored anywhere?`,
+    a: `No. The entire ${c.from} to ${c.to} conversion happens locally in your browser using the canvas API — your files are never uploaded, stored, or shared, and they never leave your device.`,
+  },
+  {
+    q: `Will converting reduce the image quality?`,
+    a: `Converting to ${c.to} ${c.lossy ? `re-encodes the image with lossy compression, so use the Quality slider to balance file size against sharpness — 90% and above usually looks identical to the original.` : `is lossless, so every pixel is preserved exactly and there is no visible quality loss.`}`,
+  },
+  {
+    q: `Does it keep transparency (the alpha channel)?`,
+    a: `${c.mime === 'image/jpeg' ? `No. JPG does not support transparency, so any transparent areas are filled with a solid white background during conversion.` : `Yes. ${c.to} supports an alpha channel, so transparent regions in your image are preserved in the converted file.`}`,
+  },
+  {
+    q: `Can I convert multiple images at once?`,
+    a: `Yes. Drop or select several ${c.from} files together and the tool converts them in a batch; you can then download each ${c.to} file individually or use Download all to save the whole set.`,
+  },
+  {
+    q: `Do I need to install software or create an account?`,
+    a: `No. The converter runs entirely in your web browser with no signup, no plugins, and no installs — just open the page, add your ${c.from} images, and download the ${c.to} results.`,
+  },
+];
 ---
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
@@ -79,6 +103,7 @@ const ext = c.to.toLowerCase() === 'jpg' ? 'jpg' : c.to.toLowerCase();
     .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line);flex:0 0 auto}
     @media(max-width:680px){.wm-grid{grid-template-columns:1fr}}
   </style>
+  <Faq items={faqItems} />
   <script is:inline>
     (function(){
       var cfg=document.getElementById('cfg'), MIME=cfg.dataset.mime, EXT=cfg.dataset.ext, LOSSY=cfg.dataset.lossy==='1';

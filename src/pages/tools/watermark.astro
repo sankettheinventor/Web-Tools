@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'Add Watermark to Photos — Free Batch Watermark Studio';
-const description = 'Add a text, logo or signature watermark to your photos in your browser — batch mode, fonts, opacity, position and tiling. Free, no signup, and your images are never uploaded.';
+const description = 'Add text, logo or signature watermarks to photos in your browser — batch mode, fonts, opacity, tiling. Free, no signup, nothing is ever uploaded.';
+const faqItems = [
+  { q: 'Are my photos uploaded or stored anywhere?', a: 'No. Every image is processed entirely in your browser using the HTML canvas. Nothing is uploaded, stored, or shared, and your photos never leave your device.' },
+  { q: 'What kinds of watermarks can I add?', a: 'You can add a text watermark, a logo or image watermark, or a styled signature. Each supports its own font, color, size, opacity, position and rotation.' },
+  { q: 'Can I watermark many photos at once?', a: 'Yes. Drop multiple images and they appear in the strip at the top. Your watermark settings apply to the selected photo, and Download all saves every image in the batch.' },
+  { q: 'Can I tile the watermark across the whole image?', a: 'Yes, the Text mode has a Tile option that repeats the mark across the entire photo, which makes it much harder to crop out.' },
+  { q: 'What file formats can I use and download?', a: 'You can load JPG, PNG and WebP images. Watermarked photos are downloaded as PNG files.' },
+];
 ---
 <Base title={title} description={description}>
   <div class="wmapp">
@@ -154,6 +162,8 @@ const description = 'Add a text, logo or signature watermark to your photos in y
       .wm-canvas{min-height:300px}
     }
   </style>
+
+  <Faq items={faqItems} />
 
   <script is:inline>
     (function () {

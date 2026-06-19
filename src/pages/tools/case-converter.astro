@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'Case Converter — UPPERCASE, lowercase, Title, camelCase (Free)';
-const description = 'Free text case converter. Switch text between UPPERCASE, lowercase, Title Case, Sentence case, camelCase, snake_case and kebab-case instantly. Runs in your browser.';
+const description = 'Free case converter: switch text to UPPERCASE, lowercase, Title, Sentence, camelCase, snake_case or kebab-case. Runs in your browser, nothing uploaded.';
+const faqItems = [
+  { q: 'What text cases can this converter produce?', a: 'It converts your text to UPPERCASE, lowercase, Title Case, Sentence case, camelCase, PascalCase, snake_case, kebab-case and CONSTANT_CASE with a single tap.' },
+  { q: 'Can I chain multiple conversions?', a: 'Yes. Each conversion is applied in place to the text box, so you can apply one case, then another, and finally copy the result.' },
+  { q: 'How does Title Case differ from Sentence case?', a: 'Title Case capitalises the first letter of every word, which suits headings. Sentence case only capitalises the first letter of each sentence.' },
+  { q: 'Is my text uploaded or stored anywhere?', a: 'No. Everything is processed locally in your browser. Your text is never uploaded, stored, or shared with any server.' },
+  { q: 'Does it work for code naming styles like snake_case and camelCase?', a: 'Yes. It splits your text on spaces, underscores and hyphens, then joins or rejoins the words to produce camelCase, PascalCase, snake_case, kebab-case or CONSTANT_CASE for variables, filenames and config keys.' },
+];
 ---
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
@@ -43,6 +51,7 @@ const description = 'Free text case converter. Switch text between UPPERCASE, lo
     .cbtn:hover{border-color:var(--brand);color:var(--brand)}
     .copybtn{margin-top:14px;padding:11px 18px;border-radius:10px;border:0;background:linear-gradient(135deg,var(--brand2),var(--brand));color:#fff;font:inherit;font-weight:700;cursor:pointer}
   </style>
+  <Faq items={faqItems} />
   <script is:inline>
     (function(){
       function $(i){return document.getElementById(i);}

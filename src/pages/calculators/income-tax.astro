@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'Income Tax Calculator India (New vs Old Regime, FY 2025-26)';
-const description = 'Free income tax calculator for India. Compare the new and old tax regimes for FY 2025-26, including standard deduction, 87A rebate and 4% cess. Instant, private estimate.';
+const description = 'Compare India new vs old tax regimes for FY 2025-26 with standard deduction, 87A rebate and 4% cess. Runs in your browser, nothing uploaded.';
+const faqItems = [
+  { q: 'What is the difference between the new and old tax regime?', a: 'The new regime (FY 2025-26) has lower slab rates and a higher ₹75,000 standard deduction, with tax effectively nil up to ₹12,00,000 taxable income via the 87A rebate. The old regime has a ₹50,000 standard deduction but lets you claim deductions like 80C and 80D, with the 87A rebate nil up to ₹5,00,000.' },
+  { q: 'Does this calculator include the 4% cess and 87A rebate?', a: 'Yes. It applies the Section 87A rebate (nil tax up to ₹12L taxable in the new regime, ₹5L in the old) and adds a 4% health and education cess on top of the calculated tax in both regimes.' },
+  { q: 'Why can I only enter deductions in the old regime?', a: 'Most deductions such as 80C are not available under the new regime, so the deductions field appears only when you select the old regime. The new regime instead gives a flat ₹75,000 standard deduction for salaried individuals.' },
+  { q: 'Is this an exact tax figure I can file with?', a: 'No. It is a simplified estimate for general guidance that ignores surcharge on very high incomes and marginal relief, and it is not tax advice. Confirm with a tax professional or the official income tax portal before filing.' },
+  { q: 'Is my income data uploaded or stored anywhere?', a: 'No. Everything is calculated locally in your browser. Your income and deduction figures are never uploaded, stored, or shared.' },
+];
 ---
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
@@ -68,6 +76,8 @@ const description = 'Free income tax calculator for India. Compare the new and o
     <p><em>This is a simplified estimate for general guidance, ignores surcharge on very high incomes and marginal relief, and is not tax advice. Confirm with a tax professional or the official portal before filing.</em></p>
     <div class="xlinks"><a href="/calculators/emi">EMI Calculator →</a><a href="/#calculators">All calculators →</a></div>
   </div>
+
+  <Faq items={faqItems} />
 
   <script is:inline>
     (function () {

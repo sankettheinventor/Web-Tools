@@ -1,7 +1,30 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'SIP Calculator — Mutual Fund SIP Returns (Free, Instant)';
-const description = 'Free SIP calculator. Enter your monthly investment, expected return and duration to see the future value of your mutual fund SIP, with invested vs returns breakdown.';
+const description = 'Free SIP calculator: enter monthly investment, expected return and duration to see your mutual fund SIP future value. Runs in your browser, nothing uploaded.';
+const faqItems = [
+  {
+    q: 'What does this SIP calculator estimate?',
+    a: 'It estimates the future value of a monthly Systematic Investment Plan using the standard monthly-compounding formula, and splits the result into the amount you invested and your estimated returns.',
+  },
+  {
+    q: 'How is the SIP future value calculated?',
+    a: 'It uses FV = P × [((1 + i)ⁿ − 1) ÷ i] × (1 + i), where P is your monthly investment, i is the monthly rate (expected annual return ÷ 12 ÷ 100) and n is the number of months. It assumes a constant expected return each month.',
+  },
+  {
+    q: 'Are the returns guaranteed?',
+    a: 'No. The calculator assumes a fixed expected rate you enter, but actual mutual fund returns vary year to year and are never guaranteed. Treat the result as an estimate, not a promise.',
+  },
+  {
+    q: 'Which currencies can I use?',
+    a: 'You can switch between Indian Rupee, US Dollar, Euro and British Pound, and the symbol plus number formatting update automatically across the inputs and results.',
+  },
+  {
+    q: 'Is my data uploaded or stored?',
+    a: 'No. Everything is processed locally in your browser. Your inputs are never uploaded, stored, or shared, and no calculation leaves your device.',
+  },
+];
 ---
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
@@ -66,6 +89,8 @@ const description = 'Free SIP calculator. Enter your monthly investment, expecte
       <a href="/#calculators">All calculators →</a>
     </div>
   </div>
+
+  <Faq items={faqItems} />
 
   <script is:inline>
     (function () {

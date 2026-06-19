@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'Percentage Calculator — 3 Quick Modes (Free)';
-const description = 'Free percentage calculator. Find what is X% of Y, what percent one number is of another, and the percentage increase or decrease between two numbers. Instant results.';
+const description = 'Free percentage calculator: find X% of Y, what percent one number is of another, and the percent change between two values. Runs in your browser, no uploads.';
+const faqItems = [
+  { q: 'How do I find what X% of Y is?', a: 'Use the first row: enter the percentage and the number, and the tool computes (X / 100) x Y. For example, 15% of 200 is 30.' },
+  { q: 'How do I work out what percent one number is of another?', a: 'Use the second row: it divides the first number by the second and multiplies by 100. For example, 45 is 25% of 180.' },
+  { q: 'How is the percentage increase or decrease calculated?', a: 'The third row uses ((New - Old) / Old) x 100. A positive result, shown with a plus sign, is an increase; a negative result is a decrease.' },
+  { q: 'Does the calculator update automatically?', a: 'Yes. Results recalculate instantly as you type in any field, so there is no button to press.' },
+  { q: 'Is my data uploaded or stored?', a: 'No. Every calculation runs entirely in your browser. Nothing you enter is uploaded, stored, or shared with anyone.' },
+];
 ---
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
@@ -61,6 +69,8 @@ const description = 'Free percentage calculator. Find what is X% of Y, what perc
     .pres{margin-top:10px;font-size:17px;color:var(--dim)}
     .pres b{color:var(--brand);font-size:22px;font-weight:800}
   </style>
+
+  <Faq items={faqItems} />
 
   <script is:inline>
     (function () {

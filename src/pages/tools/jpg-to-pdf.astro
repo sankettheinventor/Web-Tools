@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'JPG to PDF — Convert Images to PDF (Free, Private)';
 const description = 'Free JPG to PDF converter. Combine JPG, PNG or WebP images into a single PDF — one image per page, in order — right in your browser. Nothing is uploaded.';
+const faqItems = [
+  { q: 'How do I convert JPG images to a PDF?', a: 'Drop or browse to select one or more JPG, PNG or WebP images, then click Create PDF. The tool combines them into a single PDF with one image per page and downloads it instantly.' },
+  { q: 'In what order are the images added to the PDF?', a: 'Images are placed in the order you add them, one image per page. Each page is sized to match the dimensions of its image.' },
+  { q: 'What image formats can I convert?', a: 'You can convert JPG, PNG and WebP images. Each image is rendered onto a white background and embedded as a JPEG page in the final PDF.' },
+  { q: 'Is there a limit on how many images I can combine?', a: 'There is no fixed limit set by the tool. Because everything runs in your browser, very large batches depend on your device memory, but typical sets of photos, scans or receipts work fine.' },
+  { q: 'Are my images uploaded or stored anywhere?', a: 'No. Every image is processed locally in your browser and the PDF is generated on your device. Nothing is uploaded, stored or shared.' },
+];
 ---
 <Base title={title} description={description}>
   <Fragment slot="head">
@@ -37,6 +45,7 @@ const description = 'Free JPG to PDF converter. Combine JPG, PNG or WebP images 
     .wm-actions{display:flex;gap:10px}.wm-btn{padding:11px 18px;border-radius:10px;font-weight:700;color:#fff;border:0;cursor:pointer;background:linear-gradient(135deg,var(--brand2),var(--brand))}
     .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line)}.status{margin-top:10px;font-size:13px;color:var(--dim)}
   </style>
+  <Faq items={faqItems} />
   <script is:inline>
     (function(){
       var files=[];

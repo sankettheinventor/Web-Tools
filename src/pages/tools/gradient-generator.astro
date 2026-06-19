@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'CSS Gradient Generator — Free, Live Preview & Copy';
 const description = 'Free CSS gradient generator. Pick colors, angle and type (linear or radial), preview live, and copy the CSS. Runs in your browser.';
+const faqItems = [
+  { q: 'What CSS does this gradient generator output?', a: 'It outputs a ready-to-paste background declaration using either linear-gradient() with your chosen angle or radial-gradient(circle, ...). Click Copy CSS to copy the full line, such as "background: linear-gradient(135deg, #6b4dff, #ff5e7e);".' },
+  { q: 'What is the difference between linear and radial gradients?', a: 'A linear gradient runs along a straight line at the angle you set (0 degrees points up, 90 degrees points right), while a radial gradient spreads outward from the centre. Use the Type dropdown to switch between them.' },
+  { q: 'How many colors can I use in the gradient?', a: 'This tool blends two colors, Color 1 and Color 2, which you pick with the color inputs or generate with the Random gradient button. For more color stops you would extend the copied CSS by hand in your stylesheet.' },
+  { q: 'What does the angle slider control?', a: 'The angle slider sets the direction of a linear gradient from 0 to 360 degrees in 5-degree steps, and the live preview updates as you drag. The angle is ignored for radial gradients since they always radiate from the centre.' },
+  { q: 'Are my colors or gradients uploaded or stored?', a: 'No. Everything runs locally in your browser, nothing is uploaded, stored, or shared, and the CSS is generated entirely on your device.' }
+];
 ---
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
@@ -37,6 +45,7 @@ const description = 'Free CSS gradient generator. Pick colors, angle and type (l
     .randbtn{margin-top:12px;width:100%;padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--surface2);color:var(--txt);font:inherit;font-weight:700;cursor:pointer}
     code{background:var(--surface2);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
   </style>
+  <Faq items={faqItems} />
   <script is:inline>
     (function(){
       function $(i){return document.getElementById(i);}

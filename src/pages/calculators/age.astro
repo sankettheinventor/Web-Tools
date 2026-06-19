@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'Age Calculator — Exact Age in Years, Months & Days (Free)';
 const description = 'Free age calculator. Enter your date of birth to find your exact age in years, months and days — plus total months, weeks and days. Runs in your browser.';
+const faqItems = [
+  { q: 'How do I calculate my exact age in years, months and days?', a: 'Enter your date of birth and the calculator instantly shows your exact age as complete years, then the remaining months, then the remaining days. The "Age at date" field defaults to today, but you can change it to find your age on any past or future date.' },
+  { q: 'How does the calculator handle leap years?', a: 'Each remaining day count uses the actual number of days in each month, so February 29 and leap years are accounted for automatically. This keeps the months and days breakdown accurate regardless of which years your dates span.' },
+  { q: 'What do the total months, weeks and days figures mean?', a: 'Those values express your entire age in a single unit instead of a years-months-days breakdown — for example your full age counted only in weeks or only in days. They are useful for milestones like a 1,000-day or 500-week marker.' },
+  { q: 'How is the days until my next birthday counted?', a: 'The calculator finds your next birthday on or after the chosen "Age at date" and counts the number of days remaining until it. If your birthday is today the count reflects your next one in the following year.' },
+  { q: 'Is my date of birth uploaded or stored anywhere?', a: 'No. Everything is processed locally in your browser, so your date of birth and results are never uploaded, stored, or shared. Nothing leaves your device.' },
+];
 ---
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
@@ -33,6 +41,7 @@ const description = 'Free age calculator. Enter your date of birth to find your 
     <div class="xlinks"><a href="/#everyday">All calculators →</a></div>
   </div>
   <style>.dateinput{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface2);color:var(--txt);font:inherit;font-weight:600;outline:none}.dateinput:focus{border-color:var(--brand)}</style>
+  <Faq items={faqItems} />
   <script is:inline>
     (function(){
       function el(i){return document.getElementById(i);}

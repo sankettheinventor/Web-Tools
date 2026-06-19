@@ -42,10 +42,10 @@ const og = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="1200" hei
   <text x="98" y="365" font-family="Segoe UI, Arial, sans-serif" font-size="52" font-weight="700" fill="#ece8f5">Free Online Calculators &amp; Image Tools</text>
   <text x="98" y="430" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="400" fill="#aea7c5">No signup · No upload · Everything runs in your browser</text>
   <g font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700" fill="#cfc8e8">
-    <rect x="98" y="500" width="200" height="56" rx="28" fill="#1f1930" stroke="#2c2440"/>
-    <text x="124" y="536">⚡ 29 tools</text>
-    <rect x="320" y="500" width="240" height="56" rx="28" fill="#1f1930" stroke="#2c2440"/>
-    <text x="346" y="536">100% private</text>
+    <rect x="98" y="500" width="220" height="56" rx="28" fill="#1f1930" stroke="#2c2440"/>
+    <text x="124" y="536">⚡ 40+ tools</text>
+    <rect x="340" y="500" width="240" height="56" rx="28" fill="#1f1930" stroke="#2c2440"/>
+    <text x="366" y="536">100% private</text>
   </g>
 </svg>`);
 

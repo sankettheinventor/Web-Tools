@@ -1,7 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
 const title = 'Discount & GST Calculator — Final Price After Sale & Tax (Free)';
-const description = 'Free discount and GST/VAT calculator. Enter a price, discount percentage and tax rate to see the final price you pay and how much you save. Instant, in your browser.';
+const description = 'Free discount & GST/VAT calculator: enter price, discount % and tax rate to get the final price and your savings. Runs in your browser.';
+const faqItems = [
+  { q: 'How does this calculator work out the final price?', a: 'It first takes the discount off the original price, then applies the tax to that discounted amount. The formula is final = price × (1 − discount%) × (1 + tax%).' },
+  { q: 'Is the tax charged before or after the discount?', a: 'After. Tax (GST, VAT or sales tax) is calculated on the discounted price you actually pay, not on the original pre-discount price.' },
+  { q: 'Which currencies and tax rates can I use?', a: 'You can pick US Dollar, Indian Rupee, Euro or British Pound, and enter any discount up to 100% and any tax rate up to 50%, so it works for GST, VAT and sales tax anywhere.' },
+  { q: 'What do the "You save" and "Tax added" figures mean?', a: '"You save" is the discount amount taken off the original price, and "Tax added" is the tax charged on the discounted price. Both update instantly as you change the inputs.' },
+  { q: 'Is my data uploaded or stored anywhere?', a: 'No. Every calculation runs entirely in your browser. Nothing you type is uploaded, stored or shared.' },
+];
 ---
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
@@ -43,6 +51,7 @@ const description = 'Free discount and GST/VAT calculator. Enter a price, discou
     <p>That order matters — tax is charged on what you actually pay, not the pre-discount price. Use it for sales, coupons and checkout estimates anywhere in the world.</p>
     <div class="xlinks"><a href="/calculators/percentage">Percentage →</a><a href="/#everyday">All calculators →</a></div>
   </div>
+  <Faq items={faqItems} />
   <script is:inline>
     (function(){var cur='USD',loc='en-US';function el(i){return document.getElementById(i);}function num(i){var v=parseFloat(el(i).value);return isFinite(v)?v:0;}
     function money(v){try{return new Intl.NumberFormat(loc,{style:'currency',currency:cur,maximumFractionDigits:2}).format(v);}catch(e){return v.toFixed(2);}}
