@@ -168,15 +168,19 @@ const ADSENSE_CLIENT = '';
     </div>
     <div class="foot-bottom">
       <p class="legal">© 2026 SnapJar. All tools run locally in your browser; no files or inputs are uploaded to any server. Calculator results are estimates for general information only and are not financial advice.</p>
-      <nav class="foot-legal" aria-label="Legal"><a href="/about">About</a><a href="/privacy-policy">Privacy</a><a href="/terms">Terms</a></nav>
+      <nav class="foot-legal" aria-label="Legal"><a href="/about">About</a><a href="/privacy-policy">Privacy</a><a href="/terms">Terms</a><a href="#" onclick="return openCookiePrefs()">Cookie settings</a></nav>
     </div>
   </footer>
 
-  <div id="cookie-banner" class="cookie-banner" hidden>
-    <p class="cb-text">SnapJar processes your files <b>on your device</b>. We use essential cookies, and — with your consent — advertising cookies to keep the tools free. See our <a href="/privacy-policy">Privacy Policy</a>.</p>
-    <div class="cb-actions">
-      <button id="cb-decline" type="button" class="cb-btn ghost">Decline</button>
-      <button id="cb-accept" type="button" class="cb-btn">Accept</button>
+  <div id="cookie-banner" class="cookie-banner" hidden role="dialog" aria-label="Cookie notice">
+    <div class="cb-ic" aria-hidden="true">🍪</div>
+    <div class="cb-body">
+      <p class="cb-lead">SnapJar processes your files on your device.</p>
+      <p class="cb-text">We use essential cookies, and — only with your consent — advertising cookies to keep the tools free. <a href="/privacy-policy">Privacy&nbsp;Policy</a></p>
+      <div class="cb-actions">
+        <button id="cb-decline" type="button" class="cb-btn ghost">Reject</button>
+        <button id="cb-accept" type="button" class="cb-btn">Accept</button>
+      </div>
     </div>
   </div>
 
@@ -224,6 +228,7 @@ const ADSENSE_CLIENT = '';
       var a = document.getElementById('cb-accept'), d = document.getElementById('cb-decline');
       if (a) a.onclick = function () { set('accepted'); };
       if (d) d.onclick = function () { set('declined'); };
+      window.openCookiePrefs = function () { if (b) b.hidden = false; return false; };
     })();
   </script>
 
