@@ -1,24 +1,26 @@
 ---
 import Base from '../../layouts/Base.astro';
 import AppLd from '../../components/AppLd.astro';
-const title = 'EMI Calculator — Adjust Rate, Tenure & Loan Live';
-const description = 'Free EMI calculator: drag sliders for loan amount, rate and tenure to see your monthly EMI, total interest and total payment update live. Runs in your browser.';
+import Faq from '../../components/Faq.astro';
+const title = 'EMI Calculator with Prepayment & Step-Up';
+const description = 'Free EMI calculator with part-prepayment & annual step-up. See your EMI, interest saved and a year-by-year amortization schedule — live in your browser.';
+const faqItems = [
+  { q: 'How is EMI calculated?', a: 'EMI = P × r × (1+r)^n ÷ ((1+r)^n − 1), where P is the principal, r is the monthly interest rate (annual rate ÷ 12 ÷ 100) and n is the number of monthly instalments. This calculator uses reducing-balance interest, like real home, car and personal loans.' },
+  { q: 'How much interest does prepayment save?', a: 'Every prepayment cuts the outstanding principal, so all future interest is charged on a smaller balance. Enter a one-time or yearly prepayment above and the calculator shows the exact interest saved and how many months earlier you become loan-free.' },
+  { q: 'What is an EMI step-up and why use it?', a: 'A step-up increases your EMI by a fixed percentage each year — handy when your income grows annually. Even a 5–10% step-up can cut total interest sharply and shorten the loan; model it live above and watch the schedule update.' },
+  { q: 'Is this EMI calculator free and private?', a: 'Yes. It is completely free, needs no signup, and runs entirely in your browser — none of your numbers are uploaded, stored or shared.' },
+];
 ---
 <Base title={title} description={description}>
   <Fragment slot="head">
-    <AppLd name="EMI Calculator" description="Interactive EMI calculator — adjust loan amount, interest rate and tenure with live sliders to see your monthly payment, total interest and amortisation instantly." category="FinanceApplication" features={["Live sliders for loan, rate and tenure","Monthly EMI, total interest and total payment","Multi-currency","Runs fully in your browser — nothing uploaded"]} />
-    <script type="application/ld+json" set:html={JSON.stringify({
-      "@context":"https://schema.org","@type":"FAQPage","mainEntity":[
-        {"@type":"Question","name":"How is EMI calculated?","acceptedAnswer":{"@type":"Answer","text":"EMI = P × r × (1+r)^n ÷ ((1+r)^n − 1), where P is the principal, r is the monthly interest rate (annual rate ÷ 12 ÷ 100) and n is the number of monthly instalments."}},
-        {"@type":"Question","name":"Is this EMI calculator free?","acceptedAnswer":{"@type":"Answer","text":"Yes. It is completely free, requires no signup, and runs entirely in your browser — none of your numbers are uploaded anywhere."}}
-      ]})} />
+    <AppLd name="EMI Calculator with Prepayment & Step-Up" description="Interactive EMI calculator with part-prepayment and salary step-up modelling — see your EMI, total interest, interest saved and a full year-by-year amortisation schedule." category="FinanceApplication" features={["Live sliders for loan, rate and tenure","Model annual EMI step-up for salary growth","One-time and recurring yearly prepayments","Interest saved and time-to-loan-free","Year-by-year amortisation schedule","Runs fully in your browser — nothing uploaded"]} />
   </Fragment>
 
   <header class="head">
     <div class="wrap">
       <p class="kicker">Finance Calculator</p>
       <h1>EMI Calculator</h1>
-      <p>Your monthly loan payment, instantly. Drag a slider or type a number — the result updates live.</p>
+      <p>Drag the sliders, then add a prepayment or annual step-up to see exactly how much interest you save — live, in your browser.</p>
     </div>
   </header>
 
@@ -70,6 +72,56 @@ const description = 'Free EMI calculator: drag sliders for loan amount, rate and
           <div class="bd"><div class="k">Interest share</div><div class="v" id="bdPct">—</div></div>
         </div>
       </div>
+
+      <div class="adv">
+        <div class="adv-h"><span>🏦 Beat the bank</span><small>Optional — model prepayments &amp; salary step-up an AI snippet can't compute</small></div>
+        <div class="grid2">
+          <div class="field">
+            <div class="field-top"><label for="stepup">Annual EMI step-up</label>
+              <div class="valwrap"><input id="stepup" type="number" inputmode="numeric" min="0" max="50" step="1" value="0" /><span>%/yr</span></div></div>
+            <input id="stepupR" type="range" min="0" max="25" step="1" value="0" aria-label="Annual EMI step-up percent" />
+          </div>
+          <div class="field">
+            <div class="field-top"><label for="annual">Extra payment every year</label>
+              <div class="valwrap"><span class="sym">₹</span><input id="annual" type="number" inputmode="decimal" min="0" step="1000" value="0" /></div></div>
+            <input id="annualR" type="range" min="0" max="1000000" step="10000" value="0" aria-label="Annual extra payment" />
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="field">
+            <div class="field-top"><label for="onetime">One-time prepayment</label>
+              <div class="valwrap"><span class="sym">₹</span><input id="onetime" type="number" inputmode="decimal" min="0" step="10000" value="0" /></div></div>
+            <input id="onetimeR" type="range" min="0" max="5000000" step="50000" value="0" aria-label="One-time prepayment amount" />
+          </div>
+          <div class="field">
+            <div class="field-top"><label for="otyear">…paid in year</label>
+              <div class="valwrap"><input id="otyear" type="number" inputmode="numeric" min="1" value="3" /><span>yr</span></div></div>
+            <input id="otyearR" type="range" min="1" max="30" step="1" value="3" aria-label="One-time prepayment year" />
+          </div>
+        </div>
+
+        <div class="save" aria-live="polite">
+          <div class="save-row">
+            <div class="save-box"><div class="k">Interest saved</div><div class="v ok" id="saveInt">—</div></div>
+            <div class="save-box"><div class="k">Loan-free earlier by</div><div class="v" id="saveTime">—</div></div>
+          </div>
+          <div class="save-row">
+            <div class="save-box"><div class="k">New total interest</div><div class="v" id="newInt">—</div></div>
+            <div class="save-box"><div class="k">New payoff time</div><div class="v" id="newPay">—</div></div>
+          </div>
+          <p class="save-hint" id="saveHint">Add a step-up or prepayment above to see how much interest you save.</p>
+        </div>
+
+        <details class="sched">
+          <summary>Year-by-year amortization schedule</summary>
+          <div class="sched-wrap">
+            <table>
+              <thead><tr><th>Yr</th><th>EMI/mo</th><th>Principal</th><th>Interest</th><th>Extra</th><th>Balance</th></tr></thead>
+              <tbody id="schedBody"></tbody>
+            </table>
+          </div>
+        </details>
+      </div>
     </div>
   </div>
 
@@ -85,6 +137,14 @@ const description = 'Free EMI calculator: drag sliders for loan amount, rate and
     <h3>Flat vs reducing balance</h3>
     <p>This calculator uses <b>reducing balance</b> — interest is charged only on the outstanding principal, which falls every month. That's how almost all home, car and personal loans actually work. A "flat rate" charges interest on the full original amount the whole term, which makes the effective rate much higher for the same headline number — always compare on reducing balance.</p>
 
+    <h3>Prepayment and step-up: how to beat the bank</h3>
+    <p>Two levers shrink a loan faster than anything else, and most borrowers never model them:</p>
+    <ul>
+      <li><b>Prepayment</b> — paying a lump sum (say, a bonus) reduces principal directly. Because interest is charged on the balance, a prepayment in <b>year 3 saves far more</b> than the same amount in year 12. Use the one-time field above to see it.</li>
+      <li><b>EMI step-up</b> — raising your EMI a few percent each year, in line with salary growth, repays principal faster every single year. A 10%/year step-up can cut a 20-year loan by several years.</li>
+    </ul>
+    <p>Combine both and the year-by-year schedule above shows exactly when you go loan-free and how much interest you keep. This is the kind of multi-variable answer a search snippet can't give you — you have to model your own numbers.</p>
+
     <h3>How to lower your EMI</h3>
     <ul>
       <li><b>Longer tenure</b> lowers the monthly EMI but increases total interest paid.</li>
@@ -92,13 +152,36 @@ const description = 'Free EMI calculator: drag sliders for loan amount, rate and
       <li><b>Prepayments</b> cut the outstanding principal, shrinking future interest.</li>
     </ul>
 
-    <p>Try changing the tenure above and watch the <b>total interest</b> move — it's often the most eye-opening number.</p>
-
     <div class="xlinks">
+      <a href="/calculators/loan-payoff">Loan Payoff Calculator →</a>
       <a href="/calculators/compound-interest">Compound Interest Calculator →</a>
       <a href="/#calculators">All calculators →</a>
     </div>
   </div>
+
+  <Faq items={faqItems} />
+
+  <style is:global>
+    .adv{margin-top:var(--s5);border-top:1px solid var(--line);padding-top:var(--s5)}
+    .adv-h{display:flex;align-items:baseline;gap:var(--s3);margin-bottom:var(--s4);flex-wrap:wrap}
+    .adv-h span{font-weight:800;font-size:var(--t-md)}
+    .adv-h small{color:var(--dim);font-size:var(--t-sm)}
+    .save{background:var(--result-bg);border:1px solid var(--line);border-radius:var(--r-lg);padding:var(--s4);margin-top:var(--s4)}
+    .save-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3)}
+    .save-row+.save-row{margin-top:var(--s3)}
+    .save-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--s3) var(--s4)}
+    .save-box .k{font-size:var(--t-xs);color:var(--dim)}
+    .save-box .v{font-size:var(--t-lg);font-weight:800;margin-top:2px}
+    .save-box .v.ok{color:var(--ok)}
+    .save-hint{font-size:var(--t-sm);color:var(--dim);margin-top:var(--s3);line-height:1.5}
+    .sched{margin-top:var(--s4)}
+    .sched summary{cursor:pointer;font-weight:700;font-size:var(--t-sm);color:var(--brand);padding:var(--s2) 0}
+    .sched-wrap{overflow-x:auto;margin-top:var(--s3)}
+    .sched table{width:100%;border-collapse:collapse;font-size:var(--t-sm);min-width:540px}
+    .sched th,.sched td{text-align:right;padding:var(--s2) var(--s3);border-bottom:1px solid var(--line);white-space:nowrap}
+    .sched th:first-child,.sched td:first-child{text-align:left}
+    .sched th{color:var(--dim);font-weight:700;font-size:var(--t-xs);text-transform:uppercase;letter-spacing:.4px}
+  </style>
 
   <script is:inline>
     (function () {
@@ -109,15 +192,45 @@ const description = 'Free EMI calculator: drag sliders for loan amount, rate and
         try { return new Intl.NumberFormat(loc, { style:'currency', currency:cur, maximumFractionDigits:0 }).format(Math.round(v)); }
         catch(e){ return Math.round(v).toLocaleString(); }
       }
-      // keep a number input and its slider in sync
+      function fmtDur(months){
+        months = Math.round(months);
+        var y = Math.floor(months/12), mo = months%12, s = '';
+        if (y) s += y + 'y';
+        if (mo) s += (s ? ' ' : '') + mo + 'm';
+        return s || '0m';
+      }
       function pair(a, b){
         el(a).addEventListener('input', function(){ el(b).value = el(a).value; compute(); });
         el(b).addEventListener('input', function(){ el(a).value = el(b).value; compute(); });
       }
+      // Month-by-month amortization with optional step-up + prepayments.
+      function simulate(P, i, emi0, stepup, annual, oneAmt, oneYear){
+        if (emi0 <= 0) return { never:true };
+        var bal = P, emi = emi0, totInt = 0, m = 0, cap = 12*45;
+        var rows = [], yInt = 0, yPrin = 0, yExtra = 0;
+        while (bal > 0.5 && m < cap){
+          m++;
+          var interest = bal * i;
+          var principal = emi - interest;
+          if (principal <= 0) return { never:true };       // EMI never covers interest
+          if (principal > bal) principal = bal;
+          bal -= principal; totInt += interest; yInt += interest; yPrin += principal;
+          if (m % 12 === 0){
+            var yr = m/12;
+            if (annual > 0 && bal > 0){ var e = Math.min(annual, bal); bal -= e; yExtra += e; }
+            if (oneAmt > 0 && yr === oneYear && bal > 0){ var o = Math.min(oneAmt, bal); bal -= o; yExtra += o; }
+            rows.push({ yr:yr, emi:emi, prin:yPrin, int:yInt, extra:yExtra, bal:bal });
+            if (stepup > 0) emi = emi * (1 + stepup/100);
+            yInt = 0; yPrin = 0; yExtra = 0;
+          }
+        }
+        if (m % 12 !== 0) rows.push({ yr:Math.ceil(m/12), emi:emi, prin:yPrin, int:yInt, extra:yExtra, bal:bal });
+        return { months:m, totInt:totInt, rows:rows, never:false };
+      }
       function compute(){
         var P = num('amount'), R = num('rate'), Y = num('tenure');
-        var r = R/12/100, n = Y*12;
-        var emi = (r > 0) ? P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1) : (n>0 ? P/n : 0);
+        var i = R/12/100, n = Y*12;
+        var emi = (i > 0) ? P*i*Math.pow(1+i,n)/(Math.pow(1+i,n)-1) : (n>0 ? P/n : 0);
         if (!isFinite(emi) || emi < 0) emi = 0;
         var total = emi*n, interest = total - P;
         el('emi').textContent = money(emi);
@@ -126,12 +239,45 @@ const description = 'Free EMI calculator: drag sliders for loan amount, rate and
         el('bdI').textContent = money(interest);
         el('bdT').textContent = money(total);
         el('bdPct').textContent = total > 0 ? Math.round(interest/total*100) + '%' : '—';
+
+        // Advanced: baseline (no extras) vs optimized (step-up + prepayments)
+        var stepup = num('stepup'), annual = num('annual'), oneAmt = num('onetime'), oneYear = num('otyear');
+        var base = simulate(P, i, emi, 0, 0, 0, 0);
+        var opt  = simulate(P, i, emi, stepup, annual, oneAmt, oneYear);
+        var body = el('schedBody'); body.innerHTML = '';
+        if (opt.never || base.never){
+          el('saveInt').textContent = '—'; el('saveTime').textContent = '—';
+          el('newInt').textContent = '—'; el('newPay').textContent = '—';
+          el('saveHint').textContent = 'EMI is too low to ever repay this loan — raise the rate, tenure or loan figures.';
+          return;
+        }
+        var saved = base.totInt - opt.totInt, mSaved = base.months - opt.months;
+        var hasExtra = (stepup > 0 || annual > 0 || oneAmt > 0);
+        el('newInt').textContent = money(opt.totInt);
+        el('newPay').textContent = fmtDur(opt.months);
+        if (hasExtra && saved > 0.5){
+          el('saveInt').textContent = money(saved);
+          el('saveTime').textContent = mSaved > 0 ? fmtDur(mSaved) : '—';
+          el('saveHint').textContent = 'You cut total interest by ' + money(saved) + ' and become loan-free ' + fmtDur(mSaved) + ' earlier.';
+        } else {
+          el('saveInt').textContent = money(0);
+          el('saveTime').textContent = '—';
+          el('saveHint').textContent = 'Add a step-up or prepayment above to see how much interest you save.';
+        }
+        for (var k = 0; k < opt.rows.length; k++){
+          var row = opt.rows[k], tr = document.createElement('tr');
+          tr.innerHTML = '<td>' + row.yr + '</td><td>' + money(row.emi) + '</td><td>' + money(row.prin) +
+            '</td><td>' + money(row.int) + '</td><td>' + (row.extra > 0 ? money(row.extra) : '—') +
+            '</td><td>' + money(row.bal) + '</td>';
+          body.appendChild(tr);
+        }
       }
       pair('amount','amountR'); pair('rate','rateR'); pair('tenure','tenureR');
+      pair('stepup','stepupR'); pair('annual','annualR'); pair('onetime','onetimeR'); pair('otyear','otyearR');
       el('cur').addEventListener('change', function(){
         var o = el('cur').selectedOptions[0];
         cur = el('cur').value; loc = o.dataset.loc;
-        document.querySelector('.valwrap .sym').textContent = o.dataset.sym;
+        document.querySelectorAll('.valwrap .sym').forEach(function(s){ s.textContent = o.dataset.sym; });
         compute();
       });
       compute(); // pre-filled defaults → answer is on screen immediately
