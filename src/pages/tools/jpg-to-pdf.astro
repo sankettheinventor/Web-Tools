@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
+import HowTo from '../../components/HowTo.astro';
 const title = 'JPG to PDF — Convert Images to PDF (Free, Private)';
 const description = 'Free JPG to PDF converter. Combine JPG, PNG or WebP images into a single PDF — one image per page, in order — right in your browser. Nothing is uploaded.';
 const faqItems = [
@@ -9,6 +10,11 @@ const faqItems = [
   { q: 'What image formats can I convert?', a: 'You can convert JPG, PNG and WebP images. Each image is rendered onto a white background and embedded as a JPEG page in the final PDF.' },
   { q: 'Is there a limit on how many images I can combine?', a: 'There is no fixed limit set by the tool. Because everything runs in your browser, very large batches depend on your device memory, but typical sets of photos, scans or receipts work fine.' },
   { q: 'Are my images uploaded or stored anywhere?', a: 'No. Every image is processed locally in your browser and the PDF is generated on your device. Nothing is uploaded, stored or shared.' },
+];
+const howSteps = [
+  { name: 'Add your images', text: 'Drop your images onto the box or click browse to select one or more JPG, PNG or WebP files.' },
+  { name: 'Check the order', text: 'Review the thumbnails, which appear in the order the images will be placed in the PDF, one image per page.' },
+  { name: 'Create the PDF', text: 'Click Create PDF to combine the images into a single PDF and download it instantly to your device.' },
 ];
 ---
 <Base title={title} description={description}>
@@ -45,6 +51,7 @@ const faqItems = [
     .wm-actions{display:flex;gap:10px}.wm-btn{padding:11px 18px;border-radius:10px;font-weight:700;color:#fff;border:0;cursor:pointer;background:linear-gradient(135deg,var(--brand2),var(--brand))}
     .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line)}.status{margin-top:10px;font-size:13px;color:var(--dim)}
   </style>
+  <HowTo task="convert JPG images to PDF" steps={howSteps} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){

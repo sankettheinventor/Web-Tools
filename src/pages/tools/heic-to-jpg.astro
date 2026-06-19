@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
+import HowTo from '../../components/HowTo.astro';
 const title = 'HEIC to JPG Converter — Free, Private, In Your Browser';
 const description = 'Free HEIC to JPG converter. Turn iPhone HEIC/HEIF photos into JPG right in your browser — batch supported, adjustable quality, and nothing is ever uploaded.';
 const faqItems = [
@@ -9,6 +10,12 @@ const faqItems = [
   { q: 'Can I control the JPG quality?', a: 'Yes. There is a quality slider that ranges from 40% to 100%, defaulting to 85%. Higher quality keeps more detail but produces larger files, while lower quality makes smaller files.' },
   { q: 'Are my photos uploaded or stored anywhere?', a: 'No. Every conversion happens entirely in your browser on your own device. Your HEIC photos are never uploaded, stored or shared, so even private images stay private.' },
   { q: 'Why did one of my files fail to convert?', a: 'The converter only handles HEIC and HEIF images. If a file is in another format or is corrupted, that file is skipped and you’ll see a short message, while your other photos still convert normally.' },
+];
+const howSteps = [
+  { name: 'Add your HEIC photos', text: 'Drop your HEIC or HEIF files onto the upload area, or click browse to select one or more from your device.' },
+  { name: 'Set the quality', text: 'Adjust the quality slider (40% to 100%, default 85%) to balance image detail against file size.' },
+  { name: 'Let it convert', text: 'Each photo is converted to JPG right in your browser and shown as a preview thumbnail, with nothing uploaded anywhere.' },
+  { name: 'Download your JPGs', text: 'Click Download under a single result, or use Download all to save every converted JPG at once.' },
 ];
 ---
 <Base title={title} description={description}>
@@ -49,6 +56,7 @@ const faqItems = [
     .wm-actions{display:flex;gap:10px}.wm-btn{padding:12px 18px;border-radius:10px;font-weight:700;color:#fff;border:0;cursor:pointer;background:linear-gradient(135deg,var(--brand2),var(--brand))}
     .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line)}.status{margin-top:10px;font-size:13px;color:var(--dim)}
   </style>
+  <HowTo task="convert HEIC to JPG" steps={howSteps} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){

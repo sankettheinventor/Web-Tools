@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
+import HowTo from '../../components/HowTo.astro';
 const title = 'Image Converter & Resizer — JPG, PNG, WebP (Free, Private)';
 const description = 'Free image converter and resizer. Convert between JPG, PNG and WebP and resize images in your browser. Fast, private — your files are never uploaded.';
 const faqItems = [
@@ -9,6 +10,12 @@ const faqItems = [
   { q: 'Are my files uploaded or stored anywhere?', a: 'No. Every conversion and resize happens locally in your browser using the canvas, so your images are never uploaded, stored or shared. Nothing leaves your device.' },
   { q: 'Why does my converted JPG have a white background?', a: 'JPG does not support transparency, so any transparent areas are filled with white when you convert to JPG. Choose PNG or WebP instead if you need to keep a transparent background.' },
   { q: 'Is there a file size or count limit?', a: 'There is no fixed limit because the tool runs entirely on your device. You convert one image at a time, and very large images are only constrained by your device memory and browser.' }
+];
+const howSteps = [
+  { name: 'Add your image', text: 'Drop an image onto the box or click "browse" to pick a file from your device.' },
+  { name: 'Choose a format', text: 'Use the "Convert to" dropdown to select PNG, JPG or WebP.' },
+  { name: 'Set the size', text: 'Type a new Width or Height; with "Keep aspect ratio" ticked the other value updates automatically.' },
+  { name: 'Download the result', text: 'Click "Download" to save the converted, resized image to your device.' }
 ];
 ---
 <Base title={title} description={description}>
@@ -60,6 +67,7 @@ const faqItems = [
     .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line);flex:0 0 auto}
     @media(max-width:680px){.wm-grid{grid-template-columns:1fr}}
   </style>
+  <HowTo task="convert and resize an image" steps={howSteps} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){

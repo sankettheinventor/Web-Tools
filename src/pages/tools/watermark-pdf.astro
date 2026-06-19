@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
+import HowTo from '../../components/HowTo.astro';
 const title = 'Add Watermark to PDF — Free, Private (In Browser)';
 const description = 'Free tool to add a text watermark to every page of a PDF — choose the text, opacity and angle, then download. Runs in your browser, nothing uploaded.';
 const faqItems = [
@@ -9,6 +10,12 @@ const faqItems = [
   { q: 'Does the watermark appear on every page?', a: 'Yes. The same text watermark is applied to all pages in the PDF automatically, scaled to fit each page size.' },
   { q: 'Is my PDF uploaded or stored anywhere?', a: 'No. The entire process runs locally in your browser using JavaScript, so your PDF is never uploaded, stored, or shared. Nothing leaves your device.' },
   { q: 'Can I add an image or logo as a watermark?', a: 'No. This tool adds a text watermark only — you choose the words, opacity, and angle. It does not support image or logo watermarks.' },
+];
+const howSteps = [
+  { name: 'Add your PDF', text: 'Drop a PDF onto the page or click browse to select the file from your device.' },
+  { name: 'Type the watermark text', text: 'Enter your watermark text, such as DRAFT or CONFIDENTIAL, in the Watermark text field.' },
+  { name: 'Adjust opacity and angle', text: 'Use the Opacity slider (5% to 60%) and Angle slider (0° to 90°) to set how the watermark looks.' },
+  { name: 'Watermark and download', text: 'Click Watermark & download to stamp the text across every page and save the result.' },
 ];
 ---
 <Base title={title} description={description}>
@@ -48,6 +55,7 @@ const faqItems = [
     .acts{display:flex;gap:10px}.wm-btn{padding:11px 18px;border-radius:10px;font-weight:700;color:#fff;border:0;cursor:pointer;background:linear-gradient(135deg,var(--brand2),var(--brand))}
     .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line)}.status{margin-top:10px;font-size:13px;color:var(--dim)}
   </style>
+  <HowTo task="add a watermark to a PDF" steps={howSteps} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){

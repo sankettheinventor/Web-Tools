@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
+import HowTo from '../../components/HowTo.astro';
 const title = 'Rotate PDF — Turn PDF Pages Free (Private)';
 const description = 'Free rotate PDF tool. Turn every page of a PDF 90, 180 or 270 degrees and download the fixed file — in your browser, nothing uploaded.';
 const faqItems = [
@@ -9,6 +10,11 @@ const faqItems = [
   { q: 'Is the rotation saved permanently in the file?', a: 'Yes. The rotation is written into the PDF itself, so the document opens the right way up in any viewer, not just in this browser.' },
   { q: 'Is there a file size or page limit?', a: 'There is no fixed limit set by the tool. Because everything runs in your browser using your device memory, very large PDFs may process more slowly on lower-powered devices.' },
   { q: 'Is my PDF uploaded or stored anywhere?', a: 'No. Your PDF is processed entirely in your browser. Nothing is uploaded, stored, or shared — the file never leaves your device.' },
+];
+const howSteps = [
+  { name: 'Add your PDF', text: 'Drop a PDF onto the drop zone or click browse to pick one from your device.' },
+  { name: 'Choose the angle', text: 'In the "Rotate every page" dropdown, select 90° right, 180°, or 90° left.' },
+  { name: 'Rotate and download', text: 'Click "Rotate & download" to turn every page and save the corrected PDF to your device.' },
 ];
 ---
 <Base title={title} description={description}>
@@ -43,6 +49,7 @@ const faqItems = [
     .acts{display:flex;gap:10px}.wm-btn{padding:11px 18px;border-radius:10px;font-weight:700;color:#fff;border:0;cursor:pointer;background:linear-gradient(135deg,var(--brand2),var(--brand))}
     .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line)}.status{margin-top:10px;font-size:13px;color:var(--dim)}
   </style>
+  <HowTo task="rotate a PDF" steps={howSteps} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){

@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
+import HowTo from '../../components/HowTo.astro';
 const title = 'PDF to JPG — Convert PDF Pages to Images (Free, Private)';
 const description = 'Free PDF to JPG converter. Turn each page of a PDF into a JPG image right in your browser, then download them zipped. Nothing is uploaded.';
 const faqItems = [
@@ -9,6 +10,11 @@ const faqItems = [
   { q: 'Does each PDF page become a separate JPG?', a: 'Yes. Every page in the PDF is rendered to its own page-1.jpg, page-2.jpg and so on, so a 10-page PDF gives you 10 separate JPG images.' },
   { q: 'What quality are the converted JPG images?', a: 'Pages are rendered at 2x scale and saved as JPGs at 90% quality, which keeps text and figures crisp while keeping file sizes reasonable.' },
   { q: 'Can I download all the images at once?', a: 'Yes. When a PDF has two or more pages, a "Download all (.zip)" button appears so you can save every page image in one zip archive instead of one at a time.' },
+];
+const howSteps = [
+  { name: 'Add your PDF', text: 'Drop a PDF onto the page or click browse to pick one from your device.' },
+  { name: 'Wait for rendering', text: 'Each page is rendered locally in your browser to a 2x-scale JPG and shown as a thumbnail.' },
+  { name: 'Download images', text: 'Click Download under any page to save that JPG, or use Download all (.zip) to grab every page at once.' },
 ];
 ---
 <Base title={title} description={description}>
@@ -37,6 +43,7 @@ const faqItems = [
     <p>Drop in a PDF and each page is rendered to a high-quality JPG you can download — individually or all at once as a zip. Handy for pulling a figure out of a report, sharing a single page as an image, or posting a PDF page where only images are allowed. It all runs locally in your browser, so your document is never uploaded.</p>
     <div class="xlinks"><a href="/tools/jpg-to-pdf">JPG to PDF →</a><a href="/tools/pdf-tools">Merge PDF →</a></div>
   </div>
+  <HowTo task="convert a PDF to JPG images" steps={howSteps} />
   <Faq items={faqItems} />
   <style>
     .drop{border:2px dashed var(--line);border-radius:14px;background:var(--surface2);padding:40px 20px;text-align:center;cursor:pointer}

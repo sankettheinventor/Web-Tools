@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
+import HowTo from '../../components/HowTo.astro';
 const title = 'Merge PDF — Combine PDF Files Free (Private, In Browser)';
 const description = 'Free PDF merger. Combine multiple PDF files into one in your browser, rotate pages, then download. Nothing is uploaded — your documents stay private.';
 const faqItems = [
@@ -9,6 +10,12 @@ const faqItems = [
   { q: 'Can I rotate the pages while merging?', a: 'Yes. Use the "Rotate all pages" option to turn every page 90° right, 180°, or 90° left, which is handy for scans that came in sideways. The rotation applies to all merged pages.' },
   { q: 'Why does merging fail for some PDFs?', a: 'Merging can fail if a file is password-protected or encrypted. Remove the protection from the PDF first, then add it again to merge it.' },
   { q: 'Are my PDF files uploaded or stored anywhere?', a: 'No. The entire merge runs locally in your browser using JavaScript, so your files are never uploaded, stored, or shared. Even confidential documents stay private on your device.' },
+];
+const howSteps = [
+  { name: 'Add your PDFs', text: 'Drop two or more PDF files onto the drop zone, or click "browse" to select them.' },
+  { name: 'Set the order', text: 'The files appear in a numbered list and merge top to bottom in the order you added them.' },
+  { name: 'Rotate if needed', text: 'Optionally use the "Rotate all pages" menu to turn every page 90° right, 180°, or 90° left.' },
+  { name: 'Merge and download', text: 'Click "Merge & download" to combine the files and save the single merged PDF to your device.' },
 ];
 ---
 <Base title={title} description={description}>
@@ -39,6 +46,7 @@ const faqItems = [
     <p><b>Your documents never leave your device.</b> The merge happens entirely in your browser, so even confidential PDFs stay private.</p>
     <div class="xlinks"><a href="/">All tools →</a></div>
   </div>
+  <HowTo task="merge PDF files" steps={howSteps} />
   <Faq items={faqItems} />
   <style>
     .drop{border:2px dashed var(--line);border-radius:16px;background:var(--surface2);padding:48px 24px;text-align:center;cursor:pointer}

@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
+import HowTo from '../../components/HowTo.astro';
 const title = 'QR Code Generator — URL, WiFi, vCard, Email & More (Free)';
 const description = 'Free QR code generator for URLs, WiFi, vCards, email, SMS and text. Style with presets, colors and a logo, then download PNG or SVG. Runs in your browser.';
 const faqItems = [
@@ -9,6 +10,13 @@ const faqItems = [
   { q: 'Can I download the QR code as PNG or SVG?', a: 'Yes. Use the PNG button for a raster image, SVG for a scalable vector file, or Copy to put the PNG on your clipboard. You can also adjust the output size before downloading.' },
   { q: 'Do these QR codes expire or can I edit them later?', a: 'No. These are static QR codes, so they never expire, but they cannot be edited or scan-tracked after creation. Live editing, redirects and scan analytics require a hosted server, which this on-device tool does not use.' },
   { q: 'Is my data or logo uploaded or stored anywhere?', a: 'No. Everything is generated locally in your browser, including the logo you add. Nothing you enter is uploaded, stored, or shared.' },
+];
+const howSteps = [
+  { name: 'Pick a QR type', text: 'Choose a tab such as URL, WiFi, Email or Contact to set what the code encodes.' },
+  { name: 'Enter your details', text: 'Fill in the fields for that type, like a website URL or WiFi name and password, and watch the preview update live.' },
+  { name: 'Style the code', text: 'Pick a style preset or set the dot and corner shapes, dots and background colors, and optionally upload a center logo.' },
+  { name: 'Adjust the size', text: 'Drag the Size slider to set the output dimensions you want.' },
+  { name: 'Download the QR code', text: 'Click PNG or SVG to save the file, or Copy to put the image on your clipboard.' },
 ];
 ---
 <Base title={title} description={description}>
@@ -130,6 +138,8 @@ const faqItems = [
     .qr-actions{display:flex;gap:10px}.wm-btn{flex:1;padding:12px;border-radius:10px;font-weight:700;color:#fff;border:0;cursor:pointer;background:linear-gradient(135deg,var(--brand2),var(--brand))}
     .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line)}
   </style>
+
+  <HowTo task="create a QR code" steps={howSteps} />
 
   <Faq items={faqItems} />
 

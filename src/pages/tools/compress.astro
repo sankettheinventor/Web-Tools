@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
+import HowTo from '../../components/HowTo.astro';
 const title = 'Image Compressor — Reduce Photo Size Online (Free, Private)';
 const description = 'Free image compressor. Shrink JPG, PNG and WebP photos right in your browser — adjust quality, watch the size drop, and download. Nothing is uploaded.';
 const faqItems = [
@@ -9,6 +10,12 @@ const faqItems = [
   { q: 'Will compressing reduce the image quality?', a: 'JPEG and WebP are lossy, so lower quality settings make smaller files but can add visible artifacts. Use the live preview and size readout to find a balance, or keep PNG if you need no quality loss at all.' },
   { q: 'Does it work on JPG, PNG and WebP images?', a: 'Yes. You can load JPG, PNG or WebP images and export to JPEG, WebP or PNG. The tool reads any common browser-supported image and lets you pick the output format independently.' },
   { q: 'Is my image uploaded or stored anywhere?', a: 'No. Everything is processed locally in your browser using a canvas — your image is never uploaded, stored, or shared, and nothing leaves your device.' }
+];
+const howSteps = [
+  { name: 'Add your image', text: 'Drop a photo onto the drop zone or click browse to load a JPG, PNG, or WebP file.' },
+  { name: 'Pick an output format', text: 'Choose JPEG, WebP, or PNG from the Output format menu to control how small the file can get.' },
+  { name: 'Adjust quality and width', text: 'Drag the Quality slider down and lower the Max width to shrink the file while watching the live New size readout.' },
+  { name: 'Download the result', text: 'Click Download to save the compressed image to your device.' }
 ];
 ---
 <Base title={title} description={description}>
@@ -59,6 +66,7 @@ const faqItems = [
     .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line);flex:0 0 auto}
     @media(max-width:680px){.wm-grid{grid-template-columns:1fr}}
   </style>
+  <HowTo task="compress an image" steps={howSteps} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){

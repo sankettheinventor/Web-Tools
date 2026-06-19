@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
+import HowTo from '../../components/HowTo.astro';
 const title = 'Color Picker from Image — Eyedropper Tool (Free)';
 const description = 'Free color picker: upload an image and click to grab any color as HEX, RGB and HSL with one-click copy. Runs in your browser — nothing is uploaded.';
 const faqItems = [
@@ -9,6 +10,12 @@ const faqItems = [
   { q: 'Can I pick a color from anywhere on my screen?', a: 'Yes, on supported browsers. If your browser includes the EyeDropper API, a "pick from screen" option appears that lets you sample any color on your display, not just the loaded image.' },
   { q: 'Is my image uploaded or stored anywhere?', a: 'No. Your image is processed entirely in your browser using a local canvas — it is never uploaded, stored or shared. Nothing leaves your device.' },
   { q: 'What image formats can I use?', a: 'Any image format your browser can display works, including JPG, PNG, WebP and GIF. The picker reads pixels from the image after it loads.' },
+];
+const howSteps = [
+  { name: 'Load your image', text: 'Drop an image onto the box or click browse to select a file from your device.' },
+  { name: 'Click to pick', text: 'Click anywhere on the image, or drag with the mouse held down, to sample the exact pixel under your cursor.' },
+  { name: 'Read the values', text: 'See the picked colour shown at once as HEX, RGB and HSL next to a live swatch preview.' },
+  { name: 'Copy the format', text: 'Press the Copy button beside the HEX, RGB or HSL value to copy that code to your clipboard.' },
 ];
 ---
 <Base title={title} description={description}>
@@ -51,6 +58,7 @@ const faqItems = [
     .cpy{padding:0 12px;border-radius:9px;border:1px solid var(--line);background:var(--surface2);color:var(--dim);font:inherit;font-weight:700;font-size:12px;cursor:pointer}.cpy:hover{color:var(--brand);border-color:var(--brand)}
     .randbtn{margin-top:6px;padding:10px;border-radius:9px;border:1px solid var(--line);background:var(--surface2);color:var(--txt);font:inherit;font-weight:700;cursor:pointer}
   </style>
+  <HowTo task="pick a color from an image" steps={howSteps} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){

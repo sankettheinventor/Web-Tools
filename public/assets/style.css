@@ -151,6 +151,17 @@ select{width:100%;padding:var(--s3);border:1px solid var(--line);border-radius:v
 .bd .v{font-size:var(--t-md);font-weight:700;margin-top:2px}
 @media(max-width:560px){.breakdown{grid-template-columns:1fr}}
 
+/* ---- HowTo steps (visible + HowTo JSON-LD via HowTo.astro) ---- */
+.howto{max-width:var(--read);margin:var(--s7) auto 0;padding:0 var(--s5)}
+.howto>h2{font-size:var(--t-lg);font-weight:800;margin-bottom:var(--s2)}
+.howto-intro{color:var(--dim);font-size:var(--t-sm);margin-bottom:var(--s4)}
+.howto-steps{list-style:none;counter-reset:step;display:flex;flex-direction:column;gap:var(--s3)}
+.howto-steps li{counter-increment:step;position:relative;padding:var(--s3) var(--s4) var(--s3) var(--s7);
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r);font-size:var(--t-sm);line-height:1.6;color:var(--dim)}
+.howto-steps li b{color:var(--txt)}
+.howto-steps li::before{content:counter(step);position:absolute;left:var(--s3);top:var(--s3);width:26px;height:26px;
+  border-radius:50%;background:var(--brand);color:#fff;font-weight:800;font-size:var(--t-sm);display:grid;place-items:center}
+
 /* ---- FAQ accordion (visible + FAQPage JSON-LD via Faq.astro) ---- */
 .faq{max-width:var(--read);margin:var(--s7) auto 0;padding:0 var(--s5)}
 .faq>h2{font-size:var(--t-lg);font-weight:800;margin-bottom:var(--s4)}

@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
+import HowTo from '../../components/HowTo.astro';
 const title = 'Favicon & App Icon Generator — From Image or Emoji (Free)';
 const description = 'Free favicon & app icon generator. Make icons from an image, text or emoji — every iOS & Android size plus a real favicon.ico. Runs in your browser.';
 const faqItems = [
@@ -9,6 +10,13 @@ const faqItems = [
   { q: 'Does it give me the HTML to add the favicon to my site?', a: 'Yes. The tool shows a ready-to-paste <head> snippet with the link tags for the 16 and 32 px favicons, the Apple touch icon and favicon.ico, and the same snippet is saved as head-snippet.html inside the .zip download.' },
   { q: 'Why does my icon look blurry?', a: 'Icons are scaled from your source, so start with a square image that is at least 512 px (ideally 1024 px) for crisp results. Small or non-square images get stretched, which can make the smaller sizes look soft.' },
   { q: 'Is my image uploaded or stored anywhere?', a: 'No. Everything runs locally in your browser using a canvas, so your image and the generated icons are never uploaded, stored or shared. Nothing leaves your device.' },
+];
+const howSteps = [
+  { name: 'Pick a source', text: 'Choose the "From image" tab to drop or browse a square image, or the "From text / emoji" tab to type a letter or emoji.' },
+  { name: 'Style the icon', text: 'For text or emoji, set the text colour, background colour and shape (rounded square, square or circle).' },
+  { name: 'Check the preview', text: 'Review the live 16, 32, 48, 180 and 512 px previews to confirm your icon looks crisp.' },
+  { name: 'Copy the head snippet', text: 'Copy the ready-to-paste <head> link tags shown so your site references the icons correctly.' },
+  { name: 'Download your icons', text: 'Click "favicon.ico" for the standalone .ico, or "All sizes (.zip)" to download every PNG size plus the favicon.ico and HTML snippet.' },
 ];
 ---
 <Base title={title} description={description}>
@@ -99,6 +107,7 @@ const faqItems = [
     code{background:var(--surface2);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
   </style>
 
+  <HowTo task="make a favicon" steps={howSteps} />
   <Faq items={faqItems} />
 
   <script is:inline>

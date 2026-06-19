@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
+import HowTo from '../../components/HowTo.astro';
 const title = 'Split PDF — Separate PDF Pages (Free, Private)';
 const description = 'Free split PDF tool. Break a PDF into individual one-page PDFs and download them zipped — in your browser, nothing uploaded.';
 const faqItems = [
@@ -9,6 +10,11 @@ const faqItems = [
   { q: 'What do I get when I split a PDF?', a: 'You get a ZIP archive containing one PDF per page, named page-1.pdf, page-2.pdf, and so on, matching the original page order.' },
   { q: 'Can I split a password-protected PDF?', a: 'The tool attempts to open encrypted PDFs by ignoring basic encryption, so many protected files will still split. Strongly encrypted documents that require a password to open may not work.' },
   { q: 'Is there a page limit or does it cost anything?', a: 'The tool is completely free with no page limit, though very large PDFs take longer and depend on your device\'s available memory since all work happens locally.' },
+];
+const howSteps = [
+  { name: 'Add your PDF', text: 'Drag a PDF onto the drop zone or click browse to pick a file from your device.' },
+  { name: 'Check the page count', text: 'Review the file name and page count shown once the PDF loads.' },
+  { name: 'Split and download', text: 'Click Split & download (.zip) to separate every page into its own PDF and save the bundled split-pages.zip.' },
 ];
 ---
 <Base title={title} description={description}>
@@ -43,6 +49,7 @@ const faqItems = [
     .acts{display:flex;gap:10px}.wm-btn{padding:11px 18px;border-radius:10px;font-weight:700;color:#fff;border:0;cursor:pointer;background:linear-gradient(135deg,var(--brand2),var(--brand))}
     .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line)}.status{margin-top:10px;font-size:13px;color:var(--dim)}
   </style>
+  <HowTo task="split a PDF" steps={howSteps} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){

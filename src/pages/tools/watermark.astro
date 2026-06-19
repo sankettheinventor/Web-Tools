@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
+import HowTo from '../../components/HowTo.astro';
 const title = 'Add Watermark to Photos — Free Batch Watermark Studio';
 const description = 'Add text, logo or signature watermarks to photos in your browser — batch mode, fonts, opacity, tiling. Free, no signup, nothing is ever uploaded.';
 const faqItems = [
@@ -9,6 +10,12 @@ const faqItems = [
   { q: 'Can I watermark many photos at once?', a: 'Yes. Drop multiple images and they appear in the strip at the top. Your watermark settings apply to the selected photo, and Download all saves every image in the batch.' },
   { q: 'Can I tile the watermark across the whole image?', a: 'Yes, the Text mode has a Tile option that repeats the mark across the entire photo, which makes it much harder to crop out.' },
   { q: 'What file formats can I use and download?', a: 'You can load JPG, PNG and WebP images. Watermarked photos are downloaded as PNG files.' },
+];
+const howSteps = [
+  { name: 'Add your photos', text: 'Drop one or more images onto the canvas or click browse, and they appear in the thumbnail strip at the top.' },
+  { name: 'Choose a watermark type', text: 'Pick the Text, Logo or Signature tab in the side panel to set the kind of watermark you want.' },
+  { name: 'Style the watermark', text: 'Adjust the font, color, size, opacity, rotation and position, and enable Tile to repeat a text mark across the whole photo.' },
+  { name: 'Download the result', text: 'Click Download to save the current photo as a PNG, or Download all to export every image in the batch.' },
 ];
 ---
 <Base title={title} description={description}>
@@ -163,6 +170,7 @@ const faqItems = [
     }
   </style>
 
+  <HowTo task="add a watermark to a photo" steps={howSteps} />
   <Faq items={faqItems} />
 
   <script is:inline>

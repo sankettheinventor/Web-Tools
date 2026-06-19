@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
+import HowTo from '../../components/HowTo.astro';
 const title = 'Add Page Numbers to PDF — Free, Private';
 const description = 'Free tool to add page numbers to a PDF. Choose the position and download the numbered file — in your browser, nothing uploaded.';
 const faqItems = [
@@ -9,6 +10,11 @@ const faqItems = [
   { q: 'Is my file uploaded or stored anywhere?', a: 'No. The PDF is processed entirely in your browser using JavaScript, so nothing is uploaded, stored, or shared. Your document never leaves your device.' },
   { q: 'Does numbering start at 1 or can I customize it?', a: 'Numbering always starts at 1 on the first page and counts up by one for each page. There is currently no option to set a custom starting number or skip pages.' },
   { q: 'Will adding page numbers change the rest of my PDF?', a: 'No. The tool only draws a small number at the bottom of each page and leaves all your existing text, images, and layout untouched.' },
+];
+const howSteps = [
+  { name: 'Add your PDF', text: 'Drop a PDF onto the upload box or click browse to select the file from your device.' },
+  { name: 'Choose the position', text: 'Use the Position dropdown to place the numbers at the bottom center, bottom right, or bottom left of every page.' },
+  { name: 'Add numbers and download', text: 'Click "Add numbers & download" to number every page starting at 1 and save the new PDF to your device.' },
 ];
 ---
 <Base title={title} description={description}>
@@ -43,6 +49,7 @@ const faqItems = [
     .acts{display:flex;gap:10px}.wm-btn{padding:11px 18px;border-radius:10px;font-weight:700;color:#fff;border:0;cursor:pointer;background:linear-gradient(135deg,var(--brand2),var(--brand))}
     .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line)}.status{margin-top:10px;font-size:13px;color:var(--dim)}
   </style>
+  <HowTo task="add page numbers to a PDF" steps={howSteps} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){
