@@ -1,9 +1,11 @@
 import { getCollection } from 'astro:content';
+import { catSlug } from '../lib/categories';
 
-// Self-generated sitemap for all current pages (incl. blog posts).
+// Self-generated sitemap for all current pages (incl. blog posts + categories).
 export async function GET(context: { site?: URL }) {
   const site = context.site?.href ?? 'https://snapjar.netlify.app/';
   const posts = await getCollection('blog', ({ data }) => !data.draft);
+  const cats = Array.from(new Set(posts.map((p) => p.data.category)));
   const paths = [
     '', 'blog',
     'calculators/emi', 'calculators/mortgage', 'calculators/sip',
@@ -25,6 +27,7 @@ export async function GET(context: { site?: URL }) {
   const urls = [
     ...paths.map((p) => new URL(p, site).href),
     ...posts.map((p) => new URL(`blog/${p.slug}`, site).href),
+    ...cats.map((c) => new URL(`blog/category/${catSlug(c)}`, site).href),
   ];
   const body =
     `<?xml version="1.0" encoding="UTF-8"?>\n` +

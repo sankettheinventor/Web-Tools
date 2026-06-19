@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
+import { catSlug } from '../../lib/categories';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog', ({ data }) => !data.draft);
@@ -22,7 +23,7 @@ const dateStr = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', 
     })} />
   </Fragment>
   <article><div class="read prose">
-    <p class="kicker">{post.data.category}</p>
+    <p class="kicker"><a href={`/blog/category/${catSlug(post.data.category)}`} style="color:var(--brand)">{post.data.category}</a></p>
     <h1>{post.data.title}</h1>
     <p class="ameta">{dateStr}</p>
     <Content />

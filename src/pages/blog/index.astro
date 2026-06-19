@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
+import { catSlug } from '../../lib/categories';
 
 const posts = (await getCollection('blog', ({ data }) => !data.draft))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
@@ -25,8 +26,9 @@ const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month:
   </div></header>
 
   <div class="wrap blogwrap">
-    <div class="cat-pills" id="pills">
-      {cats.map((c, i) => <button type="button" class={'pill' + (i === 0 ? ' on' : '')} data-cat={c}>{c}</button>)}
+    <div class="cat-pills">
+      <a class="pill on" href="/blog">All</a>
+      {cats.filter((c) => c !== 'All').map((c) => <a class="pill" href={`/blog/category/${catSlug(c)}`}>{c}</a>)}
     </div>
 
     {featured && (
@@ -63,8 +65,8 @@ const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month:
     .blogwrap{padding-bottom:var(--s8)}
     .cat-pills{display:flex;flex-wrap:wrap;gap:var(--s2);margin-bottom:var(--s5)}
     .pill{padding:var(--s2) var(--s4);border-radius:var(--r-pill);border:1px solid var(--line);background:var(--surface);
-      color:var(--dim);font:inherit;font-size:var(--t-sm);font-weight:600;cursor:pointer;transition:.12s}
-    .pill:hover{color:var(--txt);border-color:var(--brand)}
+      color:var(--dim);font:inherit;font-size:var(--t-sm);font-weight:600;cursor:pointer;transition:.12s;text-decoration:none}
+    .pill:hover{color:var(--txt);border-color:var(--brand);text-decoration:none}
     .pill.on{color:#fff;background:linear-gradient(135deg,var(--brand2),var(--brand));border-color:transparent}
     .feat{display:grid;grid-template-columns:1.1fr 1fr;gap:0;background:var(--surface);border:1px solid var(--line);
       border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow);transition:transform .15s}
@@ -87,18 +89,4 @@ const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month:
     .post-body p{color:var(--dim);font-size:var(--t-sm)}
     @media(max-width:680px){.feat{grid-template-columns:1fr}.feat-cover{min-height:170px}.feat-cover span{font-size:60px}}
   </style>
-  <script is:inline>
-    (function(){
-      document.querySelectorAll('.pill').forEach(function(b){
-        b.onclick=function(){
-          document.querySelectorAll('.pill').forEach(function(x){x.classList.remove('on');});
-          b.classList.add('on');
-          var c=b.dataset.cat;
-          document.querySelectorAll('.feat,.post').forEach(function(el){
-            el.style.display=(c==='All'||el.dataset.cat===c)?'':'none';
-          });
-        };
-      });
-    })();
-  </script>
 </Base>
