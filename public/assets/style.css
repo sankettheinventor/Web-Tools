@@ -213,6 +213,7 @@ footer{border-top:1px solid var(--line);margin-top:var(--s8);padding:var(--s6) 0
   display:flex;gap:13px;align-items:flex-start;
   background:#1c1830;border:1px solid rgba(255,255,255,.16);
   border-radius:14px;box-shadow:0 24px 60px -16px rgba(0,0,0,.55);padding:18px 20px}
+.cookie-banner[hidden]{display:none}
 .cb-ic{font-size:26px;line-height:1;flex:0 0 auto;margin-top:1px}
 .cb-body{min-width:0}
 .cb-lead{font-size:15px;font-weight:800;color:#f6f4fb;margin-bottom:5px;line-height:1.3}
