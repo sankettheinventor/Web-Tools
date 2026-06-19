@@ -3,7 +3,27 @@ const {
   title = 'SnapJar — Free Online Calculators & Image Tools',
   description = 'Free, fast, private online tools. Calculators and image utilities that run entirely in your browser — no signup, no upload, your data never leaves your device.',
 } = Astro.props;
-const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const SITE = Astro.site ?? new URL('https://snapjar.netlify.app/');
+const canonical = new URL(Astro.url.pathname, SITE).href;
+const ogImage = new URL('/og.png', SITE).href;
+const isHome = Astro.url.pathname === '/';
+
+// Sitewide structured data: Organization + WebSite (helps Google understand the
+// brand + enables sitelinks search box). Emitted once per page in the head.
+const orgLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'SnapJar',
+  url: SITE.href,
+  logo: new URL('/icon-512.png', SITE).href,
+};
+const siteLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'SnapJar',
+  url: SITE.href,
+  description: 'Free online calculators and image tools that run entirely in your browser.',
+};
 
 // ===== AdSense: paste your publisher ID here once approved (e.g. ca-pub-1234567890123456)
 // Leaving it empty keeps ads OFF site-wide (placeholders show instead). Hybrid model:
@@ -22,9 +42,24 @@ const ADSENSE_CLIENT = '';
   <meta property="og:title" content={title} />
   <meta property="og:description" content={description} />
   <meta property="og:type" content="website" />
+  <meta property="og:url" content={canonical} />
+  <meta property="og:site_name" content="SnapJar" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:image" content={ogImage} />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="SnapJar — free online calculators & image tools" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={ogImage} />
   <meta name="theme-color" content="#5b54e6" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
   <link rel="stylesheet" href="/assets/style.css" />
+  <script type="application/ld+json" set:html={JSON.stringify(orgLd)} />
+  {isHome && <script type="application/ld+json" set:html={JSON.stringify(siteLd)} />}
   <script is:inline defer src="/assets/cloud-import.js"></script>
   <script is:inline>
     (function () {

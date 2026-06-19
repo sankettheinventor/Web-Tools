@@ -172,7 +172,10 @@ select{width:100%;padding:var(--s3);border:1px solid var(--line);border-radius:v
 .xlinks a:hover{border-color:var(--brand);text-decoration:none}
 
 /* ---- homepage tool grid ---- */
-.cats{padding:var(--s5) 0 var(--s8)}
+/* Homepage hero is compact so tool cards surface above the fold */
+.head-home{padding:var(--s5) 0 var(--s2)}
+.cats{padding:var(--s3) 0 var(--s8)}
+.cats .cat:first-of-type{margin-top:var(--s4)}
 .cat{margin-top:var(--s7)}
 .cat h2{font-size:var(--t-lg);font-weight:800;margin-bottom:var(--s1)}
 .cat .csub{color:var(--dim);font-size:var(--t-sm);margin-bottom:var(--s4)}
