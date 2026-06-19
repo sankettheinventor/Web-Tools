@@ -203,5 +203,24 @@ const ADSENSE_CLIENT = '';
       mp.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', close); });
     })();
   </script>
+
+  <script is:inline>
+    // Netlify Identity: only load the widget when an invite/recovery token is
+    // present in the URL (keeps normal page loads fast). It then lets you set a
+    // password and bounces you to the CMS.
+    (function () {
+      if (location.hash && /(invite_token|recovery_token|confirmation_token|email_change_token)=/.test(location.hash)) {
+        var s = document.createElement('script');
+        s.src = 'https://identity.netlify.com/v1/netlify-identity-widget.js';
+        s.onload = function () {
+          if (!window.netlifyIdentity) return;
+          window.netlifyIdentity.on('init', function (user) {
+            if (!user) window.netlifyIdentity.on('login', function () { location.href = '/admin/'; });
+          });
+        };
+        document.body.appendChild(s);
+      }
+    })();
+  </script>
 </body>
 </html>
