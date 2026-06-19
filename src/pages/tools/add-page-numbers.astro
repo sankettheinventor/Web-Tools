@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
 import HowTo from '../../components/HowTo.astro';
+import AppLd from '../../components/AppLd.astro';
 const title = 'Add Page Numbers to PDF — Free, Private';
 const description = 'Free tool to add page numbers to a PDF. Choose the position and download the numbered file — in your browser, nothing uploaded.';
 const faqItems = [
@@ -20,7 +21,7 @@ const howSteps = [
 <Base title={title} description={description}>
   <Fragment slot="head"><script is:inline src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script></Fragment>
   <header class="head"><div class="wrap"><p class="kicker">PDF Tool</p><h1>Add Page Numbers to PDF</h1>
-    <p>Number every page — in your browser, never uploaded.</p></div></header>
+    <p>Drop in your PDF, pick a corner, and number every page — right here in your browser.</p></div></header>
   <div class="wrap"><div class="tool pdf">
     <div id="drop" class="drop"><input id="file" type="file" accept="application/pdf,.pdf" hidden />
       <div class="drop-ic">🔢</div><p class="drop-t">Drop a PDF, or <button id="browse" type="button" class="linklike">browse</button></p>
@@ -50,6 +51,7 @@ const howSteps = [
     .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line)}.status{margin-top:10px;font-size:13px;color:var(--dim)}
   </style>
   <HowTo task="add page numbers to a PDF" steps={howSteps} />
+  <AppLd name="Add Page Numbers to PDF" description="Drop in a PDF, pick a position from the dropdown, and download a copy with sequential numbers drawn on every page — all in your browser." category="BusinessApplication" features={["Drag-and-drop PDF upload","Choose number position: bottom center, left or right","Automatic sequential numbering on every page","Instant download of the numbered PDF","100% in-browser, nothing uploaded"]} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){

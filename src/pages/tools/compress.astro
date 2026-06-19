@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
 import HowTo from '../../components/HowTo.astro';
+import AppLd from '../../components/AppLd.astro';
 const title = 'Image Compressor — Reduce Photo Size Online (Free, Private)';
 const description = 'Free image compressor. Shrink JPG, PNG and WebP photos right in your browser — adjust quality, watch the size drop, and download. Nothing is uploaded.';
 const faqItems = [
@@ -21,7 +22,7 @@ const howSteps = [
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
     <p class="kicker">Image Tool</p><h1>Image Compressor</h1>
-    <p>Make photos smaller without uploading them anywhere. Adjust quality and watch the size drop.</p>
+    <p>Drop in a photo and drag the quality slider to watch the file size shrink live — right in your browser.</p>
   </div></header>
   <div class="wrap"><div class="tool wm">
     <div id="drop" class="drop"><input id="file" type="file" accept="image/*" hidden />
@@ -67,6 +68,7 @@ const howSteps = [
     @media(max-width:680px){.wm-grid{grid-template-columns:1fr}}
   </style>
   <HowTo task="compress an image" steps={howSteps} />
+  <AppLd name="Image Compressor" description="Drop in a JPG, PNG or WebP photo, drag the quality and max-width sliders, and watch the file size drop live before downloading." category="MultimediaApplication" features={["Drag-and-drop image loading", "Live quality slider with instant size readout", "JPEG, WebP and PNG output formats", "Max-width slider to downscale large photos", "One-click download, fully in-browser"]} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){

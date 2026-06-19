@@ -1,7 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
-const title = 'Percentage Calculator — 3 Quick Modes (Free)';
+import AppLd from '../../components/AppLd.astro';
+const title = 'Percentage Calculator — Type Values, See Results Live';
 const description = 'Free percentage calculator: find X% of Y, what percent one number is of another, and the percent change between two values. Runs in your browser, no uploads.';
 const faqItems = [
   { q: 'How do I find what X% of Y is?', a: 'Use the first row: enter the percentage and the number, and the tool computes (X / 100) x Y. For example, 15% of 200 is 30.' },
@@ -15,7 +16,7 @@ const faqItems = [
   <header class="head"><div class="wrap">
     <p class="kicker">Everyday Calculator</p>
     <h1>Percentage Calculator</h1>
-    <p>Three common percentage questions, answered as you type.</p>
+    <p>Type into any field to compute X% of Y, a ratio, or % change — live.</p>
   </div></header>
 
   <div class="wrap">
@@ -69,6 +70,8 @@ const faqItems = [
     .pres{margin-top:10px;font-size:17px;color:var(--dim)}
     .pres b{color:var(--brand);font-size:22px;font-weight:800}
   </style>
+
+  <AppLd name="Percentage Calculator" description="Type values into three live fields to instantly find X% of Y, what percent one number is of another, and the percent change between two numbers — right in your browser." category="UtilitiesApplication" features={["Live recalculation as you type", "Find X% of any number", "What percent A is of B", "Percent increase or decrease between two values", "100% client-side, no uploads"]} />
 
   <Faq items={faqItems} />
 

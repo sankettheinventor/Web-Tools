@@ -1,7 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
-const title = 'Unit Converter — Length, Weight & Temperature (Free)';
+import AppLd from '../../components/AppLd.astro';
+const title = 'Unit Converter — Switch Units & See Results Live';
 const description = 'Free unit converter for length, weight and temperature. Convert metric and imperial units instantly in your browser — nothing uploaded, runs locally.';
 const faqItems = [
   { q: 'What units can I convert?', a: 'This tool covers length (meters, kilometers, centimeters, millimeters, miles, yards, feet, inches), weight (kilograms, grams, milligrams, pounds, ounces, tonnes) and temperature (Celsius, Fahrenheit, Kelvin).' },
@@ -14,7 +15,7 @@ const faqItems = [
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
     <p class="kicker">Everyday Tool</p><h1>Unit Converter</h1>
-    <p>Convert length, weight and temperature instantly.</p>
+    <p>Pick a category, type a value and switch units to watch the result update live.</p>
   </div></header>
   <div class="wrap"><div class="tool">
     <div class="field"><div class="field-top"><label for="cat">Category</label></div>
@@ -37,6 +38,7 @@ const faqItems = [
     <div class="xlinks"><a href="/#everyday">All calculators →</a></div>
   </div>
   <style>.usel{width:100%;margin-top:10px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface2);color:var(--txt);font:inherit;font-weight:600;outline:none}.usel:focus{border-color:var(--brand)}</style>
+  <AppLd name="Unit Converter" description="Choose a category, type a value and switch the from and to dropdowns to watch the converted result update live in your browser." category="UtilitiesApplication" features={["Live conversion as you type or change units", "Length, weight and temperature categories", "Metric and imperial unit dropdowns", "Instant two-way conversion with no button to press"]} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){

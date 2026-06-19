@@ -1,7 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
-const title = 'Retirement Calculator — How Big a Corpus You Need (Free)';
+import AppLd from '../../components/AppLd.astro';
+const title = 'Retirement Calculator — Adjust Savings, Return & Age Live';
 const description = 'Free retirement calculator: estimate your inflation-adjusted retirement corpus from age, savings, contributions and return. Runs in your browser.';
 const faqItems = [
   { q: 'How does this retirement calculator estimate my corpus?', a: 'It grows your current savings until retirement and adds the future value of every monthly contribution, all compounding at your expected annual return. The two parts are summed to give the projected corpus at your retirement age.' },
@@ -14,7 +15,7 @@ const faqItems = [
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
     <p class="kicker">Finance Calculator</p><h1>Retirement Calculator</h1>
-    <p>Estimate the nest egg you'll have built by retirement. Live results.</p>
+    <p>Drag the sliders for your age, savings and return to watch your retirement corpus update live.</p>
   </div></header>
   <div class="wrap"><div class="tool">
     <div class="field"><div class="field-top"><label for="cur">Currency</label></div>
@@ -63,6 +64,7 @@ const faqItems = [
     <p>Because prices rise over time, the calculator also shows the corpus <b>in today's money</b> — discounted by your inflation assumption — so the big future number means something real. <em>This is an estimate using constant rates; actual returns and inflation vary.</em></p>
     <div class="xlinks"><a href="/calculators/sip">SIP Calculator →</a><a href="/#calculators">All calculators →</a></div>
   </div>
+  <AppLd name="Retirement Calculator" description="Drag sliders for your current age, retirement age, savings, monthly contribution, expected return and inflation to see your projected retirement corpus update live in your browser." category="FinanceApplication" features={["Live sliders for age, savings, return and inflation", "Switch between INR, USD, EUR and GBP currencies", "Inflation-adjusted corpus shown in today's money", "Breakdown of total invested vs projected corpus", "Runs 100% in your browser — nothing uploaded"]} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){var cur='INR',loc='en-IN';function el(i){return document.getElementById(i);}function num(i){var v=parseFloat(el(i).value);return isFinite(v)?v:0;}

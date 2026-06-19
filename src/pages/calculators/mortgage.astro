@@ -1,7 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
-const title = 'Mortgage Calculator — Monthly Home Loan Payment (Free)';
+import AppLd from '../../components/AppLd.astro';
+const title = 'Mortgage Calculator — Adjust Price, Rate & Down Live';
 const description = 'Free mortgage calculator with taxes and insurance. Enter home price, down payment, rate and term to see your total monthly payment instantly.';
 const faqItems = [
   { q: 'What does this mortgage calculator include?', a: 'It calculates your full monthly payment (PITI): principal, interest, property tax and home insurance. Principal and interest use the standard amortization formula; tax and insurance are entered yearly and divided by 12.' },
@@ -14,7 +15,7 @@ const faqItems = [
   <header class="head"><div class="wrap">
     <p class="kicker">Finance Calculator</p>
     <h1>Mortgage Calculator</h1>
-    <p>Your full monthly home payment — principal, interest, tax and insurance. Updates live.</p>
+    <p>Drag the sliders for price, rate and down payment to watch your monthly payment update live.</p>
   </div></header>
 
   <div class="wrap">
@@ -92,6 +93,8 @@ const faqItems = [
       <a href="/#calculators">All calculators →</a>
     </div>
   </div>
+
+  <AppLd name="Mortgage Calculator" description="Drag the sliders for home price, interest rate, down payment and term to watch your full monthly payment and total interest update live in your browser." category="FinanceApplication" features={["Live sliders for price, rate, down payment and term", "Instant PITI breakdown of principal, interest, tax and insurance", "Adjustable annual property tax and home insurance", "Multi-currency support (USD, INR, EUR, GBP)", "Runs entirely client-side — nothing uploaded"]} />
 
   <Faq items={faqItems} />
 

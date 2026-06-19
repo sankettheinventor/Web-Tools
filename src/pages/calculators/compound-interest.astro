@@ -1,7 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
-const title = 'Compound Interest Calculator — Free, Instant Growth Estimate';
+import AppLd from '../../components/AppLd.astro';
+const title = 'Compound Interest Calculator — Drag Rate & Years Live';
 const description = 'Free compound interest calculator. See how a deposit plus regular contributions grow over time, at any rate and compounding frequency. Runs in your browser.';
 const faqItems = [
   { q: 'How does this compound interest calculator work?', a: 'It takes your initial amount, monthly addition, annual rate, time period and compounding frequency, then adds each monthly contribution and applies compound growth period by period. The future balance, total invested and interest earned update live as you change any value.' },
@@ -16,7 +17,7 @@ const faqItems = [
     <div class="wrap">
       <p class="kicker">Finance Calculator</p>
       <h1>Compound Interest Calculator</h1>
-      <p>See how your money grows. Change any value and the future balance updates live.</p>
+      <p>Drag the rate, deposit and years sliders to watch your future balance grow live.</p>
     </div>
   </header>
 
@@ -98,6 +99,8 @@ const faqItems = [
       <a href="/#calculators">All calculators →</a>
     </div>
   </div>
+
+  <AppLd name="Compound Interest Calculator" description="Drag the rate, deposit, monthly addition and years sliders to watch your future balance, total invested and interest earned update live in your browser." category="FinanceApplication" features={["Live sliders for deposit, monthly addition, rate and years", "Monthly, quarterly or yearly compounding toggle", "Instant breakdown of invested vs interest earned", "Switch between INR, USD, EUR and GBP", "Runs entirely in your browser — nothing uploaded"]} />
 
   <Faq items={faqItems} />
 

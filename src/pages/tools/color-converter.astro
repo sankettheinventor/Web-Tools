@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
+import AppLd from '../../components/AppLd.astro';
 const title = 'Color Converter — HEX, RGB & HSL (Free, Instant)';
 const description = 'Free color converter. Convert between HEX, RGB and HSL instantly, with a live swatch and one-click copy. Runs in your browser.';
 const faqItems = [
@@ -14,7 +15,7 @@ const faqItems = [
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
     <p class="kicker">Color Tool</p><h1>Color Converter</h1>
-    <p>Convert between HEX, RGB and HSL — edit any field and the rest update live.</p>
+    <p>Pick a color or type any field — the swatch and every other format update live.</p>
   </div></header>
   <div class="wrap"><div class="tool">
     <div class="cc-top">
@@ -53,6 +54,7 @@ const faqItems = [
     .cpy{padding:0 14px;border-radius:9px;border:1px solid var(--line);background:var(--surface2);color:var(--dim);font:inherit;font-weight:700;font-size:13px;cursor:pointer}.cpy:hover{color:var(--brand);border-color:var(--brand)}
     code{background:var(--surface2);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
   </style>
+  <AppLd name="Color Converter" description="Pick a color or edit any HEX, RGB or HSL field and watch the live swatch and the other two formats update instantly, then copy with one click." category="DesignApplication" features={["Live color picker with instant swatch preview", "Two-way HEX, RGB and HSL conversion", "Editable R/G/B and H/S/L number fields", "3-digit shorthand HEX support", "One-click copy for each format"]} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){

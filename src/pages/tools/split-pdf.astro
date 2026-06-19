@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
 import HowTo from '../../components/HowTo.astro';
+import AppLd from '../../components/AppLd.astro';
 const title = 'Split PDF — Separate PDF Pages (Free, Private)';
 const description = 'Free split PDF tool. Break a PDF into individual one-page PDFs and download them zipped — in your browser, nothing uploaded.';
 const faqItems = [
@@ -23,7 +24,7 @@ const howSteps = [
     <script is:inline src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   </Fragment>
   <header class="head"><div class="wrap"><p class="kicker">PDF Tool</p><h1>Split PDF</h1>
-    <p>Break a PDF into separate pages — in your browser, never uploaded.</p></div></header>
+    <p>Drop in your PDF and split every page into its own file — right here in your browser.</p></div></header>
   <div class="wrap"><div class="tool pdf">
     <div id="drop" class="drop"><input id="file" type="file" accept="application/pdf,.pdf" hidden />
       <div class="drop-ic">📄</div><p class="drop-t">Drop a PDF, or <button id="browse" type="button" class="linklike">browse</button></p>
@@ -50,6 +51,7 @@ const howSteps = [
     .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line)}.status{margin-top:10px;font-size:13px;color:var(--dim)}
   </style>
   <HowTo task="split a PDF" steps={howSteps} />
+  <AppLd name="Split PDF" description="Drag and drop a PDF to split every page into its own one-page file and download them all as a zip, processed entirely in your browser." category="BusinessApplication" features={["Drag-and-drop PDF upload", "Splits each page into a separate PDF", "Downloads all pages as a single zip", "Opens encrypted PDFs by ignoring basic encryption", "100% client-side — nothing uploaded"]} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){

@@ -1,7 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
-const title = 'BMI Calculator — Body Mass Index (Metric & Imperial)';
+import AppLd from '../../components/AppLd.astro';
+const title = 'BMI Calculator — Drag Sliders, See Your BMI Live';
 const description = 'Free BMI calculator. Enter your height and weight in metric or imperial units to get your Body Mass Index and category instantly. Runs in your browser.';
 const faqItems = [
   { q: 'How is BMI calculated?', a: 'BMI is your weight divided by the square of your height. This tool uses weight (kg) divided by height (m) squared for metric, and 703 times weight (lb) divided by height (inches) squared for imperial.' },
@@ -15,7 +16,7 @@ const faqItems = [
   <header class="head"><div class="wrap">
     <p class="kicker">Health Calculator</p>
     <h1>BMI Calculator</h1>
-    <p>Your Body Mass Index and category, updated as you type.</p>
+    <p>Drag the height and weight sliders to watch your BMI and category update live.</p>
   </div></header>
 
   <div class="wrap">
@@ -76,6 +77,8 @@ const faqItems = [
     <p>BMI doesn't distinguish muscle from fat, and it doesn't account for age, sex or body composition. A very muscular person can read "overweight" while being healthy. Treat BMI as one rough indicator, not a diagnosis — talk to a healthcare professional for a full picture.</p>
     <div class="xlinks"><a href="/#calculators">All calculators →</a></div>
   </div>
+
+  <AppLd name="BMI Calculator" description="Drag the height and weight sliders or type your numbers and toggle metric/imperial units to see your Body Mass Index and category update live in your browser." category="HealthApplication" features={["Height and weight sliders that update BMI live","Metric and imperial unit toggle","Instant BMI category labeling (underweight to obese)","Type-in number inputs synced to sliders","100% client-side, no data uploaded"]} />
 
   <Faq items={faqItems} />
 

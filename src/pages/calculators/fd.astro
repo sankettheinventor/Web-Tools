@@ -1,7 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
-const title = 'FD Calculator — Fixed Deposit Maturity & Interest (Free)';
+import AppLd from '../../components/AppLd.astro';
+const title = 'FD Calculator — Adjust Deposit, Rate & Tenure Live';
 const description = 'Free fixed deposit (FD) calculator: get maturity amount and interest from your deposit, rate, tenure and compounding. Runs in your browser, nothing uploaded.';
 const faqItems = [
   { q: 'How does this FD calculator work?', a: 'It applies the compound interest formula A = P x (1 + r/n)^(n x t) using your deposit, annual interest rate, tenure in years and compounding frequency. Results update live as you change any input.' },
@@ -14,7 +15,7 @@ const faqItems = [
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
     <p class="kicker">Finance Calculator</p><h1>FD Calculator</h1>
-    <p>Your fixed-deposit maturity amount and interest, updated live.</p>
+    <p>Drag the sliders for deposit, rate and tenure to watch your maturity update live.</p>
   </div></header>
   <div class="wrap"><div class="tool">
     <div class="field"><div class="field-top"><label for="cur">Currency</label></div>
@@ -56,6 +57,7 @@ const faqItems = [
     <p>The more frequently interest compounds, the slightly higher your maturity amount for the same rate. <em>Interest on FDs may be taxable depending on your country and income — this estimate is before tax.</em></p>
     <div class="xlinks"><a href="/calculators/compound-interest">Compound Interest →</a><a href="/#calculators">All calculators →</a></div>
   </div>
+  <AppLd name="FD Calculator" description="Drag the sliders for deposit, rate and tenure, pick your compounding frequency, and watch the fixed-deposit maturity and interest recalculate live in your browser." category="FinanceApplication" features={["Live deposit, rate and tenure sliders", "Quarterly, monthly, half-yearly and yearly compounding", "Maturity, deposited and interest-earned breakdown", "Multi-currency formatting (INR, USD, EUR, GBP)", "Instant in-browser recalculation, nothing uploaded"]} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){var cur='INR',loc='en-IN';function el(i){return document.getElementById(i);}function num(i){var v=parseFloat(el(i).value);return isFinite(v)?v:0;}

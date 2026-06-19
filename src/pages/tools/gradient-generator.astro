@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
+import AppLd from '../../components/AppLd.astro';
 const title = 'CSS Gradient Generator — Free, Live Preview & Copy';
 const description = 'Free CSS gradient generator. Pick colors, angle and type (linear or radial), preview live, and copy the CSS. Runs in your browser.';
 const faqItems = [
@@ -14,7 +15,7 @@ const faqItems = [
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
     <p class="kicker">Color Tool</p><h1>CSS Gradient Generator</h1>
-    <p>Design a gradient and copy the CSS — live preview as you tweak.</p>
+    <p>Pick two colours, drag the angle slider, and watch the gradient preview update live.</p>
   </div></header>
   <div class="wrap"><div class="tool">
     <div class="grad-prev" id="prev"></div>
@@ -45,6 +46,7 @@ const faqItems = [
     .randbtn{margin-top:12px;width:100%;padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--surface2);color:var(--txt);font:inherit;font-weight:700;cursor:pointer}
     code{background:var(--surface2);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
   </style>
+  <AppLd name="CSS Gradient Generator" description="Pick two colours, switch between linear and radial, and drag the angle slider to preview your CSS gradient live, then copy the code." category="DesignApplication" features={["Live gradient preview that updates as you adjust controls", "Two color pickers for the start and end colours", "Linear and radial gradient type switcher", "Angle slider from 0 to 360 degrees", "One-click copy of the generated background CSS"]} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){

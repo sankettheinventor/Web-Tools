@@ -1,7 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
-const title = 'SIP Calculator — Mutual Fund SIP Returns (Free, Instant)';
+import AppLd from '../../components/AppLd.astro';
+const title = 'SIP Calculator — Adjust Amount, Return & Years Live';
 const description = 'Free SIP calculator: enter monthly investment, expected return and duration to see your mutual fund SIP future value. Runs in your browser, nothing uploaded.';
 const faqItems = [
   {
@@ -30,7 +31,7 @@ const faqItems = [
   <header class="head"><div class="wrap">
     <p class="kicker">Finance Calculator</p>
     <h1>SIP Calculator</h1>
-    <p>See what your monthly investments could grow to. Change any value — results update live.</p>
+    <p>Drag the sliders for amount, return and years to watch your SIP value update live.</p>
   </div></header>
 
   <div class="wrap">
@@ -89,6 +90,8 @@ const faqItems = [
       <a href="/#calculators">All calculators →</a>
     </div>
   </div>
+
+  <AppLd name="SIP Calculator" description="Drag the sliders for monthly amount, expected return and duration, switch currencies, and watch your mutual fund SIP future value and returns recalculate live." category="FinanceApplication" features={["Live sliders for monthly investment, expected return and duration", "Instant future value and invested-vs-returns breakdown", "Switch between INR, USD, EUR and GBP", "Monthly-compounding SIP formula", "Runs fully in your browser, nothing uploaded"]} />
 
   <Faq items={faqItems} />
 

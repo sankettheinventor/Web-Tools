@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
 import HowTo from '../../components/HowTo.astro';
+import AppLd from '../../components/AppLd.astro';
 
 // One template → a dedicated, individually-rankable page per conversion.
 const CONVERSIONS = [
@@ -63,7 +64,7 @@ const howSteps = [
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
     <p class="kicker">Image Converter</p><h1>{c.from} to {c.to} Converter</h1>
-    <p>Convert {c.from} images to {c.to} — instantly, in your browser, nothing uploaded.</p>
+    <p>Drop your {c.from} images and watch them convert to {c.to} live — right here in your browser.</p>
   </div></header>
   <div class="wrap"><div class="tool wm">
     <div id="cfg" data-mime={c.mime} data-ext={ext} data-lossy={c.lossy ? '1' : '0'} hidden></div>
@@ -112,6 +113,7 @@ const howSteps = [
     @media(max-width:680px){.wm-grid{grid-template-columns:1fr}}
   </style>
   <HowTo task="convert an image to another format" steps={howSteps} />
+  <AppLd name={`${c.from} to ${c.to} Converter`} description={`Drop or browse ${c.from} images and convert them to ${c.to} live in your browser${c.lossy ? ', dragging the Quality slider to watch the output size update' : ''} — batch-convert and download each file or the whole set, nothing uploaded.`} category="MultimediaApplication" features={["Drag-and-drop batch image conversion", ...(c.lossy ? ["Live Quality slider with instant size preview"] : ["Lossless conversion preserving every pixel"]), "Thumbnail strip to switch between batched images", "Download individual files or the whole batch", "100% in-browser — nothing is uploaded"]} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){

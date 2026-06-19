@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
 import HowTo from '../../components/HowTo.astro';
+import AppLd from '../../components/AppLd.astro';
 const title = 'PDF to JPG — Convert PDF Pages to Images (Free, Private)';
 const description = 'Free PDF to JPG converter. Turn each page of a PDF into a JPG image right in your browser, then download them zipped. Nothing is uploaded.';
 const faqItems = [
@@ -24,7 +25,7 @@ const howSteps = [
   </Fragment>
   <header class="head"><div class="wrap">
     <p class="kicker">PDF Tool</p><h1>PDF to JPG</h1>
-    <p>Turn every PDF page into an image — in your browser, never uploaded.</p>
+    <p>Drop in a PDF to render every page to a downloadable JPG — right here in your browser.</p>
   </div></header>
   <div class="wrap"><div class="tool wm">
     <div id="drop" class="drop"><input id="file" type="file" accept="application/pdf,.pdf" hidden />
@@ -44,6 +45,7 @@ const howSteps = [
     <div class="xlinks"><a href="/tools/jpg-to-pdf">JPG to PDF →</a><a href="/tools/pdf-tools">Merge PDF →</a></div>
   </div>
   <HowTo task="convert a PDF to JPG images" steps={howSteps} />
+  <AppLd name="PDF to JPG" description="Drop or browse to a PDF and this tool renders each page to a JPG thumbnail you can download individually or grab all at once as a zip." category="BusinessApplication" features={["Drag-and-drop or browse to load a PDF", "Renders every page to a 2x-scale JPG in-browser", "Download any single page image", "Download all pages as a single zip", "Runs fully client-side — no uploads"]} />
   <Faq items={faqItems} />
   <style>
     .drop{border:2px dashed var(--line);border-radius:14px;background:var(--surface2);padding:40px 20px;text-align:center;cursor:pointer}

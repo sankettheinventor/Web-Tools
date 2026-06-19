@@ -1,7 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
-const title = 'Tip Calculator — Tip & Bill Split (Free, Instant)';
+import AppLd from '../../components/AppLd.astro';
+const title = 'Tip Calculator — Drag to Set Tip & Split Live';
 const description = 'Free tip calculator. Enter the bill, choose a tip percentage and split between people to see the tip, total and amount per person instantly.';
 const faqItems = [
   { q: 'How does this tip calculator work?', a: 'It multiplies your bill by the tip percentage to get the tip amount, adds that to the bill for the total, then divides by the number of people. Results update instantly as you type or drag the sliders.' },
@@ -14,7 +15,7 @@ const faqItems = [
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
     <p class="kicker">Everyday Calculator</p><h1>Tip Calculator</h1>
-    <p>Tip and split the bill in seconds.</p>
+    <p>Drag the bill, tip and split sliders to watch each person&rsquo;s share update live.</p>
   </div></header>
   <div class="wrap"><div class="tool">
     <div class="field"><div class="field-top"><label for="cur">Currency</label></div>
@@ -51,6 +52,7 @@ const faqItems = [
     <p>Common tips are 15–20% in the US for good service; many other countries tip less or not at all. Adjust the slider to match your situation.</p>
     <div class="xlinks"><a href="/calculators/percentage">Percentage →</a><a href="/#everyday">All calculators →</a></div>
   </div>
+  <AppLd name="Tip Calculator" description="Drag the bill, tip percentage and split sliders to instantly see the tip, total and per-person share update live in your browser." category="UtilitiesApplication" features={["Live bill, tip and split sliders", "Instant per-person breakdown", "Tip and total bill amounts", "Switch between USD, INR, EUR and GBP", "Runs fully in your browser"]} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){var cur='USD',loc='en-US';function el(i){return document.getElementById(i);}function num(i){var v=parseFloat(el(i).value);return isFinite(v)?v:0;}

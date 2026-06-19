@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
 import HowTo from '../../components/HowTo.astro';
+import AppLd from '../../components/AppLd.astro';
 const title = 'Image Converter & Resizer — JPG, PNG, WebP (Free, Private)';
 const description = 'Free image converter and resizer. Convert between JPG, PNG and WebP and resize images in your browser. Fast, private — your files are never uploaded.';
 const faqItems = [
@@ -21,7 +22,7 @@ const howSteps = [
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
     <p class="kicker">Image Tool</p><h1>Image Converter &amp; Resizer</h1>
-    <p>Convert between JPG, PNG and WebP, and resize — all in your browser.</p>
+    <p>Drop in an image, pick JPG, PNG or WebP, and drag the size — right here in your browser.</p>
   </div></header>
   <div class="wrap"><div class="tool wm">
     <div id="drop" class="drop"><input id="file" type="file" accept="image/*" hidden />
@@ -68,6 +69,7 @@ const howSteps = [
     @media(max-width:680px){.wm-grid{grid-template-columns:1fr}}
   </style>
   <HowTo task="convert and resize an image" steps={howSteps} />
+  <AppLd name="Image Converter & Resizer" description="Drop in an image, choose JPG, PNG or WebP, and type a new width or height to resize it live in your browser." category="MultimediaApplication" features={["Convert between JPG, PNG and WebP", "Drag-and-drop or browse to add an image", "Resize by width or height with aspect-ratio lock", "Live preview with new file size", "One-click download — nothing uploaded"]} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){

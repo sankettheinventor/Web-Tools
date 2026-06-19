@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
 import HowTo from '../../components/HowTo.astro';
+import AppLd from '../../components/AppLd.astro';
 const title = 'Favicon & App Icon Generator — From Image or Emoji (Free)';
 const description = 'Free favicon & app icon generator. Make icons from an image, text or emoji — every iOS & Android size plus a real favicon.ico. Runs in your browser.';
 const faqItems = [
@@ -25,7 +26,7 @@ const howSteps = [
   </Fragment>
   <header class="head"><div class="wrap">
     <p class="kicker">Image Tool</p><h1>Favicon &amp; App Icon Generator</h1>
-    <p>From an image, text or emoji — get every favicon, iOS &amp; Android size and a real <code>.ico</code>, all in your browser.</p>
+    <p>Drop in an image or type an emoji, then download every favicon size and a real <code>.ico</code> — right in your browser.</p>
   </div></header>
 
   <div class="wrap"><div class="tool fav">
@@ -108,6 +109,7 @@ const howSteps = [
   </style>
 
   <HowTo task="make a favicon" steps={howSteps} />
+  <AppLd name="Favicon & App Icon Generator" description="Drop in a square image or type a letter or emoji, pick colours and a shape, preview your icon live, then download a real favicon.ico or a zip of every iOS, Android and PWA size — all in your browser." category="DesignApplication" features={["Drag-and-drop image upload or type a letter/emoji", "Pick text colour, background colour and shape (rounded, square, circle)", "Live previews at 16, 32, 48, 180 and 512 px", "Download a real multi-resolution favicon.ico", "Export all 11 sizes plus a head snippet as a .zip"]} />
   <Faq items={faqItems} />
 
   <script is:inline>

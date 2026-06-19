@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
 import HowTo from '../../components/HowTo.astro';
+import AppLd from '../../components/AppLd.astro';
 const title = 'HEIC to JPG Converter — Free, Private, In Your Browser';
 const description = 'Free HEIC to JPG converter. Turn iPhone HEIC/HEIF photos into JPG right in your browser — batch supported, adjustable quality, and nothing is ever uploaded.';
 const faqItems = [
@@ -24,7 +25,7 @@ const howSteps = [
   </Fragment>
   <header class="head"><div class="wrap">
     <p class="kicker">Image Tool</p><h1>HEIC to JPG Converter</h1>
-    <p>Convert iPhone HEIC photos to JPG — in your browser, nothing uploaded.</p>
+    <p>Drop your iPhone HEIC photos here to batch-convert them to JPG live in your browser.</p>
   </div></header>
   <div class="wrap"><div class="tool wm">
     <div id="drop" class="drop"><input id="file" type="file" accept=".heic,.heif,image/heic,image/heif" multiple hidden />
@@ -57,6 +58,7 @@ const howSteps = [
     .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line)}.status{margin-top:10px;font-size:13px;color:var(--dim)}
   </style>
   <HowTo task="convert HEIC to JPG" steps={howSteps} />
+  <AppLd name="HEIC to JPG Converter" description="Drop or browse to one or many iPhone HEIC/HEIF photos, drag the quality slider, and batch-convert them to JPG live in your browser with instant previews." category="MultimediaApplication" features={["Batch convert multiple HEIC/HEIF files at once", "Drag-and-drop or browse upload", "Adjustable JPG quality slider (40-100%)", "Instant preview thumbnails", "Download all converted JPGs at once"]} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){

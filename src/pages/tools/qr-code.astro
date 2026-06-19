@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
 import HowTo from '../../components/HowTo.astro';
+import AppLd from '../../components/AppLd.astro';
 const title = 'QR Code Generator — URL, WiFi, vCard, Email & More (Free)';
 const description = 'Free QR code generator for URLs, WiFi, vCards, email, SMS and text. Style with presets, colors and a logo, then download PNG or SVG. Runs in your browser.';
 const faqItems = [
@@ -25,7 +26,7 @@ const howSteps = [
   </Fragment>
   <header class="head"><div class="wrap">
     <p class="kicker">Utility</p><h1>QR Code Generator</h1>
-    <p>Pick a type, style it, and download — all in your browser, nothing uploaded.</p>
+    <p>Type your details, style the dots and drop in a logo, then download your QR — live in your browser.</p>
   </div></header>
 
   <div class="wrap"><div class="tool qr">
@@ -140,6 +141,8 @@ const howSteps = [
   </style>
 
   <HowTo task="create a QR code" steps={howSteps} />
+
+  <AppLd name="QR Code Generator" description="Pick a QR type, type your details and watch the code update live, then style the dots and corners, drag the size slider, upload a center logo and download a PNG or SVG." category="UtilitiesApplication" features={["Live preview for URL, WiFi, vCard, email, SMS and text", "Style presets with custom dot and background colors", "Adjustable dot and corner shapes", "Upload a center logo with high error correction", "Download as PNG or SVG, or copy to clipboard"]} />
 
   <Faq items={faqItems} />
 

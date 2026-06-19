@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
+import AppLd from '../../components/AppLd.astro';
 const title = 'Case Converter — UPPERCASE, lowercase, Title, camelCase (Free)';
 const description = 'Free case converter: switch text to UPPERCASE, lowercase, Title, Sentence, camelCase, snake_case or kebab-case. Runs in your browser, nothing uploaded.';
 const faqItems = [
@@ -14,7 +15,7 @@ const faqItems = [
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
     <p class="kicker">Text Tool</p><h1>Case Converter</h1>
-    <p>Paste text, tap a case — copy the result.</p>
+    <p>Paste your text, tap a case, and copy the result instantly — right here in your browser.</p>
   </div></header>
   <div class="wrap"><div class="tool">
     <textarea id="t" rows="6" placeholder="Type or paste your text here…">The quick brown fox jumps over the lazy dog</textarea>
@@ -51,6 +52,7 @@ const faqItems = [
     .cbtn:hover{border-color:var(--brand);color:var(--brand)}
     .copybtn{margin-top:14px;padding:11px 18px;border-radius:10px;border:0;background:linear-gradient(135deg,var(--brand2),var(--brand));color:#fff;font:inherit;font-weight:700;cursor:pointer}
   </style>
+  <AppLd name="Case Converter" description="Paste or type text, then tap a case button to instantly convert it to UPPERCASE, Title Case, camelCase, snake_case and more, and copy the result." category="UtilitiesApplication" features={["One-tap conversion to 9 text cases", "Chain conversions in place on the same text box", "camelCase, PascalCase, snake_case and kebab-case for code", "One-click copy of the converted result", "Runs entirely in your browser, nothing uploaded"]} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){

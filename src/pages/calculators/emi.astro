@@ -1,10 +1,12 @@
 ---
 import Base from '../../layouts/Base.astro';
-const title = 'EMI Calculator — Monthly Loan Payment (Free, Instant)';
-const description = 'Free EMI calculator: enter loan amount, rate and tenure to see your monthly EMI, total interest and total payment. Runs in your browser, nothing uploaded.';
+import AppLd from '../../components/AppLd.astro';
+const title = 'EMI Calculator — Adjust Rate, Tenure & Loan Live';
+const description = 'Free EMI calculator: drag sliders for loan amount, rate and tenure to see your monthly EMI, total interest and total payment update live. Runs in your browser.';
 ---
 <Base title={title} description={description}>
   <Fragment slot="head">
+    <AppLd name="EMI Calculator" description="Interactive EMI calculator — adjust loan amount, interest rate and tenure with live sliders to see your monthly payment, total interest and amortisation instantly." category="FinanceApplication" features={["Live sliders for loan, rate and tenure","Monthly EMI, total interest and total payment","Multi-currency","Runs fully in your browser — nothing uploaded"]} />
     <script type="application/ld+json" set:html={JSON.stringify({
       "@context":"https://schema.org","@type":"FAQPage","mainEntity":[
         {"@type":"Question","name":"How is EMI calculated?","acceptedAnswer":{"@type":"Answer","text":"EMI = P × r × (1+r)^n ÷ ((1+r)^n − 1), where P is the principal, r is the monthly interest rate (annual rate ÷ 12 ÷ 100) and n is the number of monthly instalments."}},

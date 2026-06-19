@@ -1,7 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
-const title = 'Discount & GST Calculator — Final Price After Sale & Tax (Free)';
+import AppLd from '../../components/AppLd.astro';
+const title = 'Discount Calculator — Drag Price, Discount & Tax Live';
 const description = 'Free discount & GST/VAT calculator: enter price, discount % and tax rate to get the final price and your savings. Runs in your browser.';
 const faqItems = [
   { q: 'How does this calculator work out the final price?', a: 'It first takes the discount off the original price, then applies the tax to that discounted amount. The formula is final = price × (1 − discount%) × (1 + tax%).' },
@@ -14,7 +15,7 @@ const faqItems = [
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
     <p class="kicker">Everyday Calculator</p><h1>Discount &amp; GST Calculator</h1>
-    <p>Work out the real price after a discount and tax.</p>
+    <p>Drag the sliders to watch your final price, savings and tax update live.</p>
   </div></header>
   <div class="wrap"><div class="tool">
     <div class="field"><div class="field-top"><label for="cur">Currency</label></div>
@@ -51,6 +52,7 @@ const faqItems = [
     <p>That order matters — tax is charged on what you actually pay, not the pre-discount price. Use it for sales, coupons and checkout estimates anywhere in the world.</p>
     <div class="xlinks"><a href="/calculators/percentage">Percentage →</a><a href="/#everyday">All calculators →</a></div>
   </div>
+  <AppLd name="Discount & GST Calculator" description="Drag the price, discount and tax sliders and switch currency to see your final price, savings and tax recalculate live in your browser." category="FinanceApplication" features={["Live price, discount and tax sliders", "Instant final-price calculation", "You save and tax added breakdown", "Switch between USD, INR, EUR and GBP", "100% client-side, nothing uploaded"]} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){var cur='USD',loc='en-US';function el(i){return document.getElementById(i);}function num(i){var v=parseFloat(el(i).value);return isFinite(v)?v:0;}

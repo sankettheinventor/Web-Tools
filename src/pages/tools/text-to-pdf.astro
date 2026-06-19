@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
 import HowTo from '../../components/HowTo.astro';
+import AppLd from '../../components/AppLd.astro';
 const title = 'Text to PDF — Convert Text to a PDF File (Free, Private)';
 const description = 'Free text to PDF converter. Paste your text, pick page size and font size, and download a clean PDF — generated in your browser, nothing uploaded.';
 const faqItems = [
@@ -24,7 +25,7 @@ const howSteps = [
   </Fragment>
   <header class="head"><div class="wrap">
     <p class="kicker">Document Tool</p><h1>Text to PDF</h1>
-    <p>Paste text, get a clean PDF — made in your browser, never uploaded.</p>
+    <p>Paste your text, pick a page size and font, and download a clean PDF right here in your browser.</p>
   </div></header>
   <div class="wrap"><div class="tool">
     <textarea id="t" rows="9" placeholder="Type or paste your text here…"></textarea>
@@ -49,6 +50,7 @@ const howSteps = [
     .dlbtn{margin-top:14px;padding:12px 20px;border-radius:10px;border:0;background:linear-gradient(135deg,var(--brand2),var(--brand));color:#fff;font:inherit;font-weight:700;cursor:pointer}
   </style>
   <HowTo task="convert text to a PDF" steps={howSteps} />
+  <AppLd name="Text to PDF Converter" description="Paste text into the editor, choose A4 or Letter page size and a font size, then click to generate and download a multi-page PDF in your browser." category="BusinessApplication" features={["Paste or type text into a live editor", "Choose A4 or Letter page size", "Adjust font size (11–16pt)", "Automatic line wrapping and page breaks", "One-click PDF download, nothing uploaded"]} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){

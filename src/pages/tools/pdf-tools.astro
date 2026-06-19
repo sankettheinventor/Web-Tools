@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
 import HowTo from '../../components/HowTo.astro';
+import AppLd from '../../components/AppLd.astro';
 const title = 'Merge PDF — Combine PDF Files Free (Private, In Browser)';
 const description = 'Free PDF merger. Combine multiple PDF files into one in your browser, rotate pages, then download. Nothing is uploaded — your documents stay private.';
 const faqItems = [
@@ -24,7 +25,7 @@ const howSteps = [
   </Fragment>
   <header class="head"><div class="wrap">
     <p class="kicker">PDF Tool</p><h1>Merge PDF</h1>
-    <p>Combine several PDFs into one — in your browser, never uploaded.</p>
+    <p>Drop in your PDFs, set the order, and merge them into one file — right here in your browser.</p>
   </div></header>
   <div class="wrap"><div class="tool wm">
     <div id="drop" class="drop"><input id="file" type="file" accept="application/pdf,.pdf" multiple hidden />
@@ -47,6 +48,7 @@ const howSteps = [
     <div class="xlinks"><a href="/">All tools →</a></div>
   </div>
   <HowTo task="merge PDF files" steps={howSteps} />
+  <AppLd name="Merge PDF" description="Drop or browse to add your PDF files, reorder them in the list, optionally rotate every page, then merge and download the combined file right in your browser." category="BusinessApplication" features={["Drag-and-drop PDF files to combine","Merge multiple PDFs in the order you add them","Rotate all pages 90° right, 180°, or 90° left","One-click merge and download","Runs fully in-browser — no uploads"]} />
   <Faq items={faqItems} />
   <style>
     .drop{border:2px dashed var(--line);border-radius:16px;background:var(--surface2);padding:48px 24px;text-align:center;cursor:pointer}

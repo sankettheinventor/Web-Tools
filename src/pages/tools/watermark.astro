@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
 import HowTo from '../../components/HowTo.astro';
+import AppLd from '../../components/AppLd.astro';
 const title = 'Add Watermark to Photos — Free Batch Watermark Studio';
 const description = 'Add text, logo or signature watermarks to photos in your browser — batch mode, fonts, opacity, tiling. Free, no signup, nothing is ever uploaded.';
 const faqItems = [
@@ -171,6 +172,7 @@ const howSteps = [
   </style>
 
   <HowTo task="add a watermark to a photo" steps={howSteps} />
+  <AppLd name="Watermark Studio" description="Drop your photos in, then drag sliders to style a text, logo or signature watermark with live opacity, rotation and tiling — right in your browser." category="MultimediaApplication" features={["Batch-watermark many photos at once", "Text, logo and signature watermark modes", "Live sliders for size, opacity and rotation", "Tile a watermark across the whole image", "Download single photos or the whole batch as PNG"]} />
   <Faq items={faqItems} />
 
   <script is:inline>

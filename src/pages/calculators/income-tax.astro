@@ -1,7 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
-const title = 'Income Tax Calculator India (New vs Old Regime, FY 2025-26)';
+import AppLd from '../../components/AppLd.astro';
+const title = 'Income Tax Calculator — Drag Income, Compare Regimes Live';
 const description = 'Compare India new vs old tax regimes for FY 2025-26 with standard deduction, 87A rebate and 4% cess. Runs in your browser, nothing uploaded.';
 const faqItems = [
   { q: 'What is the difference between the new and old tax regime?', a: 'The new regime (FY 2025-26) has lower slab rates and a higher ₹75,000 standard deduction, with tax effectively nil up to ₹12,00,000 taxable income via the 87A rebate. The old regime has a ₹50,000 standard deduction but lets you claim deductions like 80C and 80D, with the 87A rebate nil up to ₹5,00,000.' },
@@ -15,7 +16,7 @@ const faqItems = [
   <header class="head"><div class="wrap">
     <p class="kicker">Finance Calculator</p>
     <h1>Income Tax Calculator</h1>
-    <p>Estimate your India income tax for FY 2025-26 — compare the new and old regimes live.</p>
+    <p>Drag your income slider to watch your FY 2025-26 tax update live across both regimes.</p>
   </div></header>
 
   <div class="wrap">
@@ -76,6 +77,8 @@ const faqItems = [
     <p><em>This is a simplified estimate for general guidance, ignores surcharge on very high incomes and marginal relief, and is not tax advice. Confirm with a tax professional or the official portal before filing.</em></p>
     <div class="xlinks"><a href="/calculators/emi">EMI Calculator →</a><a href="/#calculators">All calculators →</a></div>
   </div>
+
+  <AppLd name="Income Tax Calculator" description="Drag the income slider and switch between the new and old regimes to watch your FY 2025-26 tax, cess and take-home update live in your browser." category="FinanceApplication" features={["Live income slider", "Toggle new vs old regime", "Adjustable 80C deductions slider", "Instant 87A rebate and 4% cess", "Effective rate and take-home breakdown"]} />
 
   <Faq items={faqItems} />
 

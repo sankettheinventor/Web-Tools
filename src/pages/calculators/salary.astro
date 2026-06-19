@@ -1,7 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
-const title = 'Take-Home Salary Calculator — Gross to Net Pay (Free)';
+import AppLd from '../../components/AppLd.astro';
+const title = 'Salary Calculator — Adjust Gross, Tax & Deductions Live';
 const description = 'Free take-home salary calculator. Enter your gross pay and deductions (tax, retirement, other) to see your net monthly and annual in-hand salary instantly.';
 const faqItems = [
   { q: 'How do I calculate my take-home pay from gross salary?', a: 'Enter your annual gross salary, then set your income tax, retirement/PF percentages and any fixed monthly deduction. The calculator subtracts those from your gross and shows your monthly and annual in-hand salary instantly.' },
@@ -14,7 +15,7 @@ const faqItems = [
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
     <p class="kicker">Finance Calculator</p><h1>Take-Home Salary Calculator</h1>
-    <p>Turn gross pay into real in-hand salary. Adjust the deductions for your situation.</p>
+    <p>Drag the sliders for gross pay, tax and PF to watch your take-home update live.</p>
   </div></header>
   <div class="wrap"><div class="tool">
     <div class="field"><div class="field-top"><label for="cur">Currency</label></div>
@@ -53,6 +54,7 @@ const faqItems = [
     <p>Because tax and retirement rules differ by country, this calculator lets you enter the percentages that apply to you, so it works anywhere. <em>For an exact figure, check your payslip or a local tax tool.</em></p>
     <div class="xlinks"><a href="/calculators/income-tax">Income Tax →</a><a href="/#calculators">All calculators →</a></div>
   </div>
+  <AppLd name="Take-Home Salary Calculator" description="Drag sliders for gross salary, income tax and retirement/PF and watch your monthly and annual take-home pay update live." category="FinanceApplication" features={["Live sliders for gross salary, tax and PF percentages","Instant monthly and annual in-hand pay results","Switch between INR, USD, EUR and GBP currencies","Adjustable extra monthly deduction field","100% client-side — nothing uploaded"]} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){var cur='INR',loc='en-IN';function el(i){return document.getElementById(i);}function num(i){var v=parseFloat(el(i).value);return isFinite(v)?v:0;}

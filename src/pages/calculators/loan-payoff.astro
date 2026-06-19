@@ -1,7 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
-const title = 'Loan Payoff Calculator — How Long to Pay Off a Loan (Free)';
+import AppLd from '../../components/AppLd.astro';
+const title = 'Loan Payoff Calculator — Drag Balance, Rate & Payment Live';
 const description = 'Free loan payoff calculator: see how long until you are debt-free and how extra payments cut interest. Runs in your browser; nothing is uploaded.';
 const faqItems = [
   { q: 'How does this loan payoff calculator work?', a: 'Enter your loan balance, annual interest rate and monthly payment, and the calculator finds how many months it takes to reach a zero balance. It also shows the total interest and total amount you will pay.' },
@@ -79,6 +80,8 @@ const faqItems = [
       <a href="/#calculators">All calculators →</a>
     </div>
   </div>
+
+  <AppLd name="Loan Payoff Calculator" description="Drag the balance, rate, monthly and extra-payment sliders to watch your debt-free date and total interest update live in your browser." category="FinanceApplication" features={["Drag sliders for balance, interest rate and monthly payment", "Add an extra monthly payment to see months and interest saved", "Live debt-free time, total interest and total paid", "Switch between USD, INR, EUR and GBP", "100% client-side — nothing uploaded"]} />
 
   <Faq items={faqItems} />
 

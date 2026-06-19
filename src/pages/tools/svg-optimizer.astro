@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
 import HowTo from '../../components/HowTo.astro';
+import AppLd from '../../components/AppLd.astro';
 const title = 'SVG Optimizer — Minify & Clean SVG Files Online (Free)';
 const description = 'Free SVG optimizer. Paste or upload an SVG to strip comments, editor metadata and whitespace, shrinking the file — all in your browser, nothing uploaded.';
 const faqItems = [
@@ -20,7 +21,7 @@ const howSteps = [
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
     <p class="kicker">Utility</p><h1>SVG Optimizer</h1>
-    <p>Clean and shrink SVG code — paste it in, copy it out.</p>
+    <p>Paste or upload your SVG and watch it shrink live — then copy or download.</p>
   </div></header>
   <div class="wrap"><div class="tool">
     <div class="svg-grid">
@@ -60,6 +61,7 @@ const howSteps = [
     .sizes{display:flex;gap:22px;margin-top:14px;font-size:13.5px;color:var(--dim);background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:12px}.sizes .hl{color:var(--brand);font-weight:700}
   </style>
   <HowTo task="optimize an SVG file" steps={howSteps} />
+  <AppLd name="SVG Optimizer" description="Paste your SVG markup or upload an .svg file to strip metadata and whitespace and watch the file size shrink live, then copy or download the optimized result." category="DeveloperApplication" features={["Paste SVG markup or upload an .svg file","Live before/after size and percentage saved","Strips comments, metadata and editor cruft","Copy optimized result to clipboard","Download the minified optimized.svg"]} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){

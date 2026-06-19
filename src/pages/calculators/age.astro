@@ -1,7 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
-const title = 'Age Calculator — Exact Age in Years, Months & Days (Free)';
+import AppLd from '../../components/AppLd.astro';
+const title = 'Age Calculator — Get Your Exact Age on Any Date Live';
 const description = 'Free age calculator. Enter your date of birth to find your exact age in years, months and days — plus total months, weeks and days. Runs in your browser.';
 const faqItems = [
   { q: 'How do I calculate my exact age in years, months and days?', a: 'Enter your date of birth and the calculator instantly shows your exact age as complete years, then the remaining months, then the remaining days. The "Age at date" field defaults to today, but you can change it to find your age on any past or future date.' },
@@ -14,7 +15,7 @@ const faqItems = [
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
     <p class="kicker">Everyday Calculator</p><h1>Age Calculator</h1>
-    <p>Your exact age, down to the day.</p>
+    <p>Pick your date of birth and any target date to see your exact age update live.</p>
   </div></header>
   <div class="wrap"><div class="tool">
     <div class="grid2">
@@ -41,6 +42,7 @@ const faqItems = [
     <div class="xlinks"><a href="/#everyday">All calculators →</a></div>
   </div>
   <style>.dateinput{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface2);color:var(--txt);font:inherit;font-weight:600;outline:none}.dateinput:focus{border-color:var(--brand)}</style>
+  <AppLd name="Age Calculator" description="Pick your date of birth and any 'age at date' to instantly see your exact age in years, months and days, with totals and a next-birthday countdown updating live as you change the dates." category="UtilitiesApplication" features={["Exact age in years, months and days", "Age at any past or future date", "Total months, weeks and days", "Days-until-next-birthday countdown", "Live results, runs fully in your browser"]} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){

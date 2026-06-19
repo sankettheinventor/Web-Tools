@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
 import HowTo from '../../components/HowTo.astro';
+import AppLd from '../../components/AppLd.astro';
 const title = 'Color Palette Extractor — Get Colors From a Photo (Free)';
 const description = 'Free color palette extractor: pull dominant colors from any photo as copyable HEX swatches for moodboards and brands. Runs in your browser, nothing uploaded.';
 const faqItems = [
@@ -21,7 +22,7 @@ const howSteps = [
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
     <p class="kicker">Color Tool</p><h1>Color Palette Extractor</h1>
-    <p>Pull the dominant colours out of any photo — copy the HEX you like.</p>
+    <p>Drop in a photo and click any swatch to copy its HEX — right here in your browser.</p>
   </div></header>
   <div class="wrap"><div class="tool">
     <div id="drop" class="drop"><input id="file" type="file" accept="image/*" hidden />
@@ -50,6 +51,7 @@ const howSteps = [
     .sw:hover .hx{color:var(--brand)}
     .randbtn{margin-top:16px;padding:10px 16px;border-radius:9px;border:1px solid var(--line);background:var(--surface2);color:var(--txt);font:inherit;font-weight:700;cursor:pointer}
   </style>
+  <AppLd name="Color Palette Extractor" description="Drop or browse to a photo and the tool instantly extracts up to 8 dominant colors as clickable HEX swatches you copy with one tap." category="DesignApplication" features={["Drag-and-drop photo upload","Instant in-browser color extraction","Up to 8 dominant color swatches","One-click HEX copy to clipboard","Reset to extract from a new image"]} />
   <HowTo task="extract a color palette from an image" steps={howSteps} />
   <Faq items={faqItems} />
   <script is:inline>

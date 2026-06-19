@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
 import HowTo from '../../components/HowTo.astro';
+import AppLd from '../../components/AppLd.astro';
 const title = 'JPG to PDF — Convert Images to PDF (Free, Private)';
 const description = 'Free JPG to PDF converter. Combine JPG, PNG or WebP images into a single PDF — one image per page, in order — right in your browser. Nothing is uploaded.';
 const faqItems = [
@@ -23,7 +24,7 @@ const howSteps = [
   </Fragment>
   <header class="head"><div class="wrap">
     <p class="kicker">PDF Tool</p><h1>JPG to PDF</h1>
-    <p>Combine images into one PDF — in your browser, never uploaded.</p>
+    <p>Drop in your JPGs and merge them into one PDF in seconds — right here in your browser.</p>
   </div></header>
   <div class="wrap"><div class="tool wm">
     <div id="drop" class="drop"><input id="file" type="file" accept="image/*" multiple hidden />
@@ -52,6 +53,7 @@ const howSteps = [
     .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line)}.status{margin-top:10px;font-size:13px;color:var(--dim)}
   </style>
   <HowTo task="convert JPG images to PDF" steps={howSteps} />
+  <AppLd name="JPG to PDF Converter" description="Drop or browse to upload JPG, PNG or WebP images, reorder them as one-per-page thumbnails, and click Create PDF to merge them into a single downloadable PDF in your browser." category="BusinessApplication" features={["Drag-and-drop image upload","Combine multiple images into one PDF","One image per page sized to the image","Supports JPG, PNG and WebP","100% in-browser — nothing uploaded"]} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){
