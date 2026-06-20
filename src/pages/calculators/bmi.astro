@@ -8,6 +8,7 @@ const faqItems = [
   { q: 'How is BMI calculated?', a: 'BMI is your weight divided by the square of your height. This tool uses weight (kg) divided by height (m) squared for metric, and 703 times weight (lb) divided by height (inches) squared for imperial.' },
   { q: 'What do the BMI categories mean?', a: 'This calculator labels a BMI under 18.5 as underweight, 18.5 to 24.9 as a healthy weight, 25 to 29.9 as overweight, and 30 or above as obese.' },
   { q: 'Can I switch between metric and imperial units?', a: 'Yes. Use the Units dropdown to toggle between metric (cm, kg) and imperial (ft/in, lb), and the result updates as you type.' },
+  { q: 'What is a healthy weight for my height?', a: 'A BMI of 18.5 to 24.9 is considered healthy, so the healthy weight range is 18.5 times your height in metres squared up to 24.9 times your height in metres squared. This calculator works that range out for you and shows how many kg or lb you are above or below it.' },
   { q: 'Is BMI an accurate measure of health?', a: 'BMI is only a rough screening number. It does not distinguish muscle from fat or account for age, sex or body composition, so treat it as one indicator and consult a healthcare professional for a full assessment.' },
   { q: 'Is my height and weight data uploaded or stored?', a: 'No. Everything is calculated locally in your browser. Your height and weight are never uploaded, stored, or shared.' },
 ];
@@ -62,6 +63,10 @@ const faqItems = [
         <div class="rlabel">Your BMI</div>
         <div class="rbig" id="bmi">—</div>
         <div class="rsub" id="cat"></div>
+        <div class="breakdown">
+          <div class="bd"><div class="k">Healthy weight range</div><div class="v" id="bdRange">—</div></div>
+          <div class="bd"><div class="k">Where you stand</div><div class="v" id="bdStand">—</div></div>
+        </div>
       </div>
     </div>
   </div>
@@ -78,7 +83,7 @@ const faqItems = [
     <div class="xlinks"><a href="/#calculators">All calculators →</a></div>
   </div>
 
-  <AppLd name="BMI Calculator" description="Drag the height and weight sliders or type your numbers and toggle metric/imperial units to see your Body Mass Index and category update live in your browser." category="HealthApplication" features={["Height and weight sliders that update BMI live","Metric and imperial unit toggle","Instant BMI category labeling (underweight to obese)","Type-in number inputs synced to sliders","100% client-side, no data uploaded"]} />
+  <AppLd name="BMI Calculator" description="Drag the height and weight sliders or type your numbers and toggle metric/imperial units to see your Body Mass Index and category update live in your browser." category="HealthApplication" features={["Height and weight sliders that update BMI live","Metric and imperial unit toggle","Instant BMI category labeling (underweight to obese)","Healthy weight range for your height with how far you are above or below it","Type-in number inputs synced to sliders","100% client-side, no data uploaded"]} />
 
   <Faq items={faqItems} />
 
@@ -95,15 +100,25 @@ const faqItems = [
         return ['Obese','var(--err)'];
       }
       function compute(){
-        var unit=el('unit').value, bmi=0;
+        var unit=el('unit').value, bmi=0, m=0, wkg=0, u='kg';
         if(unit==='metric'){
-          var m=num('cm')/100; if(m>0) bmi=num('kg')/(m*m);
+          m=num('cm')/100; wkg=num('kg'); if(m>0) bmi=wkg/(m*m);
         } else {
-          var inch=num('ft')*12+num('in'); if(inch>0) bmi=703*num('lb')/(inch*inch);
+          var inch=num('ft')*12+num('in'); m=inch*0.0254; wkg=num('lb')/2.20462; u='lb';
+          if(inch>0) bmi=703*num('lb')/(inch*inch);
         }
-        if(!isFinite(bmi)||bmi<=0){el('bmi').textContent='—';el('cat').textContent='';return;}
+        if(!isFinite(bmi)||bmi<=0){el('bmi').textContent='—';el('cat').textContent='';el('bdRange').textContent='—';el('bdStand').textContent='—';return;}
         el('bmi').textContent=bmi.toFixed(1);
         var c=cat(bmi); el('cat').textContent=c[0]; el('cat').style.color=c[1];
+        // Healthy weight range (BMI 18.5–24.9) for this height
+        var loKg=18.5*m*m, hiKg=24.9*m*m;
+        var f=unit==='metric'?1:2.20462;
+        el('bdRange').textContent=Math.round(loKg*f)+'–'+Math.round(hiKg*f)+' '+u;
+        var stand;
+        if(wkg<loKg){stand='You are '+Math.round((loKg-wkg)*f)+' '+u+' below the healthy range.';}
+        else if(wkg>hiKg){stand='You are '+Math.round((wkg-hiKg)*f)+' '+u+' above the healthy range.';}
+        else {stand='You are within the healthy range.';}
+        el('bdStand').textContent=stand;
       }
       el('unit').addEventListener('change',function(){
         var im=el('unit').value==='imperial';

@@ -9,6 +9,7 @@ const faqItems = [
   { q: 'How does the calculator handle leap years?', a: 'Each remaining day count uses the actual number of days in each month, so February 29 and leap years are accounted for automatically. This keeps the months and days breakdown accurate regardless of which years your dates span.' },
   { q: 'What do the total months, weeks and days figures mean?', a: 'Those values express your entire age in a single unit instead of a years-months-days breakdown — for example your full age counted only in weeks or only in days. They are useful for milestones like a 1,000-day or 500-week marker.' },
   { q: 'How is the days until my next birthday counted?', a: 'The calculator finds your next birthday on or after the chosen "Age at date" and counts the number of days remaining until it. If your birthday is today the count reflects your next one in the following year.' },
+  { q: 'How does it know which day of the week I was born?', a: 'The calculator reads the year, month and day from your date of birth and works out the weekday directly in your browser using the standard calendar, so it correctly accounts for leap years and the way weekdays shift across centuries. It updates the moment you change your date of birth.' },
   { q: 'Is my date of birth uploaded or stored anywhere?', a: 'No. Everything is processed locally in your browser, so your date of birth and results are never uploaded, stored, or shared. Nothing leaves your device.' },
 ];
 ---
@@ -30,6 +31,7 @@ const faqItems = [
         <div class="bd"><div class="k">Total months</div><div class="v" id="bdM">—</div></div>
         <div class="bd"><div class="k">Total weeks</div><div class="v" id="bdW">—</div></div>
         <div class="bd"><div class="k">Total days</div><div class="v" id="bdD">—</div></div>
+        <div class="bd"><div class="k">Born on a</div><div class="v" id="bdDow">—</div></div>
         <div class="bd"><div class="k">Next birthday</div><div class="v" id="bdB">—</div></div>
       </div>
     </div>
@@ -38,11 +40,11 @@ const faqItems = [
   <div class="content">
     <h2>How age is calculated</h2>
     <p>Your age is the time between your date of birth and a chosen date (today by default). The calculator counts complete years, then the remaining months, then the remaining days — the same way you'd say "32 years, 4 months and 9 days".</p>
-    <p>It also shows your age expressed entirely in months, weeks and days, and counts down to your next birthday.</p>
+    <p>It also shows your age expressed entirely in months, weeks and days, tells you which day of the week you were born on, and counts down to your next birthday.</p>
     <div class="xlinks"><a href="/#everyday">All calculators →</a></div>
   </div>
   <style>.dateinput{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface2);color:var(--txt);font:inherit;font-weight:600;outline:none}.dateinput:focus{border-color:var(--brand)}</style>
-  <AppLd name="Age Calculator" description="Pick your date of birth and any 'age at date' to instantly see your exact age in years, months and days, with totals and a next-birthday countdown updating live as you change the dates." category="UtilitiesApplication" features={["Exact age in years, months and days", "Age at any past or future date", "Total months, weeks and days", "Days-until-next-birthday countdown", "Live results, runs fully in your browser"]} />
+  <AppLd name="Age Calculator" description="Pick your date of birth and any 'age at date' to instantly see your exact age in years, months and days, with totals and a next-birthday countdown updating live as you change the dates." category="UtilitiesApplication" features={["Exact age in years, months and days", "Age at any past or future date", "Total months, weeks and days", "Day of the week you were born", "Days-until-next-birthday countdown", "Live results, runs fully in your browser"]} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){
@@ -52,7 +54,7 @@ const faqItems = [
       var d18=new Date(today.getFullYear()-25,today.getMonth(),today.getDate()); el('dob').value=pad(d18);
       function c(){
         var b=new Date(el('dob').value), a=new Date(el('asof').value);
-        if(isNaN(b)||isNaN(a)||a<b){el('age').textContent='—';el('bdM').textContent=el('bdW').textContent=el('bdD').textContent=el('bdB').textContent='—';return;}
+        if(isNaN(b)||isNaN(a)||a<b){el('age').textContent='—';el('bdM').textContent=el('bdW').textContent=el('bdD').textContent=el('bdDow').textContent=el('bdB').textContent='—';return;}
         var y=a.getFullYear()-b.getFullYear(), m=a.getMonth()-b.getMonth(), d=a.getDate()-b.getDate();
         if(d<0){m--;d+=new Date(a.getFullYear(),a.getMonth(),0).getDate();}
         if(m<0){y--;m+=12;}
@@ -61,6 +63,8 @@ const faqItems = [
         el('bdM').textContent=(y*12+m).toLocaleString();
         el('bdW').textContent=Math.floor(days/7).toLocaleString();
         el('bdD').textContent=days.toLocaleString();
+        var dn=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+        el('bdDow').textContent=dn[new Date(b.getFullYear(),b.getMonth(),b.getDate()).getDay()];
         var nb=new Date(a.getFullYear(),b.getMonth(),b.getDate()); if(nb<a)nb.setFullYear(a.getFullYear()+1);
         el('bdB').textContent=Math.ceil((nb-a)/86400000)+' days';
       }

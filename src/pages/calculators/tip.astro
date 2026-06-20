@@ -8,6 +8,7 @@ const faqItems = [
   { q: 'How does this tip calculator work?', a: 'It multiplies your bill by the tip percentage to get the tip amount, adds that to the bill for the total, then divides by the number of people. Results update instantly as you type or drag the sliders.' },
   { q: 'How much should I tip?', a: 'In the US, 15-20% is common for good service in restaurants, while many other countries tip less or not at all. Adjust the tip slider to match your local custom and the quality of service.' },
   { q: 'Can I split the bill between several people?', a: 'Yes. Set the "Split between" field to the number of people and the calculator shows how much each person pays, including their share of the tip.' },
+  { q: 'What does the "round up" toggle do?', a: 'When enabled, it rounds the total bill up to the next whole unit (and each person\'s share up to a whole unit too), which is handy for leaving a clean, easy-to-pay amount in cash. The tip amount adjusts to match the rounded total.' },
   { q: 'Which currencies are supported?', a: 'You can choose US Dollar, Indian Rupee, Euro or British Pound, and the results are formatted with the matching currency symbol and number style.' },
   { q: 'Is my bill data uploaded or stored?', a: 'No. Everything is calculated locally in your browser. Nothing you enter is uploaded, stored or shared.' },
 ];
@@ -31,11 +32,18 @@ const faqItems = [
     <div class="grid2">
       <div class="field"><div class="field-top"><label for="tip">Tip</label>
         <div class="valwrap"><input id="tip" type="number" inputmode="decimal" min="0" step="1" value="15" /><span>%</span></div></div>
-        <input id="tipR" type="range" min="0" max="30" step="1" value="15" aria-label="Tip percent" /></div>
+        <input id="tipR" type="range" min="0" max="30" step="1" value="15" aria-label="Tip percent" />
+        <div class="presets" role="group" aria-label="Quick tip percentages">
+          <button type="button" class="preset" data-tip="10">10%</button>
+          <button type="button" class="preset" data-tip="15">15%</button>
+          <button type="button" class="preset" data-tip="18">18%</button>
+          <button type="button" class="preset" data-tip="20">20%</button>
+        </div></div>
       <div class="field"><div class="field-top"><label for="split">Split between</label>
         <div class="valwrap"><input id="split" type="number" inputmode="numeric" min="1" value="2" /><span>ppl</span></div></div>
         <input id="splitR" type="range" min="1" max="20" step="1" value="2" aria-label="Split between people" /></div>
     </div>
+    <label class="roundup"><input id="round" type="checkbox" /> <span>Round up total to a whole <span id="curName">USD</span></span></label>
     <div class="result" aria-live="polite">
       <div class="rlabel">Each person pays</div><div class="rbig" id="each">—</div><div class="rsub" id="sub"></div>
       <div class="breakdown">
@@ -52,16 +60,29 @@ const faqItems = [
     <p>Common tips are 15–20% in the US for good service; many other countries tip less or not at all. Adjust the slider to match your situation.</p>
     <div class="xlinks"><a href="/calculators/percentage">Percentage →</a><a href="/#everyday">All calculators →</a></div>
   </div>
-  <AppLd name="Tip Calculator" description="Drag the bill, tip percentage and split sliders to instantly see the tip, total and per-person share update live in your browser." category="UtilitiesApplication" features={["Live bill, tip and split sliders", "Instant per-person breakdown", "Tip and total bill amounts", "Switch between USD, INR, EUR and GBP", "Runs fully in your browser"]} />
+  <style is:global>
+    .presets{display:flex;gap:.4rem;margin-top:.55rem}
+    .presets .preset{flex:1;padding:.5rem .25rem;border:1px solid var(--line,#d8dce4);border-radius:.55rem;background:var(--card,#fff);color:inherit;font:inherit;font-weight:600;cursor:pointer;line-height:1}
+    .presets .preset:hover{border-color:var(--brand,#3b82f6)}
+    .presets .preset[aria-pressed="true"]{background:var(--brand,#3b82f6);border-color:var(--brand,#3b82f6);color:#fff}
+    .roundup{display:flex;align-items:center;gap:.5rem;margin-top:.4rem;cursor:pointer;font-weight:500}
+    .roundup input{width:1.05rem;height:1.05rem;accent-color:var(--brand,#3b82f6);cursor:pointer}
+  </style>
+  <AppLd name="Tip Calculator" description="Drag the bill, tip percentage and split sliders to instantly see the tip, total and per-person share update live in your browser. Use quick tip presets and round the total up to a whole unit." category="UtilitiesApplication" features={["Live bill, tip and split sliders", "Quick 10/15/18/20% tip presets", "Round up the total and per-person amount", "Instant per-person breakdown", "Tip and total bill amounts", "Switch between USD, INR, EUR and GBP", "Runs fully in your browser"]} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){var cur='USD',loc='en-US';function el(i){return document.getElementById(i);}function num(i){var v=parseFloat(el(i).value);return isFinite(v)?v:0;}
     function money(v){try{return new Intl.NumberFormat(loc,{style:'currency',currency:cur,maximumFractionDigits:2}).format(v);}catch(e){return v.toFixed(2);}}
     function pair(a,b){el(a).addEventListener('input',function(){el(b).value=el(a).value;c();});el(b).addEventListener('input',function(){el(a).value=el(b).value;c();});}
     function c(){var bill=num('bill'),tip=num('tip'),split=Math.max(1,num('split'));var tipAmt=bill*tip/100,total=bill+tipAmt;
-      el('each').textContent=money(total/split);el('sub').textContent='split between '+split;
+      if(el('round').checked){total=Math.ceil(total);tipAmt=total-bill;}
+      var each=total/split;if(el('round').checked){each=Math.ceil(each);}
+      document.querySelectorAll('.preset').forEach(function(b){b.setAttribute('aria-pressed',(+b.dataset.tip===tip)?'true':'false');});
+      el('each').textContent=money(each);el('sub').textContent='split between '+split;
       el('bdTip').textContent=money(tipAmt);el('bdTot').textContent=money(total);}
     pair('bill','billR');pair('tip','tipR');pair('split','splitR');
-    el('cur').addEventListener('change',function(){var o=el('cur').selectedOptions[0];cur=el('cur').value;loc=o.dataset.loc;document.querySelectorAll('.valwrap .sym').forEach(function(s){s.textContent=o.dataset.sym;});c();});c();})();
+    document.querySelectorAll('.preset').forEach(function(b){b.addEventListener('click',function(){el('tip').value=b.dataset.tip;el('tipR').value=b.dataset.tip;c();});});
+    el('round').addEventListener('change',c);
+    el('cur').addEventListener('change',function(){var o=el('cur').selectedOptions[0];cur=el('cur').value;loc=o.dataset.loc;el('curName').textContent=cur;document.querySelectorAll('.valwrap .sym').forEach(function(s){s.textContent=o.dataset.sym;});c();});c();})();
   </script>
 </Base>

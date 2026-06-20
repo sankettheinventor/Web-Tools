@@ -9,6 +9,7 @@ const faqItems = [
   { q: 'Is the tax charged before or after the discount?', a: 'After. Tax (GST, VAT or sales tax) is calculated on the discounted price you actually pay, not on the original pre-discount price.' },
   { q: 'Which currencies and tax rates can I use?', a: 'You can pick US Dollar, Indian Rupee, Euro or British Pound, and enter any discount up to 100% and any tax rate up to 50%, so it works for GST, VAT and sales tax anywhere.' },
   { q: 'What do the "You save" and "Tax added" figures mean?', a: '"You save" is the discount amount taken off the original price, and "Tax added" is the tax charged on the discounted price. Both update instantly as you change the inputs.' },
+  { q: 'How do two stacked discounts combine?', a: 'They multiply, they do not add. A 20% discount followed by an extra 10% is 0.8 × 0.9 = 0.72, so you pay 72% of the price — a 28% effective discount, not 30%. Leave the extra discount at 0 to ignore it.' },
   { q: 'Is my data uploaded or stored anywhere?', a: 'No. Every calculation runs entirely in your browser. Nothing you type is uploaded, stored or shared.' },
 ];
 ---
@@ -32,6 +33,9 @@ const faqItems = [
       <div class="field"><div class="field-top"><label for="disc">Discount</label>
         <div class="valwrap"><input id="disc" type="number" inputmode="decimal" min="0" max="100" step="1" value="20" /><span>%</span></div></div>
         <input id="discR" type="range" min="0" max="90" step="1" value="20" aria-label="Discount percent" /></div>
+      <div class="field"><div class="field-top"><label for="disc2">Extra discount</label>
+        <div class="valwrap"><input id="disc2" type="number" inputmode="decimal" min="0" max="100" step="1" value="0" /><span>%</span></div></div>
+        <input id="disc2R" type="range" min="0" max="90" step="1" value="0" aria-label="Extra discount percent" /></div>
       <div class="field"><div class="field-top"><label for="tax">Tax / GST</label>
         <div class="valwrap"><input id="tax" type="number" inputmode="decimal" min="0" max="50" step="0.5" value="18" /><span>%</span></div></div>
         <input id="taxR" type="range" min="0" max="30" step="0.5" value="18" aria-label="Tax percent" /></div>
@@ -41,6 +45,7 @@ const faqItems = [
       <div class="breakdown">
         <div class="bd"><div class="k">You save</div><div class="v" id="bdSave">—</div></div>
         <div class="bd"><div class="k">Tax added</div><div class="v" id="bdTax">—</div></div>
+        <div class="bd" id="bdEffWrap" hidden><div class="k">Effective discount</div><div class="v" id="bdEff">—</div></div>
       </div>
     </div>
   </div></div>
@@ -50,18 +55,22 @@ const faqItems = [
     <p>First the discount comes off the original price, then tax (GST/VAT/sales tax) is applied to the discounted amount:</p>
     <div class="formula">final = price × (1 − discount%) × (1 + tax%)</div>
     <p>That order matters — tax is charged on what you actually pay, not the pre-discount price. Use it for sales, coupons and checkout estimates anywhere in the world.</p>
+    <p>Got a "20% off, then an extra 10%" deal? Add the second discount and the calculator stacks them properly: discounts multiply rather than add, so 20% then 10% is a 28% effective discount, not 30%.</p>
     <div class="xlinks"><a href="/calculators/percentage">Percentage →</a><a href="/#everyday">All calculators →</a></div>
   </div>
-  <AppLd name="Discount & GST Calculator" description="Drag the price, discount and tax sliders and switch currency to see your final price, savings and tax recalculate live in your browser." category="FinanceApplication" features={["Live price, discount and tax sliders", "Instant final-price calculation", "You save and tax added breakdown", "Switch between USD, INR, EUR and GBP", "100% client-side, nothing uploaded"]} />
+  <AppLd name="Discount & GST Calculator" description="Drag the price, discount and tax sliders and switch currency to see your final price, savings and tax recalculate live in your browser." category="FinanceApplication" features={["Live price, discount and tax sliders", "Stack a second discount for combined effective % off", "Instant final-price calculation", "You save and tax added breakdown", "Switch between USD, INR, EUR and GBP", "100% client-side, nothing uploaded"]} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){var cur='USD',loc='en-US';function el(i){return document.getElementById(i);}function num(i){var v=parseFloat(el(i).value);return isFinite(v)?v:0;}
     function money(v){try{return new Intl.NumberFormat(loc,{style:'currency',currency:cur,maximumFractionDigits:2}).format(v);}catch(e){return v.toFixed(2);}}
     function pair(a,b){el(a).addEventListener('input',function(){el(b).value=el(a).value;c();});el(b).addEventListener('input',function(){el(a).value=el(b).value;c();});}
-    function c(){var p=num('price'),d=num('disc'),t=num('tax');var discounted=p*(1-d/100);var final=discounted*(1+t/100);
-      el('final').textContent=money(final);el('sub').textContent=d+'% off + '+t+'% tax';
-      el('bdSave').textContent=money(p-discounted);el('bdTax').textContent=money(discounted*t/100);}
-    pair('price','priceR');pair('disc','discR');pair('tax','taxR');
+    function c(){var p=num('price'),d=num('disc'),d2=num('disc2'),t=num('tax');var discounted=p*(1-d/100)*(1-d2/100);var final=discounted*(1+t/100);
+      var eff=p>0?(1-discounted/p)*100:0;
+      el('final').textContent=money(final);
+      el('sub').textContent=d2>0?(d+'% + '+d2+'% off ('+(Math.round(eff*100)/100)+'% effective) + '+t+'% tax'):(d+'% off + '+t+'% tax');
+      el('bdSave').textContent=money(p-discounted);el('bdTax').textContent=money(discounted*t/100);
+      el('bdEff').textContent=(Math.round(eff*100)/100)+'%';el('bdEffWrap').hidden=d2<=0;}
+    pair('price','priceR');pair('disc','discR');pair('disc2','disc2R');pair('tax','taxR');
     el('cur').addEventListener('change',function(){var o=el('cur').selectedOptions[0];cur=el('cur').value;loc=o.dataset.loc;document.querySelectorAll('.valwrap .sym').forEach(function(s){s.textContent=o.dataset.sym;});c();});c();})();
   </script>
 </Base>

@@ -8,6 +8,7 @@ const faqItems = [
   { q: 'How do I find what X% of Y is?', a: 'Use the first row: enter the percentage and the number, and the tool computes (X / 100) x Y. For example, 15% of 200 is 30.' },
   { q: 'How do I work out what percent one number is of another?', a: 'Use the second row: it divides the first number by the second and multiplies by 100. For example, 45 is 25% of 180.' },
   { q: 'How is the percentage increase or decrease calculated?', a: 'The third row uses ((New - Old) / Old) x 100. A positive result, shown with a plus sign, is an increase; a negative result is a decrease.' },
+  { q: 'How do I increase or decrease a number by a percentage?', a: 'Use the fourth row: pick Increase or Decrease, enter the number and the percentage, and the tool computes Y x (1 +/- X / 100). For example, 80 increased by 25% is 100, and decreased by 25% is 60.' },
   { q: 'Does the calculator update automatically?', a: 'Yes. Results recalculate instantly as you type in any field, so there is no button to press.' },
   { q: 'Is my data uploaded or stored?', a: 'No. Every calculation runs entirely in your browser. Nothing you enter is uploaded, stored, or shared with anyone.' },
 ];
@@ -44,6 +45,18 @@ const faqItems = [
         </div>
         <div class="pres">= <b id="r3">—</b></div>
       </div>
+
+      <div class="pblock">
+        <div class="prow">
+          <select id="d0" class="psel">
+            <option value="inc">Increase</option>
+            <option value="dec">Decrease</option>
+          </select>
+          <input id="d1" class="pin" type="number" inputmode="decimal" value="80" /><span>by</span>
+          <input id="d2" class="pin" type="number" inputmode="decimal" value="25" /><span>%?</span>
+        </div>
+        <div class="pres">= <b id="r4">—</b></div>
+      </div>
     </div>
   </div>
 
@@ -55,8 +68,9 @@ const faqItems = [
       <li><b>X% of Y</b> = (X ÷ 100) × Y. Example: 15% of 200 = 30.</li>
       <li><b>A is what % of B</b> = (A ÷ B) × 100. Example: 45 of 180 = 25%.</li>
       <li><b>% change</b> = ((New − Old) ÷ Old) × 100. A positive result is an increase, negative is a decrease.</li>
+      <li><b>Increase/decrease Y by X%</b> = Y × (1 ± X ÷ 100). Example: 80 increased by 25% = 100; decreased = 60.</li>
     </ul>
-    <p>These three cover almost every everyday percentage question — discounts, tips, test scores, price changes and more.</p>
+    <p>These four cover almost every everyday percentage question — discounts, tips, test scores, price changes, markups and more.</p>
     <div class="xlinks"><a href="/calculators/bmi">BMI Calculator →</a><a href="/#calculators">All calculators →</a></div>
   </div>
 
@@ -67,11 +81,14 @@ const faqItems = [
     .pin{width:96px;background:var(--surface2);border:1px solid var(--line);border-radius:9px;color:var(--txt);
       font:inherit;font-weight:700;padding:9px 11px;outline:none;text-align:right}
     .pin:focus{border-color:var(--brand)}
+    .psel{background:var(--surface2);border:1px solid var(--line);border-radius:9px;color:var(--txt);
+      font:inherit;font-weight:700;padding:9px 11px;outline:none;cursor:pointer}
+    .psel:focus{border-color:var(--brand)}
     .pres{margin-top:10px;font-size:17px;color:var(--dim)}
     .pres b{color:var(--brand);font-size:22px;font-weight:800}
   </style>
 
-  <AppLd name="Percentage Calculator" description="Type values into three live fields to instantly find X% of Y, what percent one number is of another, and the percent change between two numbers — right in your browser." category="UtilitiesApplication" features={["Live recalculation as you type", "Find X% of any number", "What percent A is of B", "Percent increase or decrease between two values", "100% client-side, no uploads"]} />
+  <AppLd name="Percentage Calculator" description="Type values into live fields to instantly find X% of Y, what percent one number is of another, the percent change between two numbers, and increase or decrease a number by a percentage — right in your browser." category="UtilitiesApplication" features={["Live recalculation as you type", "Find X% of any number", "What percent A is of B", "Percent increase or decrease between two values", "Increase or decrease a number by a percentage", "100% client-side, no uploads"]} />
 
   <Faq items={faqItems} />
 
@@ -84,8 +101,11 @@ const faqItems = [
         el('r1').textContent = fmt(num('a1')/100*num('a2'));
         var b2=num('b2'); el('r2').textContent = b2!==0 ? fmt(num('b1')/b2*100)+'%' : '—';
         var c1=num('c1'); el('r3').textContent = c1!==0 ? (num('c2')-c1)/Math.abs(c1)*100>=0?'+'+fmt((num('c2')-c1)/Math.abs(c1)*100)+'%':fmt((num('c2')-c1)/Math.abs(c1)*100)+'%' : '—';
+        var sign = el('d0').value==='dec' ? -1 : 1;
+        el('r4').textContent = fmt(num('d1')*(1+sign*num('d2')/100));
       }
-      ['a1','a2','b1','b2','c1','c2'].forEach(function(id){el(id).addEventListener('input',compute);});
+      ['a1','a2','b1','b2','c1','c2','d1','d2'].forEach(function(id){el(id).addEventListener('input',compute);});
+      el('d0').addEventListener('change',compute);
       compute();
     })();
   </script>

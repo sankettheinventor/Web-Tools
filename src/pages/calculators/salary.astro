@@ -9,6 +9,7 @@ const faqItems = [
   { q: 'What deductions does this calculator account for?', a: 'It subtracts income tax (as a percentage), retirement or provident-fund contributions (as a percentage), and one flexible monthly "other" amount for things like insurance or loan repayments. You enter the percentages that apply to you.' },
   { q: 'Which currencies are supported?', a: 'You can switch between Indian Rupee (INR), US Dollar (USD), Euro (EUR) and British Pound (GBP). Changing the currency updates the symbol and number formatting throughout the results.' },
   { q: 'Is this an exact figure for my country tax?', a: 'No. Because tax and retirement rules differ by country, it uses the percentages you enter rather than official slabs. For an exact figure, check your payslip or a local tax tool.' },
+  { q: 'How is my hourly and daily take-home worked out?', a: 'It splits your annual in-hand pay across a standard working year: 52 weeks, 5 working days a week (260 days) and 8 hours a day (2,080 hours). So daily pay is your annual in-hand divided by 260, and hourly is divided by 2,080.' },
   { q: 'Is my salary data uploaded or stored?', a: 'No. Everything is processed locally in your browser. Your salary and deduction figures are never uploaded, stored, or shared with any server.' }
 ];
 ---
@@ -45,6 +46,14 @@ const faqItems = [
         <div class="bd"><div class="k">Annual in-hand</div><div class="v" id="bdYr">—</div></div>
         <div class="bd"><div class="k">Total deductions</div><div class="v" id="bdDed">—</div></div>
       </div>
+      <div class="rlabel" style="margin-top:1rem">Take-home by pay period</div>
+      <div class="breakdown">
+        <div class="bd"><div class="k">Annual</div><div class="v" id="pYr">—</div></div>
+        <div class="bd"><div class="k">Monthly</div><div class="v" id="pMo">—</div></div>
+        <div class="bd"><div class="k">Weekly</div><div class="v" id="pWk">—</div></div>
+        <div class="bd"><div class="k">Daily</div><div class="v" id="pDay">—</div></div>
+        <div class="bd"><div class="k">Hourly</div><div class="v" id="pHr">—</div></div>
+      </div>
     </div>
   </div></div>
   <div class="ad">Ad space</div>
@@ -54,7 +63,7 @@ const faqItems = [
     <p>Because tax and retirement rules differ by country, this calculator lets you enter the percentages that apply to you, so it works anywhere. <em>For an exact figure, check your payslip or a local tax tool.</em></p>
     <div class="xlinks"><a href="/calculators/income-tax">Income Tax →</a><a href="/#calculators">All calculators →</a></div>
   </div>
-  <AppLd name="Take-Home Salary Calculator" description="Drag sliders for gross salary, income tax and retirement/PF and watch your monthly and annual take-home pay update live." category="FinanceApplication" features={["Live sliders for gross salary, tax and PF percentages","Instant monthly and annual in-hand pay results","Switch between INR, USD, EUR and GBP currencies","Adjustable extra monthly deduction field","100% client-side — nothing uploaded"]} />
+  <AppLd name="Take-Home Salary Calculator" description="Drag sliders for gross salary, income tax and retirement/PF and watch your monthly and annual take-home pay update live." category="FinanceApplication" features={["Live sliders for gross salary, tax and PF percentages","Instant monthly and annual in-hand pay results","Take-home broken down by annual, monthly, weekly, daily and hourly","Switch between INR, USD, EUR and GBP currencies","Adjustable extra monthly deduction field","100% client-side — nothing uploaded"]} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){var cur='INR',loc='en-IN';function el(i){return document.getElementById(i);}function num(i){var v=parseFloat(el(i).value);return isFinite(v)?v:0;}
@@ -63,7 +72,10 @@ const faqItems = [
     function c(){var g=num('gross'),tax=num('tax'),ret=num('ret'),other=num('other')*12;
       var ded=g*(tax+ret)/100+other;var net=g-ded;if(net<0)net=0;
       el('net').textContent=money(net/12);el('sub').textContent='from '+money(g)+' gross / yr';
-      el('bdYr').textContent=money(net);el('bdDed').textContent=money(ded);}
+      el('bdYr').textContent=money(net);el('bdDed').textContent=money(ded);
+      var wkY=52,dpw=5,hpd=8,days=wkY*dpw,hrs=days*hpd;
+      el('pYr').textContent=money(net);el('pMo').textContent=money(net/12);el('pWk').textContent=money(net/wkY);
+      el('pDay').textContent=money(net/days);el('pHr').textContent=money(net/hrs);}
     pair('gross','grossR');pair('tax','taxR');pair('ret','retR');pair('other','otherR');
     el('cur').addEventListener('change',function(){var o=el('cur').selectedOptions[0];cur=el('cur').value;loc=o.dataset.loc;document.querySelectorAll('.valwrap .sym').forEach(function(s){s.textContent=o.dataset.sym;});c();});c();})();
   </script>
