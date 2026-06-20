@@ -9,6 +9,12 @@
     "preview": "astro preview"
   },
   "dependencies": {
-    "astro": "^4.16.18"
+    "astro": "^4.16.18",
+    "heic2any": "0.0.4",
+    "jspdf": "2.5.2",
+    "jszip": "3.10.1",
+    "pdf-lib": "1.17.1",
+    "pdfjs-dist": "3.11.174",
+    "qr-code-styling": "1.6.0"
   }
 }

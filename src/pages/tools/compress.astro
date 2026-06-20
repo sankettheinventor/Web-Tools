@@ -3,26 +3,27 @@ import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
 import HowTo from '../../components/HowTo.astro';
 import AppLd from '../../components/AppLd.astro';
-const title = 'Image Compressor — Reduce Photo Size Online (Free, Private)';
-const description = 'Free image compressor. Shrink JPG, PNG and WebP photos right in your browser — adjust quality, watch the size drop, and download. Nothing is uploaded.';
+const title = 'Image Compressor — Reduce Photo Size or Hit a Target KB';
+const description = 'Free image compressor. Shrink JPG, PNG and WebP in your browser, or enter a target file size in KB and let it auto-find the quality. Nothing is uploaded.';
 const faqItems = [
   { q: 'How do I make an image file smaller?', a: 'Drop in a photo, choose an output format, then drag the quality slider down until the new file size and look are right. The new size updates live, and you can also lower the max width to shrink large photos further before downloading.' },
+  { q: 'How do I compress an image to a specific KB size?', a: 'Switch to Target size mode and type the size you want in KB — for example 200. The tool binary-searches the JPEG or WebP quality, and downscales the image if needed, until the result is at or just under your target, then shows the size it actually achieved.' },
   { q: 'Which format gives the smallest file?', a: 'JPEG usually produces the smallest files for photos, and WebP is often even smaller on modern browsers. PNG stays lossless, which is best for graphics and screenshots but generally larger than JPEG or WebP.' },
   { q: 'Will compressing reduce the image quality?', a: 'JPEG and WebP are lossy, so lower quality settings make smaller files but can add visible artifacts. Use the live preview and size readout to find a balance, or keep PNG if you need no quality loss at all.' },
-  { q: 'Does it work on JPG, PNG and WebP images?', a: 'Yes. You can load JPG, PNG or WebP images and export to JPEG, WebP or PNG. The tool reads any common browser-supported image and lets you pick the output format independently.' },
+  { q: 'Why can PNG not hit a small target size?', a: 'PNG is lossless and has no quality dial, so its size is fixed by the image content. Target-size mode only works with JPEG and WebP, which support adjustable quality. Pick one of those formats to compress to a chosen KB.' },
   { q: 'Is my image uploaded or stored anywhere?', a: 'No. Everything is processed locally in your browser using a canvas — your image is never uploaded, stored, or shared, and nothing leaves your device.' }
 ];
 const howSteps = [
   { name: 'Add your image', text: 'Drop a photo onto the drop zone or click browse to load a JPG, PNG, or WebP file.' },
-  { name: 'Pick an output format', text: 'Choose JPEG, WebP, or PNG from the Output format menu to control how small the file can get.' },
-  { name: 'Adjust quality and width', text: 'Drag the Quality slider down and lower the Max width to shrink the file while watching the live New size readout.' },
-  { name: 'Download the result', text: 'Click Download to save the compressed image to your device.' }
+  { name: 'Choose a mode', text: 'Keep Manual to set quality and width yourself, or pick Target size to compress to an exact KB.' },
+  { name: 'Set quality or a target', text: 'In Manual mode drag the Quality and Max width sliders; in Target size mode type the KB you want and click Compress to target.' },
+  { name: 'Download the result', text: 'Check the achieved New size readout, then click Download to save the compressed image to your device.' }
 ];
 ---
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
     <p class="kicker">Image Tool</p><h1>Image Compressor</h1>
-    <p>Drop in a photo and drag the quality slider to watch the file size shrink live — right in your browser.</p>
+    <p>Drag the quality slider and watch the size shrink live, or type a target in KB and let it auto-find the quality — all in your browser.</p>
   </div></header>
   <div class="wrap"><div class="tool wm">
     <div id="drop" class="drop"><input id="file" type="file" accept="image/*" hidden />
@@ -32,12 +33,24 @@ const howSteps = [
       <div class="wm-grid">
         <div class="wm-preview"><canvas id="canvas" aria-label="Preview"></canvas></div>
         <div class="wm-controls">
+          <div class="modeswitch" role="tablist" aria-label="Compression mode">
+            <button id="mManual" type="button" class="modebtn active" role="tab" aria-selected="true">Manual</button>
+            <button id="mTarget" type="button" class="modebtn" role="tab" aria-selected="false">Target size</button>
+          </div>
           <label class="ctl">Output format
             <select id="fmt"><option value="image/jpeg" selected>JPEG (smallest)</option><option value="image/webp">WebP (modern)</option><option value="image/png">PNG (lossless)</option></select></label>
-          <label class="ctl">Quality <span class="cv" id="qV">75%</span>
-            <input id="q" type="range" min="10" max="100" step="5" value="75" /></label>
-          <label class="ctl">Max width <span class="cv" id="wV">original</span>
-            <input id="w" type="range" min="200" max="4000" step="100" value="4000" /></label>
+          <div id="manualCtls">
+            <label class="ctl">Quality <span class="cv" id="qV">75%</span>
+              <input id="q" type="range" min="10" max="100" step="5" value="75" /></label>
+            <label class="ctl">Max width <span class="cv" id="wV">original</span>
+              <input id="w" type="range" min="200" max="4000" step="100" value="4000" /></label>
+          </div>
+          <div id="targetCtls" hidden>
+            <label class="ctl">Target file size (KB)
+              <input id="tkb" type="number" min="5" step="5" value="200" inputmode="numeric" /></label>
+            <button id="tgo" type="button" class="wm-btn">⚙ Compress to target</button>
+            <p id="tmsg" class="tmsg" role="status" aria-live="polite"></p>
+          </div>
           <div class="sizes"><span>Original: <b id="oSize">—</b></span><span>New: <b id="nSize" class="hl">—</b></span><span id="saved" class="hl"></span></div>
           <div class="wm-actions">
             <button id="dl" type="button" class="wm-btn">⬇ Download</button>
@@ -51,6 +64,7 @@ const howSteps = [
   <div class="content">
     <h2>How to compress an image</h2>
     <p>Drop in a photo, pick a format, and drag the quality slider until the size and look are right — the new file size updates instantly. <b>JPEG</b> gives the smallest files for photos; <b>WebP</b> is even smaller on modern browsers; <b>PNG</b> stays lossless for graphics. Lowering the max width shrinks big photos further.</p>
+    <p>Need an exact size? Switch to <b>Target size</b> mode, type a number of KB, and the tool binary-searches the JPEG or WebP quality — downscaling the image if quality alone can't get there — until the result lands at or just under your target. It then shows the size it actually achieved.</p>
     <p><b>Your image never leaves your device</b> — compression happens entirely in your browser.</p>
     <div class="xlinks"><a href="/tools/convert">Convert &amp; Resize →</a><a href="/#image-tools">All image tools →</a></div>
   </div>
@@ -65,39 +79,108 @@ const howSteps = [
     .cv{float:right;color:var(--brand);font-weight:700}.sizes{display:flex;flex-direction:column;gap:5px;font-size:13.5px;color:var(--dim);background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:12px}
     .sizes .hl{color:var(--brand);font-weight:700}.wm-actions{display:flex;gap:10px}.wm-btn{flex:1;padding:12px;border-radius:10px;font-weight:700;color:#fff;border:0;cursor:pointer;background:linear-gradient(135deg,var(--brand2),var(--brand))}
     .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line);flex:0 0 auto}
+    .modeswitch{display:flex;gap:4px;background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:4px}
+    .modebtn{flex:1;padding:8px 10px;border:0;border-radius:7px;background:none;color:var(--dim);font:inherit;font-weight:700;font-size:13px;cursor:pointer}
+    .modebtn.active{background:linear-gradient(135deg,var(--brand2),var(--brand));color:#fff}
+    #manualCtls,#targetCtls{display:flex;flex-direction:column;gap:14px}
+    #targetCtls input{background:var(--surface2);border:1px solid var(--line);border-radius:9px;color:var(--txt);font:inherit;font-weight:600;padding:10px 11px;width:100%}
+    .tmsg{font-size:13px;color:var(--dim);margin:0;min-height:1.2em}.tmsg.ok{color:var(--brand);font-weight:700}.tmsg.warn{color:#e0a23a;font-weight:700}
     @media(max-width:680px){.wm-grid{grid-template-columns:1fr}}
   </style>
   <HowTo task="compress an image" steps={howSteps} />
-  <AppLd name="Image Compressor" description="Drop in a JPG, PNG or WebP photo, drag the quality and max-width sliders, and watch the file size drop live before downloading." category="MultimediaApplication" features={["Drag-and-drop image loading", "Live quality slider with instant size readout", "JPEG, WebP and PNG output formats", "Max-width slider to downscale large photos", "One-click download, fully in-browser"]} />
+  <AppLd name="Image Compressor" description="Compress a JPG, PNG or WebP photo by dragging the quality slider, or enter a target file size in KB and let it auto-find the quality — all in your browser." category="MultimediaApplication" features={["Drag-and-drop image loading", "Live quality slider with instant size readout", "Target file size mode: compress to an exact KB", "Auto quality binary search with downscaling fallback", "JPEG, WebP and PNG output formats", "One-click download, fully in-browser"]} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){
-      var img=null, origSize=0, lastBlob=null, name='image';
+      var img=null, origSize=0, lastBlob=null, name='image', mode='manual';
       function $(i){return document.getElementById(i);}
       function fmtKB(b){return b>1048576?(b/1048576).toFixed(2)+' MB':Math.round(b/1024)+' KB';}
+      function showSize(b){ lastBlob=b; $('nSize').textContent=fmtKB(b.size);
+        var pct=origSize?Math.max(0,Math.round((1-b.size/origSize)*100)):0;
+        $('saved').textContent = b.size<origSize ? ('▼ '+pct+'% smaller') : ''; }
+      // Draw img to canvas at a given scale and return the canvas.
+      function draw(scale){
+        var w=Math.max(1,Math.round(img.naturalWidth*scale)), h=Math.max(1,Math.round(img.naturalHeight*scale));
+        var c=$('canvas'); c.width=w; c.height=h;
+        var ctx=c.getContext('2d'); ctx.clearRect(0,0,w,h); ctx.drawImage(img,0,0,w,h);
+        return c;
+      }
+      // Promise wrapper around canvas.toBlob.
+      function encode(c,fmt,q){ return new Promise(function(res){ c.toBlob(function(b){res(b);}, fmt, q); }); }
+      // MANUAL mode live render.
       function render(){
-        if(!img)return;
+        if(!img||mode!=='manual')return;
         var maxW=parseInt($('w').value,10), scale=Math.min(1,maxW/img.naturalWidth);
-        var w=Math.round(img.naturalWidth*scale), h=Math.round(img.naturalHeight*scale);
-        var c=$('canvas'); c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h);
-        $('wV').textContent = scale<1 ? w+'px' : 'original';
+        var c=draw(scale);
+        $('wV').textContent = scale<1 ? c.width+'px' : 'original';
         var fmt=$('fmt').value, q=parseInt($('q').value,10)/100;
-        c.toBlob(function(b){ lastBlob=b; $('nSize').textContent=fmtKB(b.size);
-          var pct=origSize?Math.max(0,Math.round((1-b.size/origSize)*100)):0;
-          $('saved').textContent = b.size<origSize ? ('▼ '+pct+'% smaller') : '';
-        }, fmt, q);
+        c.toBlob(function(b){ if(b) showSize(b); }, fmt, q);
+      }
+      // TARGET mode: binary-search quality, then downscale if still too big. Iteration-capped.
+      var QUAL_STEPS=8;   // binary-search iterations per scale (caps ~256 quality levels)
+      var SCALE_TRIES=6;  // how many times we shrink dimensions before giving up
+      function tmsg(t,cls){ var e=$('tmsg'); e.textContent=t; e.className='tmsg'+(cls?(' '+cls):''); }
+      async function runTarget(){
+        if(!img)return;
+        var fmt=$('fmt').value;
+        if(fmt==='image/png'){ tmsg('PNG has no quality dial, so it cannot target a size. Choose JPEG or WebP.','warn'); return; }
+        var kb=parseFloat($('tkb').value);
+        if(!(kb>0)){ tmsg('Enter a target size in KB greater than 0.','warn'); return; }
+        var targetBytes=kb*1024;
+        tmsg('Searching for the best quality…');
+        var scale=Math.min(1,parseInt($('w').value,10)/img.naturalWidth);
+        var best=null, bestUnder=null;
+        for(var s=0;s<SCALE_TRIES;s++){
+          var c=draw(scale);
+          // Binary search quality in [0.05, 1.0] at this scale.
+          var lo=0.05, hi=1.0, blob=null;
+          for(var it=0; it<QUAL_STEPS; it++){
+            var mid=(lo+hi)/2;
+            blob=await encode(c,fmt,mid);
+            if(!blob){ break; }
+            if(!best||blob.size<best.size) best=blob; // smallest seen overall (fallback)
+            if(blob.size<=targetBytes){
+              if(!bestUnder||blob.size>bestUnder.size) bestUnder=blob; // largest that still fits = best quality under target
+              lo=mid; // try higher quality
+            } else {
+              hi=mid; // too big, lower quality
+            }
+          }
+          if(bestUnder) break;            // found something at/under target — stop shrinking
+          scale*=0.8;                     // still too big even at min quality: downscale and retry
+          if(Math.round(img.naturalWidth*scale)<32) break; // don't go absurdly small
+        }
+        var out=bestUnder||best;
+        if(!out){ tmsg('Could not encode this image in the chosen format.','warn'); return; }
+        // out is the blob we download; size readout and download both use lastBlob, not the canvas.
+        showSize(out);
+        var achKB=Math.round(out.size/1024);
+        if(bestUnder){ tmsg('Done — achieved '+achKB+' KB (target '+Math.round(kb)+' KB).','ok'); }
+        else { tmsg('Smallest possible here is '+achKB+' KB — under your '+Math.round(kb)+' KB target was not reachable even at minimum quality.','warn'); }
+      }
+      function setMode(m){
+        mode=m;
+        var man=(m==='manual');
+        $('mManual').classList.toggle('active',man); $('mManual').setAttribute('aria-selected',man);
+        $('mTarget').classList.toggle('active',!man); $('mTarget').setAttribute('aria-selected',!man);
+        $('manualCtls').hidden=!man; $('targetCtls').hidden=man;
+        if(man){ render(); } else { tmsg(''); }
       }
       function load(f){ name=f.name.replace(/\.[^.]+$/,''); origSize=f.size; $('oSize').textContent=fmtKB(f.size);
-        var im=new Image(); im.onload=function(){img=im;$('drop').hidden=true;$('editor').hidden=false;render();}; im.src=URL.createObjectURL(f); }
+        var im=new Image(); im.onload=function(){img=im;$('drop').hidden=true;$('editor').hidden=false;setMode('manual');}; im.src=URL.createObjectURL(f); }
       $('browse').onclick=function(){$('file').click();};
       $('drop').onclick=function(e){if(e.target.id==='drop'||e.target.className.indexOf('drop-')===0)$('file').click();};
       $('file').onchange=function(e){if(e.target.files[0])load(e.target.files[0]);};
       ['dragover','dragenter'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.add('drag');});});
       ['dragleave','drop'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.remove('drag');});});
       $('drop').addEventListener('drop',function(e){if(e.dataTransfer.files[0])load(e.dataTransfer.files[0]);});
-      ['fmt','q','w'].forEach(function(i){$(i).addEventListener('input',function(){$('qV').textContent=$('q').value+'%';render();});});
+      ['q','w'].forEach(function(i){$(i).addEventListener('input',function(){$('qV').textContent=$('q').value+'%';render();});});
+      $('fmt').addEventListener('change',function(){ if(mode==='manual'){ render(); } else { tmsg('Format changed — click Compress to target again.'); } });
+      $('mManual').onclick=function(){setMode('manual');};
+      $('mTarget').onclick=function(){setMode('target');};
+      $('tgo').onclick=function(){runTarget();};
       $('dl').onclick=function(){if(!lastBlob)return;var ext=$('fmt').value.split('/')[1].replace('jpeg','jpg');var a=document.createElement('a');a.href=URL.createObjectURL(lastBlob);a.download=name+'-compressed.'+ext;a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);};
-      $('reset').onclick=function(){img=null;lastBlob=null;$('file').value='';$('editor').hidden=true;$('drop').hidden=false;};
+      $('reset').onclick=function(){img=null;lastBlob=null;$('file').value='';$('editor').hidden=true;$('drop').hidden=false;tmsg('');};
     })();
   </script>
 </Base>

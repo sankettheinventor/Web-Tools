@@ -46,7 +46,7 @@ const faqItems = [
   },
   {
     q: `Can I convert multiple images at once?`,
-    a: `Yes. Drop or select several ${c.from} files together and the tool converts them in a batch; you can then download each ${c.to} file individually or use Download all to save the whole set.`,
+    a: `Yes. Drop or select several ${c.from} files together and the tool converts them in a batch; you can then download each ${c.to} file individually or click Download all (.zip) to save the whole set as a single ZIP archive.`,
   },
   {
     q: `Do I need to install software or create an account?`,
@@ -58,10 +58,13 @@ const howSteps = [
   { name: `Add your ${c.from} images`, text: `Drop your ${c.from} files onto the upload area or click browse to select one or more images from your device.` },
   ...(c.lossy ? [{ name: 'Adjust quality', text: 'Use the Quality slider to balance file size against sharpness, watching the new size update live.' }] : []),
   { name: 'Preview the result', text: `Check the converted ${c.to} preview and use the thumbnails to switch between images in the batch.` },
-  { name: `Download your ${c.to} files`, text: `Click Download ${c.to} to save the selected image, or Download all to save the whole batch at once.` },
+  { name: `Download your ${c.to} files`, text: `Click Download ${c.to} to save the selected image, or Download all (.zip) to save the whole batch as a single ZIP archive.` },
 ];
 ---
 <Base title={title} description={description}>
+  <Fragment slot="head">
+    <script is:inline src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  </Fragment>
   <header class="head"><div class="wrap">
     <p class="kicker">Image Converter</p><h1>{c.from} to {c.to} Converter</h1>
     <p>Drop your {c.from} images and watch them convert to {c.to} live — right here in your browser.</p>
@@ -81,9 +84,10 @@ const howSteps = [
           <div class="sizes"><span>New: <b id="nSize" class="hl">—</b></span></div>
           <div class="wm-actions">
             <button id="dl" type="button" class="wm-btn">⬇ Download {c.to}</button>
-            <button id="dlall" type="button" class="wm-btn ghost" hidden>Download all</button>
+            <button id="dlall" type="button" class="wm-btn ghost" hidden>⬇ Download all (.zip)</button>
             <button id="reset" type="button" class="wm-btn ghost">Start over</button>
           </div>
+          <p id="status" class="status" role="status" aria-live="polite"></p>
         </div>
       </div>
     </div>
@@ -110,10 +114,11 @@ const howSteps = [
     .sizes{font-size:13.5px;color:var(--dim);background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:12px}.sizes .hl{color:var(--brand);font-weight:700}
     .wm-actions{display:flex;gap:10px;flex-wrap:wrap}.wm-btn{flex:1;padding:12px;border-radius:10px;font-weight:700;color:#fff;border:0;cursor:pointer;background:linear-gradient(135deg,var(--brand2),var(--brand))}
     .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line);flex:0 0 auto}
+    .status{font-size:13px;color:var(--dim);margin:2px 0 0}.status.err{color:#e5484d;font-weight:600}
     @media(max-width:680px){.wm-grid{grid-template-columns:1fr}}
   </style>
   <HowTo task="convert an image to another format" steps={howSteps} />
-  <AppLd name={`${c.from} to ${c.to} Converter`} description={`Drop or browse ${c.from} images and convert them to ${c.to} live in your browser${c.lossy ? ', dragging the Quality slider to watch the output size update' : ''} — batch-convert and download each file or the whole set, nothing uploaded.`} category="MultimediaApplication" features={["Drag-and-drop batch image conversion", ...(c.lossy ? ["Live Quality slider with instant size preview"] : ["Lossless conversion preserving every pixel"]), "Thumbnail strip to switch between batched images", "Download individual files or the whole batch", "100% in-browser — nothing is uploaded"]} />
+  <AppLd name={`${c.from} to ${c.to} Converter`} description={`Drop or browse ${c.from} images and convert them to ${c.to} live in your browser${c.lossy ? ', dragging the Quality slider to watch the output size update' : ''} — batch-convert and download each file or the whole set, nothing uploaded.`} category="MultimediaApplication" features={["Drag-and-drop batch image conversion", ...(c.lossy ? ["Live Quality slider with instant size preview"] : ["Lossless conversion preserving every pixel"]), "Thumbnail strip to switch between batched images", "Download individual files or the whole batch as a .zip", "100% in-browser — nothing is uploaded"]} />
   <Faq items={faqItems} />
   <script is:inline>
     (function(){
@@ -130,7 +135,22 @@ const howSteps = [
         $('canvas').toBlob(function(b){if(b)$('nSize').textContent=fmtKB(b.size);},MIME,quality()); }
       function thumbs(){var t=$('thumbs');t.innerHTML='';images.forEach(function(it,i){var im=document.createElement('img');im.src=it.img.src;im.className='thumb'+(i===sel?' sel':'');im.onclick=function(){sel=i;preview();thumbs();};t.appendChild(im);});$('dlall').hidden=images.length<2;}
       function add(files){Array.prototype.slice.call(files).filter(function(f){return f.type.indexOf('image/')===0;}).forEach(function(f){var im=new Image();im.onload=function(){images.push({img:im,name:f.name.replace(/\.[^.]+$/,'')});$('drop').hidden=true;$('editor').hidden=false;sel=images.length-1;preview();thumbs();};im.src=URL.createObjectURL(f);});}
-      function download(item){var c=document.createElement('canvas');render(c,item);c.toBlob(function(b){var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=item.name+'.'+EXT;a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);},MIME,quality());}
+      function status(msg,isErr){var s=$('status');if(!s)return;s.textContent=msg||'';s.className='status'+(isErr?' err':'');}
+      function blobFor(item){return new Promise(function(res){var c=document.createElement('canvas');render(c,item);c.toBlob(function(b){res(b);},MIME,quality());});}
+      function download(item){blobFor(item).then(function(b){var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=item.name+'.'+EXT;a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);});}
+      function uniqueName(used,base){var n=base+'.'+EXT,i=2;while(used[n]){n=base+'-'+i+'.'+EXT;i++;}used[n]=true;return n;}
+      function downloadAll(){
+        if(!images.length)return;
+        if(typeof JSZip==='undefined'){status('Could not load the .zip library — please check your connection and reload, or use Download '+EXT.toUpperCase()+' to save each image individually.',true);return;}
+        status('Building .zip…',false);
+        var zip=new JSZip(),used={};
+        Promise.all(images.map(function(it){return blobFor(it).then(function(b){if(b)zip.file(uniqueName(used,it.name),b);});})).then(function(){
+          return zip.generateAsync({type:'blob'});
+        }).then(function(blob){
+          var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='converted-'+EXT+'.zip';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);
+          status('Done — '+images.length+' '+EXT.toUpperCase()+' file(s) saved in your .zip.',false);
+        }).catch(function(){status('Something went wrong building the .zip. Try Download '+EXT.toUpperCase()+' to save images individually.',true);});
+      }
       $('browse').onclick=function(){$('file').click();};
       $('drop').onclick=function(e){if(e.target.id==='drop'||e.target.className.indexOf('drop-')===0)$('file').click();};
       $('file').onchange=function(e){add(e.target.files);};
@@ -139,8 +159,8 @@ const howSteps = [
       $('drop').addEventListener('drop',function(e){add(e.dataTransfer.files);});
       if($('q'))$('q').addEventListener('input',function(){$('qV').textContent=$('q').value+'%';preview();});
       $('dl').onclick=function(){if(images[sel])download(images[sel]);};
-      $('dlall').onclick=function(){images.forEach(function(it,i){setTimeout(function(){download(it);},i*350);});};
-      $('reset').onclick=function(){images=[];sel=0;$('thumbs').innerHTML='';$('file').value='';$('editor').hidden=true;$('drop').hidden=false;};
+      $('dlall').onclick=downloadAll;
+      $('reset').onclick=function(){images=[];sel=0;$('thumbs').innerHTML='';$('file').value='';status('',false);$('editor').hidden=true;$('drop').hidden=false;};
     })();
   </script>
 </Base>
