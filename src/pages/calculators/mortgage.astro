@@ -2,12 +2,13 @@
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
 import AppLd from '../../components/AppLd.astro';
-const title = 'Mortgage Calculator — Adjust Price, Rate & Down Live';
+const title = 'Mortgage Calculator with Extra Payments & Prepay';
 const description = 'Free mortgage calculator with taxes and insurance. Enter home price, down payment, rate and term to see your total monthly payment instantly.';
 const faqItems = [
   { q: 'What does this mortgage calculator include?', a: 'It calculates your full monthly payment (PITI): principal, interest, property tax and home insurance. Principal and interest use the standard amortization formula; tax and insurance are entered yearly and divided by 12.' },
   { q: 'How much should my down payment be?', a: 'A larger down payment lowers both your monthly payment and your total interest. 20% is common because it usually avoids private mortgage insurance (PMI), but you can model any percentage with the slider.' },
   { q: 'Why is my total interest so high?', a: 'Over a 15–30 year term, interest compounds on the remaining balance every month, so total interest can approach or exceed the loan amount at higher rates. Shortening the term or increasing the down payment both reduce it sharply.' },
+  { q: 'How much do extra payments and a one-time prepayment save?', a: 'Extra payments reduce the loan principal directly, so all future interest is charged on a smaller balance. Use the "Beat the bank" controls to add an annual payment step-up, a yearly extra payment, or a one-time lump-sum prepayment in any year — the calculator runs a month-by-month amortization on the principal and interest portion and shows the exact interest saved, your new payoff time, and a year-by-year schedule.' },
   { q: 'Is my financial data saved or uploaded?', a: 'No. The calculator runs entirely in your browser — nothing you type is sent to a server, stored, or shared. Closing the tab discards everything.' },
 ];
 ---
@@ -75,6 +76,56 @@ const faqItems = [
           <div class="bd"><div class="k">Total interest</div><div class="v" id="bdInt">—</div></div>
         </div>
       </div>
+
+      <div class="adv">
+        <div class="adv-h"><span>🏦 Beat the bank</span><small>Optional — model extra payments &amp; a prepayment an AI snippet can't compute</small></div>
+        <div class="grid2">
+          <div class="field">
+            <div class="field-top"><label for="stepup">Annual payment step-up</label>
+              <div class="valwrap"><input id="stepup" type="number" inputmode="numeric" min="0" max="50" step="1" value="0" /><span>%/yr</span></div></div>
+            <input id="stepupR" type="range" min="0" max="25" step="1" value="0" aria-label="Annual payment step-up percent" />
+          </div>
+          <div class="field">
+            <div class="field-top"><label for="annual">Extra payment every year</label>
+              <div class="valwrap"><span class="sym">$</span><input id="annual" type="number" inputmode="decimal" min="0" step="500" value="0" /></div></div>
+            <input id="annualR" type="range" min="0" max="100000" step="1000" value="0" aria-label="Annual extra payment" />
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="field">
+            <div class="field-top"><label for="onetime">One-time prepayment</label>
+              <div class="valwrap"><span class="sym">$</span><input id="onetime" type="number" inputmode="decimal" min="0" step="5000" value="0" /></div></div>
+            <input id="onetimeR" type="range" min="0" max="500000" step="5000" value="0" aria-label="One-time prepayment amount" />
+          </div>
+          <div class="field">
+            <div class="field-top"><label for="otyear">…paid in year</label>
+              <div class="valwrap"><input id="otyear" type="number" inputmode="numeric" min="1" value="3" /><span>yr</span></div></div>
+            <input id="otyearR" type="range" min="1" max="40" step="1" value="3" aria-label="One-time prepayment year" />
+          </div>
+        </div>
+
+        <div class="save" aria-live="polite">
+          <div class="save-row">
+            <div class="save-box"><div class="k">Interest saved</div><div class="v ok" id="saveInt">—</div></div>
+            <div class="save-box"><div class="k">Loan-free earlier by</div><div class="v" id="saveTime">—</div></div>
+          </div>
+          <div class="save-row">
+            <div class="save-box"><div class="k">New total interest</div><div class="v" id="newInt">—</div></div>
+            <div class="save-box"><div class="k">New payoff time</div><div class="v" id="newPay">—</div></div>
+          </div>
+          <p class="save-hint" id="saveHint">Add a step-up or prepayment above to see how much interest you save on your loan.</p>
+        </div>
+
+        <details class="sched">
+          <summary>Year-by-year amortization schedule</summary>
+          <div class="sched-wrap">
+            <table>
+              <thead><tr><th>Yr</th><th>P&amp;I/mo</th><th>Principal</th><th>Interest</th><th>Extra</th><th>Balance</th></tr></thead>
+              <tbody id="schedBody"></tbody>
+            </table>
+          </div>
+        </details>
+      </div>
     </div>
   </div>
 
@@ -94,9 +145,31 @@ const faqItems = [
     </div>
   </div>
 
-  <AppLd name="Mortgage Calculator" description="Drag the sliders for home price, interest rate, down payment and term to watch your full monthly payment and total interest update live in your browser." category="FinanceApplication" features={["Live sliders for price, rate, down payment and term", "Instant PITI breakdown of principal, interest, tax and insurance", "Adjustable annual property tax and home insurance", "Multi-currency support (USD, INR, EUR, GBP)", "Runs entirely client-side — nothing uploaded"]} />
+  <AppLd name="Mortgage Calculator" description="Drag the sliders for home price, interest rate, down payment and term to watch your full monthly payment and total interest update live in your browser." category="FinanceApplication" features={["Live sliders for price, rate, down payment and term", "Instant PITI breakdown of principal, interest, tax and insurance", "Adjustable annual property tax and home insurance", "Model extra payments, a yearly payment step-up and a one-time prepayment", "Interest saved, earlier payoff time and year-by-year amortization schedule", "Multi-currency support (USD, INR, EUR, GBP)", "Runs entirely client-side — nothing uploaded"]} />
 
   <Faq items={faqItems} />
+
+  <style is:global>
+    .adv{margin-top:var(--s5);border-top:1px solid var(--line);padding-top:var(--s5)}
+    .adv-h{display:flex;align-items:baseline;gap:var(--s3);margin-bottom:var(--s4);flex-wrap:wrap}
+    .adv-h span{font-weight:800;font-size:var(--t-md)}
+    .adv-h small{color:var(--dim);font-size:var(--t-sm)}
+    .save{background:var(--result-bg);border:1px solid var(--line);border-radius:var(--r-lg);padding:var(--s4);margin-top:var(--s4)}
+    .save-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3)}
+    .save-row+.save-row{margin-top:var(--s3)}
+    .save-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--s3) var(--s4)}
+    .save-box .k{font-size:var(--t-xs);color:var(--dim)}
+    .save-box .v{font-size:var(--t-lg);font-weight:800;margin-top:2px}
+    .save-box .v.ok{color:var(--ok)}
+    .save-hint{font-size:var(--t-sm);color:var(--dim);margin-top:var(--s3);line-height:1.5}
+    .sched{margin-top:var(--s4)}
+    .sched summary{cursor:pointer;font-weight:700;font-size:var(--t-sm);color:var(--brand);padding:var(--s2) 0}
+    .sched-wrap{overflow-x:auto;margin-top:var(--s3)}
+    .sched table{width:100%;border-collapse:collapse;font-size:var(--t-sm);min-width:540px}
+    .sched th,.sched td{text-align:right;padding:var(--s2) var(--s3);border-bottom:1px solid var(--line);white-space:nowrap}
+    .sched th:first-child,.sched td:first-child{text-align:left}
+    .sched th{color:var(--dim);font-weight:700;font-size:var(--t-xs);text-transform:uppercase;letter-spacing:.4px}
+  </style>
 
   <script is:inline>
     (function () {
@@ -104,7 +177,38 @@ const faqItems = [
       function el(id){return document.getElementById(id);}
       function num(id){var v=parseFloat(el(id).value);return isFinite(v)?v:0;}
       function money(v){try{return new Intl.NumberFormat(loc,{style:'currency',currency:cur,maximumFractionDigits:0}).format(Math.round(v));}catch(e){return Math.round(v).toLocaleString();}}
+      function fmtDur(months){
+        months = Math.round(months);
+        var y = Math.floor(months/12), mo = months%12, s = '';
+        if (y) s += y + 'y';
+        if (mo) s += (s ? ' ' : '') + mo + 'm';
+        return s || '0m';
+      }
       function pair(a,b){el(a).addEventListener('input',function(){el(b).value=el(a).value;compute();});el(b).addEventListener('input',function(){el(a).value=el(b).value;compute();});}
+      // Month-by-month amortization on the LOAN (P&I only) with optional step-up + prepayments.
+      function simulate(P, i, pi0, stepup, annual, oneAmt, oneYear){
+        if (pi0 <= 0) return { never:true };
+        var bal = P, pmt = pi0, totInt = 0, m = 0, cap = 12*60;
+        var rows = [], yInt = 0, yPrin = 0, yExtra = 0;
+        while (bal > 0.5 && m < cap){
+          m++;
+          var interest = bal * i;
+          var principal = pmt - interest;
+          if (principal <= 0) return { never:true };       // payment never covers interest
+          if (principal > bal) principal = bal;
+          bal -= principal; totInt += interest; yInt += interest; yPrin += principal;
+          if (m % 12 === 0){
+            var yr = m/12;
+            if (annual > 0 && bal > 0){ var e = Math.min(annual, bal); bal -= e; yExtra += e; }
+            if (oneAmt > 0 && yr === oneYear && bal > 0){ var o = Math.min(oneAmt, bal); bal -= o; yExtra += o; }
+            rows.push({ yr:yr, pmt:pmt, prin:yPrin, int:yInt, extra:yExtra, bal:bal });
+            if (stepup > 0) pmt = pmt * (1 + stepup/100);
+            yInt = 0; yPrin = 0; yExtra = 0;
+          }
+        }
+        if (m % 12 !== 0) rows.push({ yr:Math.ceil(m/12), pmt:pmt, prin:yPrin, int:yInt, extra:yExtra, bal:bal });
+        return { months:m, totInt:totInt, rows:rows, never:false };
+      }
       function compute(){
         var price=num('price'), dp=num('down'), R=num('rate'), Y=num('term'), tax=num('tax'), ins=num('ins');
         var loan=price*(1-dp/100); if(loan<0)loan=0;
@@ -118,8 +222,41 @@ const faqItems = [
         el('bdTI').textContent=money(ti);
         el('bdLoan').textContent=money(loan);
         el('bdInt').textContent=money(interest);
+
+        // Advanced: baseline (no extras) vs optimized (step-up + prepayments) on the loan P&I.
+        var stepup=num('stepup'), annual=num('annual'), oneAmt=num('onetime'), oneYear=num('otyear');
+        var base = simulate(loan, r, pi, 0, 0, 0, 0);
+        var opt  = simulate(loan, r, pi, stepup, annual, oneAmt, oneYear);
+        var body = el('schedBody'); body.innerHTML = '';
+        if (opt.never || base.never){
+          el('saveInt').textContent = '—'; el('saveTime').textContent = '—';
+          el('newInt').textContent = '—'; el('newPay').textContent = '—';
+          el('saveHint').textContent = 'Enter a loan amount and term to model extra payments.';
+          return;
+        }
+        var saved = base.totInt - opt.totInt, mSaved = base.months - opt.months;
+        var hasExtra = (stepup > 0 || annual > 0 || oneAmt > 0);
+        el('newInt').textContent = money(opt.totInt);
+        el('newPay').textContent = fmtDur(opt.months);
+        if (hasExtra && saved > 0.5){
+          el('saveInt').textContent = money(saved);
+          el('saveTime').textContent = mSaved > 0 ? fmtDur(mSaved) : '—';
+          el('saveHint').textContent = 'You cut total interest by ' + money(saved) + ' and become loan-free ' + fmtDur(mSaved) + ' earlier.';
+        } else {
+          el('saveInt').textContent = money(0);
+          el('saveTime').textContent = '—';
+          el('saveHint').textContent = 'Add a step-up or prepayment above to see how much interest you save on your loan.';
+        }
+        for (var k = 0; k < opt.rows.length; k++){
+          var row = opt.rows[k], tr = document.createElement('tr');
+          tr.innerHTML = '<td>' + row.yr + '</td><td>' + money(row.pmt) + '</td><td>' + money(row.prin) +
+            '</td><td>' + money(row.int) + '</td><td>' + (row.extra > 0 ? money(row.extra) : '—') +
+            '</td><td>' + money(row.bal) + '</td>';
+          body.appendChild(tr);
+        }
       }
       pair('price','priceR');pair('down','downR');pair('rate','rateR');pair('term','termR');pair('tax','taxR');pair('ins','insR');
+      pair('stepup','stepupR');pair('annual','annualR');pair('onetime','onetimeR');pair('otyear','otyearR');
       el('cur').addEventListener('change',function(){var o=el('cur').selectedOptions[0];cur=el('cur').value;loc=o.dataset.loc;document.querySelectorAll('.valwrap .sym').forEach(function(s){s.textContent=o.dataset.sym;});compute();});
       compute();
     })();

@@ -2,10 +2,11 @@
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
 import AppLd from '../../components/AppLd.astro';
-const title = 'Retirement Calculator — Adjust Savings, Return & Age Live';
-const description = 'Free retirement calculator: estimate your inflation-adjusted retirement corpus from age, savings, contributions and return. Runs in your browser.';
+const title = 'Retirement Calculator with Step-Up & Inflation';
+const description = 'Free retirement calculator with annual contribution step-up & inflation. See your corpus, its value in today’s money and a year-by-year accumulation table — live in your browser.';
 const faqItems = [
   { q: 'How does this retirement calculator estimate my corpus?', a: 'It grows your current savings until retirement and adds the future value of every monthly contribution, all compounding at your expected annual return. The two parts are summed to give the projected corpus at your retirement age.' },
+  { q: 'What does an annual contribution step-up do?', a: 'A step-up raises your monthly saving by a fixed percentage every year, in line with salary growth. Even a 5–10% yearly step-up compounds into a dramatically larger corpus, because each raised contribution also has years to grow. Model it above and watch the corpus and year-by-year table update live.' },
   { q: 'What does "in today’s money" mean?', a: 'It shows your future corpus discounted by your inflation assumption, so a large future number is expressed in the spending power it would have today. This makes the result easier to judge realistically.' },
   { q: 'Why do I enter both an expected return and inflation rate?', a: 'The expected return grows your savings and contributions over time, while the inflation rate is used to convert the final corpus back into today’s purchasing power. Both are applied as constant annual rates.' },
   { q: 'How accurate is the projection?', a: 'It is an estimate based on the constant rates you enter. Real-world returns and inflation vary year to year, so treat the figure as a planning guide rather than a guarantee.' },
@@ -15,7 +16,7 @@ const faqItems = [
 <Base title={title} description={description}>
   <header class="head"><div class="wrap">
     <p class="kicker">Finance Calculator</p><h1>Retirement Calculator</h1>
-    <p>Drag the sliders for your age, savings and return to watch your retirement corpus update live.</p>
+    <p>Drag the sliders for your age, savings and return, then add an annual step-up to watch your retirement corpus update live.</p>
   </div></header>
   <div class="wrap"><div class="tool">
     <div class="field"><div class="field-top"><label for="cur">Currency</label></div>
@@ -56,27 +57,132 @@ const faqItems = [
         <div class="bd"><div class="k">In today's money</div><div class="v" id="bdReal">—</div></div>
       </div>
     </div>
+
+    <div class="adv">
+      <div class="adv-h"><span>📈 Grow it faster</span><small>Optional — model an annual contribution step-up an AI snippet can't compute</small></div>
+      <div class="grid2">
+        <div class="field"><div class="field-top"><label for="stepup">Annual contribution step-up</label>
+          <div class="valwrap"><input id="stepup" type="number" inputmode="numeric" min="0" max="50" step="1" value="0" /><span>%/yr</span></div></div>
+          <input id="stepupR" type="range" min="0" max="25" step="1" value="0" aria-label="Annual contribution step-up percent" />
+        </div>
+        <div class="field"><div class="field-top"><label for="goal">Target corpus (today's money)</label>
+          <div class="valwrap"><span class="sym">₹</span><input id="goal" type="number" inputmode="decimal" min="0" step="100000" value="0" /></div></div>
+          <input id="goalR" type="range" min="0" max="100000000" step="500000" value="0" aria-label="Target corpus in today's money" />
+        </div>
+      </div>
+
+      <div class="save" aria-live="polite">
+        <div class="save-row">
+          <div class="save-box"><div class="k">Extra corpus from step-up</div><div class="v ok" id="saveExtra">—</div></div>
+          <div class="save-box"><div class="k">Step-up corpus (today's money)</div><div class="v" id="saveReal">—</div></div>
+        </div>
+        <div class="save-row">
+          <div class="save-box"><div class="k">Total you'll invest</div><div class="v" id="saveInv">—</div></div>
+          <div class="save-box"><div class="k">Target vs achieved</div><div class="v" id="saveGoal">—</div></div>
+        </div>
+        <p class="save-hint" id="saveHint">Add an annual step-up above to see how much more you build, in today's money.</p>
+      </div>
+
+      <details class="sched">
+        <summary>Year-by-year accumulation table</summary>
+        <div class="sched-wrap">
+          <table>
+            <thead><tr><th>Age</th><th>Yr</th><th>Contributed</th><th>Growth</th><th>Corpus</th><th>Today's money</th></tr></thead>
+            <tbody id="schedBody"></tbody>
+          </table>
+        </div>
+      </details>
+    </div>
   </div></div>
   <div class="ad">Ad space</div>
   <div class="content">
     <h2>How the corpus is estimated</h2>
     <p>Your retirement corpus has two parts: your current savings growing until retirement, plus all your future monthly contributions compounding along the way. Both grow at your expected return rate.</p>
     <p>Because prices rise over time, the calculator also shows the corpus <b>in today's money</b> — discounted by your inflation assumption — so the big future number means something real. <em>This is an estimate using constant rates; actual returns and inflation vary.</em></p>
+
+    <h3>Step-up: the lever most people skip</h3>
+    <p>A flat monthly contribution ignores the single biggest thing that happens to your finances over a career — your income grows. An <b>annual contribution step-up</b> raises your monthly saving by a fixed percentage each year, so every raise feeds your future self. Because the earliest contributions compound the longest, a 10%/year step-up can build a far larger corpus than the same starting amount held flat. Model your own step-up above and the year-by-year table shows exactly how the corpus and its real value build, age by age — the kind of multi-variable answer a search snippet can't give you.</p>
+
     <div class="xlinks"><a href="/calculators/sip">SIP Calculator →</a><a href="/#calculators">All calculators →</a></div>
   </div>
-  <AppLd name="Retirement Calculator" description="Drag sliders for your current age, retirement age, savings, monthly contribution, expected return and inflation to see your projected retirement corpus update live in your browser." category="FinanceApplication" features={["Live sliders for age, savings, return and inflation", "Switch between INR, USD, EUR and GBP currencies", "Inflation-adjusted corpus shown in today's money", "Breakdown of total invested vs projected corpus", "Runs 100% in your browser — nothing uploaded"]} />
+  <AppLd name="Retirement Calculator with Step-Up & Inflation" description="Drag sliders for your current age, retirement age, savings, monthly contribution, expected return and inflation, then add an annual contribution step-up to see your projected retirement corpus, its value in today's money and a year-by-year accumulation table — live in your browser." category="FinanceApplication" features={["Live sliders for age, savings, return and inflation", "Model an annual contribution step-up for salary growth", "Inflation-adjusted corpus shown in today's money", "Set a target corpus and see target vs achieved", "Year-by-year accumulation table with real values", "Switch between INR, USD, EUR and GBP currencies", "Runs 100% in your browser — nothing uploaded"]} />
   <Faq items={faqItems} />
+
+  <style is:global>
+    .adv{margin-top:var(--s5);border-top:1px solid var(--line);padding-top:var(--s5)}
+    .adv-h{display:flex;align-items:baseline;gap:var(--s3);margin-bottom:var(--s4);flex-wrap:wrap}
+    .adv-h span{font-weight:800;font-size:var(--t-md)}
+    .adv-h small{color:var(--dim);font-size:var(--t-sm)}
+    .save{background:var(--result-bg);border:1px solid var(--line);border-radius:var(--r-lg);padding:var(--s4);margin-top:var(--s4)}
+    .save-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3)}
+    .save-row+.save-row{margin-top:var(--s3)}
+    .save-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--s3) var(--s4)}
+    .save-box .k{font-size:var(--t-xs);color:var(--dim)}
+    .save-box .v{font-size:var(--t-lg);font-weight:800;margin-top:2px}
+    .save-box .v.ok{color:var(--ok)}
+    .save-hint{font-size:var(--t-sm);color:var(--dim);margin-top:var(--s3);line-height:1.5}
+    .sched{margin-top:var(--s4)}
+    .sched summary{cursor:pointer;font-weight:700;font-size:var(--t-sm);color:var(--brand);padding:var(--s2) 0}
+    .sched-wrap{overflow-x:auto;margin-top:var(--s3)}
+    .sched table{width:100%;border-collapse:collapse;font-size:var(--t-sm);min-width:540px}
+    .sched th,.sched td{text-align:right;padding:var(--s2) var(--s3);border-bottom:1px solid var(--line);white-space:nowrap}
+    .sched th:first-child,.sched td:first-child{text-align:left}
+    .sched th{color:var(--dim);font-weight:700;font-size:var(--t-xs);text-transform:uppercase;letter-spacing:.4px}
+  </style>
+
   <script is:inline>
     (function(){var cur='INR',loc='en-IN';function el(i){return document.getElementById(i);}function num(i){var v=parseFloat(el(i).value);return isFinite(v)?v:0;}
     function money(v){try{return new Intl.NumberFormat(loc,{style:'currency',currency:cur,maximumFractionDigits:0}).format(Math.round(v));}catch(e){return Math.round(v).toLocaleString();}}
     function pair(a,b){el(a).addEventListener('input',function(){el(b).value=el(a).value;c();});el(b).addEventListener('input',function(){el(a).value=el(b).value;c();});}
+    // Month-by-month accumulation with optional annual contribution step-up.
+    // Returns final corpus, total contributed, and one row per completed year.
+    function simulate(P,M,i,stepup,years,infM,age){
+      var n=years*12;var bal=P,mon=M,contributed=P,rows=[];
+      for(var m=1;m<=n;m++){
+        bal=(bal+mon)*(1+i);contributed+=mon;
+        if(m%12===0){
+          var yr=m/12;var real=bal/Math.pow(1+infM,m);
+          rows.push({yr:yr,age:age+yr,contributed:contributed,growth:bal-contributed,bal:bal,real:real});
+          if(stepup>0)mon=mon*(1+stepup/100);
+        }
+      }
+      return {corpus:bal,contributed:contributed,rows:rows};
+    }
     function c(){var age=num('age'),ret=num('ret'),P=num('cur0'),M=num('mon'),R=num('ret2'),INF=num('inf');
       var yrs=Math.max(0,ret-age),n=yrs*12,i=R/12/100;
+      // Closed-form baseline (no step-up) — keeps the primary result exact.
       var fvP=P*Math.pow(1+i,n);var fvM=(i>0)?M*((Math.pow(1+i,n)-1)/i)*(1+i):M*n;var corpus=fvP+fvM;
       var invested=P+M*n;var real=corpus/Math.pow(1+INF/100,yrs);
       el('corpus').textContent=money(corpus);el('sub').textContent=yrs+' years to retirement';
-      el('bdInv').textContent=money(invested);el('bdReal').textContent=money(real);}
+      el('bdInv').textContent=money(invested);el('bdReal').textContent=money(real);
+
+      // Advanced: step-up scenario (monthly sim) vs baseline (no step-up).
+      var stepup=num('stepup'),goal=num('goal');var infM=Math.pow(1+INF/100,1/12)-1;
+      var base=simulate(P,M,i,0,yrs,infM,age);
+      var opt =simulate(P,M,i,stepup,yrs,infM,age);
+      var optReal=opt.corpus/Math.pow(1+INF/100,yrs);
+      var extra=opt.corpus-base.corpus;
+      el('saveExtra').textContent=money(extra);
+      el('saveReal').textContent=money(optReal);
+      el('saveInv').textContent=money(opt.contributed);
+      if(goal>0){var pct=Math.round(optReal/goal*100);el('saveGoal').textContent=pct+'% of target';}
+      else el('saveGoal').textContent='—';
+      if(stepup>0&&extra>0.5){
+        el('saveHint').textContent='A '+stepup+'%/yr step-up adds '+money(extra)+' to your corpus ('+money(optReal-real)+' more in today’s money).';
+      }else if(goal>0){
+        var gap=goal-optReal;
+        el('saveHint').textContent=(gap<=0)?'On track — your corpus reaches '+money(optReal)+' in today’s money, hitting your target.':'You are '+money(gap)+' short of your target in today’s money — try a step-up or a higher monthly saving.';
+      }else{
+        el('saveHint').textContent='Add an annual step-up above to see how much more you build, in today’s money.';
+      }
+
+      var body=el('schedBody');body.innerHTML='';
+      for(var k=0;k<opt.rows.length;k++){var row=opt.rows[k],tr=document.createElement('tr');
+        tr.innerHTML='<td>'+Math.round(row.age)+'</td><td>'+row.yr+'</td><td>'+money(row.contributed)+'</td><td>'+money(row.growth)+'</td><td>'+money(row.bal)+'</td><td>'+money(row.real)+'</td>';
+        body.appendChild(tr);}
+    }
     pair('age','ageR');pair('ret','retR');pair('cur0','cur0R');pair('mon','monR');pair('ret2','ret2R');pair('inf','infR');
+    pair('stepup','stepupR');pair('goal','goalR');
     el('cur').addEventListener('change',function(){var o=el('cur').selectedOptions[0];cur=el('cur').value;loc=o.dataset.loc;document.querySelectorAll('.valwrap .sym').forEach(function(s){s.textContent=o.dataset.sym;});c();});c();})();
   </script>
 </Base>

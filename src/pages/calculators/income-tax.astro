@@ -2,12 +2,13 @@
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
 import AppLd from '../../components/AppLd.astro';
-const title = 'Income Tax Calculator — Drag Income, Compare Regimes Live';
-const description = 'Compare India new vs old tax regimes for FY 2025-26 with standard deduction, 87A rebate and 4% cess. Runs in your browser, nothing uploaded.';
+const title = 'Income Tax Calculator — Old vs New Regime FY 2025-26';
+const description = 'Compare India new vs old tax regimes side-by-side for FY 2025-26 with 80C, 80D, HRA and standard deduction, 87A rebate and 4% cess. Runs in your browser, nothing uploaded.';
 const faqItems = [
   { q: 'What is the difference between the new and old tax regime?', a: 'The new regime (FY 2025-26) has lower slab rates and a higher ₹75,000 standard deduction, with tax effectively nil up to ₹12,00,000 taxable income via the 87A rebate. The old regime has a ₹50,000 standard deduction but lets you claim deductions like 80C and 80D, with the 87A rebate nil up to ₹5,00,000.' },
+  { q: 'How does the side-by-side old vs new regime comparison work?', a: 'The calculator runs both regimes on the same income at once, applying your 80C, 80D, HRA and standard deductions to the old regime only, then adds the 87A rebate and 4% cess to each. It highlights the regime with the lower total tax as recommended and shows exactly how much you save by choosing it — a multi-deduction comparison a search snippet cannot give you.' },
+  { q: 'Which deductions apply only to the old regime?', a: 'Section 80C (up to ₹1.5L), 80D health insurance, HRA exemption and the ₹50,000 standard deduction all reduce taxable income under the old regime. The new regime ignores them and instead gives a flat ₹75,000 standard deduction, so high deductions can swing the recommendation toward the old regime.' },
   { q: 'Does this calculator include the 4% cess and 87A rebate?', a: 'Yes. It applies the Section 87A rebate (nil tax up to ₹12L taxable in the new regime, ₹5L in the old) and adds a 4% health and education cess on top of the calculated tax in both regimes.' },
-  { q: 'Why can I only enter deductions in the old regime?', a: 'Most deductions such as 80C are not available under the new regime, so the deductions field appears only when you select the old regime. The new regime instead gives a flat ₹75,000 standard deduction for salaried individuals.' },
   { q: 'Is this an exact tax figure I can file with?', a: 'No. It is a simplified estimate for general guidance that ignores surcharge on very high incomes and marginal relief, and it is not tax advice. Confirm with a tax professional or the official income tax portal before filing.' },
   { q: 'Is my income data uploaded or stored anywhere?', a: 'No. Everything is calculated locally in your browser. Your income and deduction figures are never uploaded, stored, or shared.' },
 ];
@@ -16,7 +17,7 @@ const faqItems = [
   <header class="head"><div class="wrap">
     <p class="kicker">Finance Calculator</p>
     <h1>Income Tax Calculator</h1>
-    <p>Drag your income slider to watch your FY 2025-26 tax update live across both regimes.</p>
+    <p>Drag your income slider to watch your FY 2025-26 tax update live, then compare both regimes side-by-side.</p>
   </div></header>
 
   <div class="wrap">
@@ -37,8 +38,8 @@ const faqItems = [
         </div>
         <div class="field" id="dedField" style="display:none">
           <div class="field-top"><label for="ded">Deductions (80C, etc.)</label>
-            <div class="valwrap"><span class="sym">₹</span><input id="ded" type="number" inputmode="decimal" min="0" value="150000" /></div></div>
-          <input id="dedR" type="range" min="0" max="500000" step="10000" value="150000" aria-label="Deductions" />
+            <div class="valwrap"><span class="sym">₹</span><input id="ded" type="number" inputmode="decimal" min="0" value="0" /></div></div>
+          <input id="dedR" type="range" min="0" max="500000" step="10000" value="0" aria-label="Deductions" />
         </div>
       </div>
 
@@ -52,6 +53,57 @@ const faqItems = [
           <div class="bd"><div class="k">Effective rate</div><div class="v" id="bdRate">—</div></div>
           <div class="bd"><div class="k">Take-home (yr)</div><div class="v" id="bdNet">—</div></div>
         </div>
+      </div>
+
+      <div class="adv">
+        <div class="adv-h"><span>⚖️ Old vs New, side-by-side</span><small>Optional — enter old-regime deductions to find the regime that actually saves you the most</small></div>
+        <div class="grid2">
+          <div class="field">
+            <div class="field-top"><label for="c80c">80C investments (max ₹1.5L)</label>
+              <div class="valwrap"><span class="sym">₹</span><input id="c80c" type="number" inputmode="decimal" min="0" max="150000" step="5000" value="0" /></div></div>
+            <input id="c80cR" type="range" min="0" max="150000" step="5000" value="0" aria-label="80C investments" />
+          </div>
+          <div class="field">
+            <div class="field-top"><label for="c80d">80D health insurance</label>
+              <div class="valwrap"><span class="sym">₹</span><input id="c80d" type="number" inputmode="decimal" min="0" max="100000" step="1000" value="0" /></div></div>
+            <input id="c80dR" type="range" min="0" max="100000" step="1000" value="0" aria-label="80D health insurance" />
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="field">
+            <div class="field-top"><label for="hra">HRA exemption (old regime)</label>
+              <div class="valwrap"><span class="sym">₹</span><input id="hra" type="number" inputmode="decimal" min="0" step="5000" value="0" /></div></div>
+            <input id="hraR" type="range" min="0" max="500000" step="5000" value="0" aria-label="HRA exemption" />
+          </div>
+          <div class="field">
+            <div class="field-top"><label for="othded">Other old-regime deductions</label>
+              <div class="valwrap"><span class="sym">₹</span><input id="othded" type="number" inputmode="decimal" min="0" step="5000" value="0" /></div></div>
+            <input id="othdedR" type="range" min="0" max="500000" step="5000" value="0" aria-label="Other old-regime deductions" />
+          </div>
+        </div>
+
+        <div class="save" aria-live="polite">
+          <div class="verdict" id="verdict">—</div>
+          <div class="save-row">
+            <div class="save-box" id="boxNew"><div class="k">New regime · total tax</div><div class="v" id="newTax">—</div></div>
+            <div class="save-box" id="boxOld"><div class="k">Old regime · total tax</div><div class="v" id="oldTax">—</div></div>
+          </div>
+          <div class="save-row">
+            <div class="save-box"><div class="k">You save by choosing it</div><div class="v ok" id="saveTax">—</div></div>
+            <div class="save-box"><div class="k">Take-home (recommended)</div><div class="v" id="saveNet">—</div></div>
+          </div>
+          <p class="save-hint" id="saveHint">Enter your old-regime deductions above to see which regime saves you the most.</p>
+        </div>
+
+        <details class="sched">
+          <summary>Slab-by-slab breakdown for both regimes</summary>
+          <div class="sched-wrap">
+            <table>
+              <thead><tr><th>Slab</th><th>New rate</th><th>New tax</th><th>Old rate</th><th>Old tax</th></tr></thead>
+              <tbody id="schedBody"></tbody>
+            </table>
+          </div>
+        </details>
       </div>
     </div>
   </div>
@@ -69,18 +121,44 @@ const faqItems = [
     </ul>
     <h3>Old regime</h3>
     <ul>
-      <li>Standard deduction ₹50,000 plus deductions like 80C (up to ₹1.5L), 80D and others.</li>
+      <li>Standard deduction ₹50,000 plus deductions like 80C (up to ₹1.5L), 80D and HRA.</li>
       <li>Slabs: nil up to ₹2.5L, 5% to ₹5L, 20% to ₹10L, 30% above.</li>
       <li>87A rebate makes tax nil for taxable income up to ₹5,00,000.</li>
     </ul>
     <p>A <b>4% health &amp; education cess</b> is added on top of the calculated tax in both regimes.</p>
+    <h3>Old vs new: why the recommendation flips</h3>
+    <p>With no deductions the new regime almost always wins thanks to its wider slabs and ₹12L rebate. But once you stack <b>80C, 80D and a big HRA exemption</b>, the old regime can shrink taxable income enough to beat it. The side-by-side panel above runs both regimes on your exact numbers and tells you which one to pick and how much you keep — a multi-deduction trade-off a search snippet can't compute for you.</p>
     <p><em>This is a simplified estimate for general guidance, ignores surcharge on very high incomes and marginal relief, and is not tax advice. Confirm with a tax professional or the official portal before filing.</em></p>
     <div class="xlinks"><a href="/calculators/emi">EMI Calculator →</a><a href="/#calculators">All calculators →</a></div>
   </div>
 
-  <AppLd name="Income Tax Calculator" description="Drag the income slider and switch between the new and old regimes to watch your FY 2025-26 tax, cess and take-home update live in your browser." category="FinanceApplication" features={["Live income slider", "Toggle new vs old regime", "Adjustable 80C deductions slider", "Instant 87A rebate and 4% cess", "Effective rate and take-home breakdown"]} />
+  <AppLd name="Income Tax Calculator" description="Drag the income slider and compare the new and old FY 2025-26 regimes side-by-side, with 80C, 80D and HRA deductions, to see the recommended regime and the tax you save by choosing it — live in your browser." category="FinanceApplication" features={["Live income slider", "Side-by-side old vs new regime comparison", "Recommended regime verdict and tax saved", "80C, 80D, HRA and standard deduction inputs", "Instant 87A rebate and 4% cess", "Effective rate and take-home breakdown"]} />
 
   <Faq items={faqItems} />
+
+  <style is:global>
+    .adv{margin-top:var(--s5);border-top:1px solid var(--line);padding-top:var(--s5)}
+    .adv-h{display:flex;align-items:baseline;gap:var(--s3);margin-bottom:var(--s4);flex-wrap:wrap}
+    .adv-h span{font-weight:800;font-size:var(--t-md)}
+    .adv-h small{color:var(--dim);font-size:var(--t-sm)}
+    .save{background:var(--result-bg);border:1px solid var(--line);border-radius:var(--r-lg);padding:var(--s4);margin-top:var(--s4)}
+    .save .verdict{font-weight:800;font-size:var(--t-md);margin-bottom:var(--s3);line-height:1.4}
+    .save-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3)}
+    .save-row+.save-row{margin-top:var(--s3)}
+    .save-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--s3) var(--s4)}
+    .save-box.win{border-color:var(--ok);box-shadow:0 0 0 1px var(--ok) inset}
+    .save-box .k{font-size:var(--t-xs);color:var(--dim)}
+    .save-box .v{font-size:var(--t-lg);font-weight:800;margin-top:2px}
+    .save-box .v.ok{color:var(--ok)}
+    .save-hint{font-size:var(--t-sm);color:var(--dim);margin-top:var(--s3);line-height:1.5}
+    .sched{margin-top:var(--s4)}
+    .sched summary{cursor:pointer;font-weight:700;font-size:var(--t-sm);color:var(--brand);padding:var(--s2) 0}
+    .sched-wrap{overflow-x:auto;margin-top:var(--s3)}
+    .sched table{width:100%;border-collapse:collapse;font-size:var(--t-sm);min-width:540px}
+    .sched th,.sched td{text-align:right;padding:var(--s2) var(--s3);border-bottom:1px solid var(--line);white-space:nowrap}
+    .sched th:first-child,.sched td:first-child{text-align:left}
+    .sched th{color:var(--dim);font-weight:700;font-size:var(--t-xs);text-transform:uppercase;letter-spacing:.4px}
+  </style>
 
   <script is:inline>
     (function () {
@@ -98,27 +176,84 @@ const faqItems = [
       }
       var NEW=[[0,400000,0],[400000,800000,5],[800000,1200000,10],[1200000,1600000,15],[1600000,2000000,20],[2000000,2400000,25],[2400000,1e12,30]];
       var OLD=[[0,250000,0],[250000,500000,5],[500000,1000000,20],[1000000,1e12,30]];
-      function pair(a,b){el(a).addEventListener('input',function(){el(b).value=el(a).value;compute();});el(b).addEventListener('input',function(){el(a).value=el(b).value;compute();});}
-      function compute(){
-        var gross=num('income'), regime=el('regime').value, taxable, tax;
-        if(regime==='new'){
+      // Compute total tax (incl. 4% cess) and taxable income for a regime.
+      function regime(name, gross){
+        var taxable, tax;
+        if(name==='new'){
           taxable=Math.max(0, gross-75000);
           tax=slabTax(taxable, NEW);
           if(taxable<=1200000) tax=0;            // 87A rebate
         } else {
-          taxable=Math.max(0, gross-50000-num('ded'));
+          var oldDed = num('ded') + num('c80c') + num('c80d') + num('hra') + num('othded');
+          taxable=Math.max(0, gross-50000-oldDed);
           tax=slabTax(taxable, OLD);
           if(taxable<=500000) tax=0;             // 87A rebate
         }
-        var cess=tax*0.04, total=tax+cess;
-        el('tax').textContent=money(total);
-        el('sub').textContent=(regime==='new'?'New regime':'Old regime')+' · FY 2025-26';
-        el('bdTaxable').textContent=money(taxable);
-        el('bdCess').textContent=money(total);
-        el('bdRate').textContent=gross>0?(total/gross*100).toFixed(1)+'%':'—';
-        el('bdNet').textContent=money(gross-total);
+        var total=tax*1.04;                       // tax + 4% cess
+        return { taxable:taxable, tax:tax, total:total };
+      }
+      function pair(a,b){el(a).addEventListener('input',function(){el(b).value=el(a).value;compute();});el(b).addEventListener('input',function(){el(a).value=el(b).value;compute();});}
+      function compute(){
+        var gross=num('income'), sel=el('regime').value;
+        var rNew=regime('new', gross), rOld=regime('old', gross);
+        var cur = sel==='new' ? rNew : rOld;
+
+        // Primary result mirrors the selected regime (unchanged behaviour).
+        el('tax').textContent=money(cur.total);
+        el('sub').textContent=(sel==='new'?'New regime':'Old regime')+' · FY 2025-26';
+        el('bdTaxable').textContent=money(cur.taxable);
+        el('bdCess').textContent=money(cur.total);
+        el('bdRate').textContent=gross>0?(cur.total/gross*100).toFixed(1)+'%':'—';
+        el('bdNet').textContent=money(gross-cur.total);
+
+        // Side-by-side comparison + verdict.
+        el('newTax').textContent=money(rNew.total);
+        el('oldTax').textContent=money(rOld.total);
+        var saved=Math.abs(rNew.total-rOld.total);
+        var winner, winTotal;
+        if(rNew.total<rOld.total){ winner='new'; winTotal=rNew.total; }
+        else if(rOld.total<rNew.total){ winner='old'; winTotal=rOld.total; }
+        else { winner='tie'; winTotal=rNew.total; }
+        el('boxNew').classList.toggle('win', winner==='new');
+        el('boxOld').classList.toggle('win', winner==='old');
+        el('saveTax').textContent=money(saved);
+        el('saveNet').textContent=money(gross-winTotal);
+        if(winner==='tie'){
+          el('verdict').textContent='Both regimes cost the same on these numbers.';
+          el('saveHint').textContent='Add 80C, 80D or HRA deductions to tilt the old regime in your favour.';
+        } else {
+          var label = winner==='new' ? 'New regime' : 'Old regime';
+          el('verdict').textContent='✅ Recommended: '+label+' — saves '+money(saved)+'/yr';
+          el('saveHint').textContent='Choosing the '+label.toLowerCase()+' cuts your tax by '+money(saved)+' this year versus the other regime. Deductions apply to the old regime only.';
+        }
+
+        // Slab-by-slab breakdown for both regimes.
+        var body=el('schedBody'); body.innerHTML='';
+        var labels=['Up to ₹2.5L','₹2.5L–4L','₹4L–5L','₹5L–8L','₹8L–10L','₹10L–12L','₹12L–16L','₹16L+'];
+        var bands=[[0,250000],[250000,400000],[400000,500000],[500000,800000],[800000,1000000],[1000000,1200000],[1200000,1600000],[1600000,1e12]];
+        for(var k=0;k<bands.length;k++){
+          var lo=bands[k][0], hi=bands[k][1];
+          var nRate=rateAt(NEW,lo), oRate=rateAt(OLD,lo);
+          var nTax=bandTax(rNew.taxable,lo,hi,NEW), oTax=bandTax(rOld.taxable,lo,hi,OLD);
+          var tr=document.createElement('tr');
+          tr.innerHTML='<td>'+labels[k]+'</td><td>'+nRate+'%</td><td>'+(nTax>0?money(nTax):'—')+
+            '</td><td>'+oRate+'%</td><td>'+(oTax>0?money(oTax):'—')+'</td>';
+          body.appendChild(tr);
+        }
+      }
+      function rateAt(slabs, lo){
+        for(var i=0;i<slabs.length;i++){ if(lo>=slabs[i][0] && lo<slabs[i][1]) return slabs[i][2]; }
+        return slabs[slabs.length-1][2];
+      }
+      // Tax contributed by the portion of taxable income inside [lo,hi), using the slab rate at lo.
+      function bandTax(ti, lo, hi, slabs){
+        if(ti<=lo) return 0;
+        var rate=rateAt(slabs, lo);
+        var upper=Math.min(ti, hi);
+        return (upper-lo)*rate/100;
       }
       pair('income','incomeR'); pair('ded','dedR');
+      pair('c80c','c80cR'); pair('c80d','c80dR'); pair('hra','hraR'); pair('othded','othdedR');
       el('regime').addEventListener('change',function(){
         el('dedField').style.display = el('regime').value==='old' ? 'block':'none';
         compute();

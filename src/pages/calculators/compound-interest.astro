@@ -2,22 +2,27 @@
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
 import AppLd from '../../components/AppLd.astro';
-const title = 'Compound Interest Calculator — Drag Rate & Years Live';
-const description = 'Free compound interest calculator. See how a deposit plus regular contributions grow over time, at any rate and compounding frequency. Runs in your browser.';
+const title = 'Compound Interest Calculator with Step-Up SIP';
+const description = 'Free compound interest calculator. See how a deposit plus regular contributions with an annual step-up grow over time, at any rate and compounding frequency. Runs in your browser.';
 const faqItems = [
-  { q: 'How does this compound interest calculator work?', a: 'It takes your initial amount, monthly addition, annual rate, time period and compounding frequency, then adds each monthly contribution and applies compound growth period by period. The future balance, total invested and interest earned update live as you change any value.' },
-  { q: 'Does it account for regular monthly contributions?', a: 'Yes. The calculator adds your monthly addition every month and compounds the running balance, so the result reflects ongoing saving on top of your starting deposit, not just a one-time lump sum.' },
+  { q: 'How does this compound interest calculator work?', a: 'It takes your initial amount, regular addition, annual rate, time period and compounding frequency, then adds each contribution and applies compound growth period by period. The future balance, total invested and interest earned update live as you change any value.' },
+  { q: 'Does it account for regular monthly contributions?', a: 'Yes. The calculator adds your regular addition every month or year and compounds the running balance, so the result reflects ongoing saving on top of your starting deposit, not just a one-time lump sum.' },
+  { q: 'What is a contribution step-up and why use it?', a: 'A step-up raises your regular contribution by a fixed percentage each year, in line with rising income. Even a 5–10% annual step-up sharply increases your final corpus because the extra money compounds for years. Set it above and the year-by-year table shows interest earned versus total contributed.' },
   { q: 'What does compounding frequency change?', a: 'You can compound monthly, quarterly or yearly. The more often interest compounds at the same annual rate, the faster the balance grows, so monthly compounding produces a higher future balance than yearly.' },
   { q: 'Can I use it for different currencies?', a: 'Yes. You can switch between Indian Rupee, US Dollar, Euro and British Pound, and the results are formatted in the currency and locale you select.' },
   { q: 'Is my data uploaded or stored anywhere?', a: 'No. Every calculation runs entirely in your browser. Nothing you enter is uploaded, stored or shared, and the numbers never leave your device.' }
 ];
 ---
 <Base title={title} description={description}>
+  <Fragment slot="head">
+    <AppLd name="Compound Interest Calculator with Step-Up SIP" description="Drag the rate, deposit, contribution and years sliders to watch your future balance, total invested and interest earned update live — with an optional annual step-up and a year-by-year balance table." category="FinanceApplication" features={["Live sliders for deposit, contribution, rate and years", "Monthly or yearly contributions with an annual step-up %", "Monthly, quarterly or yearly compounding toggle", "Year-by-year table of interest earned vs total contributed", "Switch between INR, USD, EUR and GBP", "Runs entirely in your browser — nothing uploaded"]} />
+  </Fragment>
+
   <header class="head">
     <div class="wrap">
       <p class="kicker">Finance Calculator</p>
       <h1>Compound Interest Calculator</h1>
-      <p>Drag the rate, deposit and years sliders to watch your future balance grow live.</p>
+      <p>Drag the rate, deposit and years sliders, then add an annual step-up to watch your future balance grow live.</p>
     </div>
   </header>
 
@@ -77,6 +82,46 @@ const faqItems = [
           <div class="bd"><div class="k">Interest earned</div><div class="v" id="bdI">—</div></div>
         </div>
       </div>
+
+      <div class="adv">
+        <div class="adv-h"><span>📈 Boost the corpus</span><small>Optional — model a contribution step-up &amp; see year-by-year growth an AI snippet can't compute</small></div>
+        <div class="grid2">
+          <div class="field">
+            <div class="field-top"><label for="contribFreq">Contribution frequency</label></div>
+            <select id="contribFreq" aria-label="Contribution frequency">
+              <option value="12" selected>Monthly</option>
+              <option value="1">Yearly</option>
+            </select>
+          </div>
+          <div class="field">
+            <div class="field-top"><label for="stepup">Annual contribution step-up</label>
+              <div class="valwrap"><input id="stepup" type="number" inputmode="numeric" min="0" max="50" step="1" value="0" /><span>%/yr</span></div></div>
+            <input id="stepupR" type="range" min="0" max="25" step="1" value="0" aria-label="Annual contribution step-up percent" />
+          </div>
+        </div>
+
+        <div class="save" aria-live="polite">
+          <div class="save-row">
+            <div class="save-box"><div class="k">Extra corpus from step-up</div><div class="v ok" id="saveCorpus">—</div></div>
+            <div class="save-box"><div class="k">Total contributed</div><div class="v" id="saveContrib">—</div></div>
+          </div>
+          <div class="save-row">
+            <div class="save-box"><div class="k">Future balance with step-up</div><div class="v" id="newFv">—</div></div>
+            <div class="save-box"><div class="k">Interest earned</div><div class="v" id="newInt">—</div></div>
+          </div>
+          <p class="save-hint" id="saveHint">Add a step-up above to see how much more your contributions grow.</p>
+        </div>
+
+        <details class="sched">
+          <summary>Year-by-year balance table</summary>
+          <div class="sched-wrap">
+            <table>
+              <thead><tr><th>Yr</th><th>Added this yr</th><th>Interest this yr</th><th>Total contributed</th><th>Interest earned</th><th>Balance</th></tr></thead>
+              <tbody id="schedBody"></tbody>
+            </table>
+          </div>
+        </details>
+      </div>
     </div>
   </div>
 
@@ -86,10 +131,13 @@ const faqItems = [
     <h2>How compound interest works</h2>
     <p>Compound interest is interest earned on both your original money <em>and</em> the interest it has already earned. Over time this "interest on interest" snowballs — which is why starting early matters so much.</p>
     <div class="formula">A = P × (1 + r/n)^(n·t)</div>
-    <p>where <b>P</b> is the starting amount, <b>r</b> is the annual rate (as a decimal), <b>n</b> is how many times per year interest compounds, and <b>t</b> is the number of years. This calculator also adds your monthly contributions as they happen, so the result reflects regular saving too.</p>
+    <p>where <b>P</b> is the starting amount, <b>r</b> is the annual rate (as a decimal), <b>n</b> is how many times per year interest compounds, and <b>t</b> is the number of years. This calculator also adds your regular contributions as they happen, so the result reflects ongoing saving too.</p>
 
     <h3>Why frequency matters</h3>
     <p>The more often interest compounds, the faster your balance grows. Monthly compounding beats yearly compounding at the same rate — try switching the <b>Compounding</b> option above and watch the future balance change.</p>
+
+    <h3>The step-up effect: how to grow your corpus faster</h3>
+    <p>Raising your contribution a few percent each year — in line with salary growth — is one of the most powerful levers most savers never model. Because every extra rupee compounds for the remaining years, a <b>10%/year step-up</b> can add a large slice to your final corpus without ever feeling like a big monthly jump. Set a step-up above and the year-by-year table shows exactly how interest earned pulls ahead of what you contributed. This is the kind of multi-variable answer a search snippet can't give you — you have to model your own numbers.</p>
 
     <h3>Simple vs compound</h3>
     <p>Simple interest is paid only on your original amount, so it grows in a straight line. Compound interest curves upward and pulls away over time — the longer the horizon, the bigger the gap.</p>
@@ -100,9 +148,29 @@ const faqItems = [
     </div>
   </div>
 
-  <AppLd name="Compound Interest Calculator" description="Drag the rate, deposit, monthly addition and years sliders to watch your future balance, total invested and interest earned update live in your browser." category="FinanceApplication" features={["Live sliders for deposit, monthly addition, rate and years", "Monthly, quarterly or yearly compounding toggle", "Instant breakdown of invested vs interest earned", "Switch between INR, USD, EUR and GBP", "Runs entirely in your browser — nothing uploaded"]} />
-
   <Faq items={faqItems} />
+
+  <style is:global>
+    .adv{margin-top:var(--s5);border-top:1px solid var(--line);padding-top:var(--s5)}
+    .adv-h{display:flex;align-items:baseline;gap:var(--s3);margin-bottom:var(--s4);flex-wrap:wrap}
+    .adv-h span{font-weight:800;font-size:var(--t-md)}
+    .adv-h small{color:var(--dim);font-size:var(--t-sm)}
+    .save{background:var(--result-bg);border:1px solid var(--line);border-radius:var(--r-lg);padding:var(--s4);margin-top:var(--s4)}
+    .save-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3)}
+    .save-row+.save-row{margin-top:var(--s3)}
+    .save-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--s3) var(--s4)}
+    .save-box .k{font-size:var(--t-xs);color:var(--dim)}
+    .save-box .v{font-size:var(--t-lg);font-weight:800;margin-top:2px}
+    .save-box .v.ok{color:var(--ok)}
+    .save-hint{font-size:var(--t-sm);color:var(--dim);margin-top:var(--s3);line-height:1.5}
+    .sched{margin-top:var(--s4)}
+    .sched summary{cursor:pointer;font-weight:700;font-size:var(--t-sm);color:var(--brand);padding:var(--s2) 0}
+    .sched-wrap{overflow-x:auto;margin-top:var(--s3)}
+    .sched table{width:100%;border-collapse:collapse;font-size:var(--t-sm);min-width:540px}
+    .sched th,.sched td{text-align:right;padding:var(--s2) var(--s3);border-bottom:1px solid var(--line);white-space:nowrap}
+    .sched th:first-child,.sched td:first-child{text-align:left}
+    .sched th{color:var(--dim);font-weight:700;font-size:var(--t-xs);text-transform:uppercase;letter-spacing:.4px}
+  </style>
 
   <script is:inline>
     (function () {
@@ -117,24 +185,82 @@ const faqItems = [
         el(a).addEventListener('input', function(){ el(b).value = el(a).value; compute(); });
         el(b).addEventListener('input', function(){ el(a).value = el(b).value; compute(); });
       }
-      function compute(){
-        var P = num('principal'), PMT = num('monthly'), R = num('rate'), Y = num('years');
-        var n = parseInt(el('freq').value, 10) || 12;     // compounds per year
-        var monthsPerPeriod = 12 / n;
+      // Month-by-month simulation with optional contribution step-up + year-by-year rows.
+      // cFreq: 1 = yearly contribution, 12 = monthly contribution. stepup applied each completed year.
+      // With stepup=0 and cFreq=12 this reduces to the standard add-then-compound future value.
+      function simulate(P, monthlyAmt, R, Y, n, cFreq, stepup){
+        var monthsPerPeriod = 12 / n;          // months between compounding events
         var periodRate = R/100/n;
         var balance = P, contributed = P, months = Y*12;
+        // Per-contribution amount: if yearly, deposit 12× the monthly figure once a year.
+        var perContrib = (cFreq === 1) ? monthlyAmt * 12 : monthlyAmt;
+        var curContrib = perContrib, factor = 1 + stepup/100;
+        var rows = [], yAdded = 0, yInt = 0;
         for (var m = 1; m <= months; m++){
-          balance += PMT; contributed += PMT;
-          if (m % monthsPerPeriod === 0) balance *= (1 + periodRate);
+          // Add contribution at the right cadence: monthly, or once a year in the first month of each year.
+          if (cFreq === 12){ balance += curContrib; contributed += curContrib; yAdded += curContrib; }
+          else if (m % 12 === 1){ balance += curContrib; contributed += curContrib; yAdded += curContrib; }
+          if (m % monthsPerPeriod === 0){
+            var before = balance;
+            balance *= (1 + periodRate);
+            yInt += balance - before;
+          }
+          if (m % 12 === 0){
+            rows.push({ yr:m/12, added:yAdded, yint:yInt, contributed:contributed, interest:balance-contributed, balance:balance });
+            if (stepup > 0) curContrib = curContrib * factor;
+            yAdded = 0; yInt = 0;
+          }
         }
-        var interest = balance - contributed;
-        el('fv').textContent = money(balance);
+        if (months % 12 !== 0){
+          rows.push({ yr:Math.ceil(months/12), added:yAdded, yint:yInt, contributed:contributed, interest:balance-contributed, balance:balance });
+        }
+        return { balance:balance, contributed:contributed, interest:balance-contributed, rows:rows };
+      }
+      function compute(){
+        var P = num('principal'), PMT = num('monthly'), R = num('rate'), Y = num('years');
+        var n = parseInt(el('freq').value, 10) || 12;
+        var cFreq = parseInt(el('contribFreq').value, 10) || 12;
+        var stepup = num('stepup');
+
+        // Primary result: baseline = monthly contributions, no step-up (preserves original behaviour).
+        var base = simulate(P, PMT, R, Y, n, 12, 0);
+        el('fv').textContent = money(base.balance);
         el('fvSub').textContent = Y + ' years · ' + el('freq').selectedOptions[0].textContent.toLowerCase() + ' compounding';
-        el('bdC').textContent = money(contributed);
-        el('bdI').textContent = money(interest);
+        el('bdC').textContent = money(base.contributed);
+        el('bdI').textContent = money(base.interest);
+
+        // Advanced: optimized scenario with chosen contribution frequency + step-up.
+        var opt = simulate(P, PMT, R, Y, n, cFreq, stepup);
+        var extraCorpus = opt.balance - base.balance;
+        var hasBoost = (stepup > 0 || cFreq !== 12);
+        el('saveContrib').textContent = money(opt.contributed);
+        el('newFv').textContent = money(opt.balance);
+        el('newInt').textContent = money(opt.interest);
+        if (hasBoost){
+          el('saveCorpus').textContent = (extraCorpus >= 0 ? '+' : '') + money(extraCorpus);
+          if (stepup > 0){
+            el('saveHint').textContent = 'A ' + stepup + '%/yr step-up grows your corpus by ' + money(Math.abs(extraCorpus)) + ' versus level monthly contributions.';
+          } else {
+            el('saveHint').textContent = 'Switching contribution frequency changes your corpus by ' + money(Math.abs(extraCorpus)) + ' versus level monthly contributions.';
+          }
+        } else {
+          el('saveCorpus').textContent = money(0);
+          el('saveHint').textContent = 'Add a step-up above to see how much more your contributions grow.';
+        }
+
+        var body = el('schedBody'); body.innerHTML = '';
+        for (var k = 0; k < opt.rows.length; k++){
+          var row = opt.rows[k], tr = document.createElement('tr');
+          tr.innerHTML = '<td>' + row.yr + '</td><td>' + money(row.added) + '</td><td>' + money(row.yint) +
+            '</td><td>' + money(row.contributed) + '</td><td>' + money(row.interest) +
+            '</td><td>' + money(row.balance) + '</td>';
+          body.appendChild(tr);
+        }
       }
       pair('principal','principalR'); pair('monthly','monthlyR'); pair('rate','rateR'); pair('years','yearsR');
+      pair('stepup','stepupR');
       el('freq').addEventListener('change', compute);
+      el('contribFreq').addEventListener('change', compute);
       el('cur').addEventListener('change', function(){
         var o = el('cur').selectedOptions[0];
         cur = el('cur').value; loc = o.dataset.loc;

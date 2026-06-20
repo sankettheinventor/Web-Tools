@@ -2,11 +2,12 @@
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
 import AppLd from '../../components/AppLd.astro';
-const title = 'Loan Payoff Calculator — Drag Balance, Rate & Payment Live';
-const description = 'Free loan payoff calculator: see how long until you are debt-free and how extra payments cut interest. Runs in your browser; nothing is uploaded.';
+const title = 'Loan Payoff Calculator — Extra Payment Savings';
+const description = 'Free loan payoff calculator: see how long until you are debt-free, compare minimum-only vs accelerated payoff, and view a year-by-year schedule. Runs in your browser; nothing is uploaded.';
 const faqItems = [
   { q: 'How does this loan payoff calculator work?', a: 'Enter your loan balance, annual interest rate and monthly payment, and the calculator finds how many months it takes to reach a zero balance. It also shows the total interest and total amount you will pay.' },
   { q: 'How do extra payments change the payoff time?', a: 'Set an amount in the "Extra payment / month" field and it is added to your regular payment, going straight to principal. The result updates instantly to show how many months and how much interest you save.' },
+  { q: 'How do I compare minimum-only vs accelerated payoff?', a: 'The "Extra payment savings" panel runs two month-by-month simulations side by side: one paying only the minimum, and one with your extra monthly and optional yearly lump-sum payments. It shows the months saved and interest saved, and the year-by-year schedule lists the accelerated balance each year so you can see exactly when you go debt-free.' },
   { q: 'Why does it say "Never" or that my payment is too low?', a: 'If your monthly payment is smaller than the interest charged each month, the balance never goes down, so the loan is never paid off. Increase your monthly or extra payment until the result shows a payoff time.' },
   { q: 'Which currencies can I use?', a: 'You can switch between US Dollar, Indian Rupee, Euro and British Pound using the currency selector, and all amounts are formatted in your chosen currency.' },
   { q: 'Is my loan information uploaded or stored?', a: 'No. Every calculation runs locally in your browser, and nothing you enter is uploaded, stored or shared.' }
@@ -62,6 +63,37 @@ const faqItems = [
           <div class="bd"><div class="k">Total paid</div><div class="v" id="bdTot">—</div></div>
         </div>
       </div>
+
+      <div class="adv">
+        <div class="adv-h"><span>💰 Extra payment savings</span><small>Optional — compare minimum-only vs accelerated payoff, something a snippet can't compute</small></div>
+        <div class="field">
+          <div class="field-top"><label for="annual">Extra lump sum every year</label>
+            <div class="valwrap"><span class="sym">$</span><input id="annual" type="number" inputmode="decimal" min="0" step="100" value="0" /></div></div>
+          <input id="annualR" type="range" min="0" max="50000" step="500" value="0" aria-label="Annual extra lump sum" />
+        </div>
+
+        <div class="save" aria-live="polite">
+          <div class="save-row">
+            <div class="save-box"><div class="k">Interest saved</div><div class="v ok" id="saveInt">—</div></div>
+            <div class="save-box"><div class="k">Debt-free earlier by</div><div class="v" id="saveTime">—</div></div>
+          </div>
+          <div class="save-row">
+            <div class="save-box"><div class="k">Minimum-only payoff</div><div class="v" id="basePay">—</div></div>
+            <div class="save-box"><div class="k">Accelerated payoff</div><div class="v" id="newPay">—</div></div>
+          </div>
+          <p class="save-hint" id="saveHint">Add an extra monthly or yearly payment above to compare against the minimum-only payoff.</p>
+        </div>
+
+        <details class="sched">
+          <summary>Year-by-year payoff schedule (accelerated)</summary>
+          <div class="sched-wrap">
+            <table>
+              <thead><tr><th>Yr</th><th>Paid/yr</th><th>Principal</th><th>Interest</th><th>Extra</th><th>Balance</th></tr></thead>
+              <tbody id="schedBody"></tbody>
+            </table>
+          </div>
+        </details>
+      </div>
     </div>
   </div>
 
@@ -74,6 +106,8 @@ const faqItems = [
     <p>where <b>B</b> is the balance, <b>r</b> is the monthly interest rate and <b>PMT</b> is your total monthly payment (regular + extra). If your payment is smaller than the monthly interest, the balance never goes down — the calculator will warn you.</p>
     <h3>Why extra payments matter so much</h3>
     <p>Every extra dollar goes straight at the principal, so it removes all the future interest that dollar would have generated. Even a small extra payment can cut months — sometimes years — off the loan. Try the extra-payment slider and watch the time and total interest drop.</p>
+    <h3>Minimum-only vs accelerated: the comparison snippets can't give you</h3>
+    <p>The <b>Extra payment savings</b> panel runs two full month-by-month simulations at once: one where you pay only the minimum, and one where your extra monthly payment and optional yearly lump sum go straight to principal. Because interest is charged on the outstanding balance, every accelerated payment compounds in your favour — the <b>months saved</b> and <b>interest saved</b> figures, plus the year-by-year schedule, show exactly when you cross the debt-free line. This multi-variable answer depends on your own numbers, so you have to model it.</p>
     <div class="xlinks">
       <a href="/calculators/emi">EMI Calculator →</a>
       <a href="/calculators/mortgage">Mortgage →</a>
@@ -81,9 +115,31 @@ const faqItems = [
     </div>
   </div>
 
-  <AppLd name="Loan Payoff Calculator" description="Drag the balance, rate, monthly and extra-payment sliders to watch your debt-free date and total interest update live in your browser." category="FinanceApplication" features={["Drag sliders for balance, interest rate and monthly payment", "Add an extra monthly payment to see months and interest saved", "Live debt-free time, total interest and total paid", "Switch between USD, INR, EUR and GBP", "100% client-side — nothing uploaded"]} />
+  <AppLd name="Loan Payoff Calculator" description="Drag the balance, rate, monthly and extra-payment sliders to watch your debt-free date and total interest update live in your browser, then compare minimum-only vs accelerated payoff with a year-by-year schedule." category="FinanceApplication" features={["Drag sliders for balance, interest rate and monthly payment", "Add an extra monthly payment to see months and interest saved", "Compare minimum-only vs accelerated payoff side by side", "Year-by-year payoff schedule with running balance", "Live debt-free time, total interest and total paid", "Switch between USD, INR, EUR and GBP", "100% client-side — nothing uploaded"]} />
 
   <Faq items={faqItems} />
+
+  <style is:global>
+    .adv{margin-top:var(--s5);border-top:1px solid var(--line);padding-top:var(--s5)}
+    .adv-h{display:flex;align-items:baseline;gap:var(--s3);margin-bottom:var(--s4);flex-wrap:wrap}
+    .adv-h span{font-weight:800;font-size:var(--t-md)}
+    .adv-h small{color:var(--dim);font-size:var(--t-sm)}
+    .save{background:var(--result-bg);border:1px solid var(--line);border-radius:var(--r-lg);padding:var(--s4);margin-top:var(--s4)}
+    .save-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3)}
+    .save-row+.save-row{margin-top:var(--s3)}
+    .save-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--s3) var(--s4)}
+    .save-box .k{font-size:var(--t-xs);color:var(--dim)}
+    .save-box .v{font-size:var(--t-lg);font-weight:800;margin-top:2px}
+    .save-box .v.ok{color:var(--ok)}
+    .save-hint{font-size:var(--t-sm);color:var(--dim);margin-top:var(--s3);line-height:1.5}
+    .sched{margin-top:var(--s4)}
+    .sched summary{cursor:pointer;font-weight:700;font-size:var(--t-sm);color:var(--brand);padding:var(--s2) 0}
+    .sched-wrap{overflow-x:auto;margin-top:var(--s3)}
+    .sched table{width:100%;border-collapse:collapse;font-size:var(--t-sm);min-width:540px}
+    .sched th,.sched td{text-align:right;padding:var(--s2) var(--s3);border-bottom:1px solid var(--line);white-space:nowrap}
+    .sched th:first-child,.sched td:first-child{text-align:left}
+    .sched th{color:var(--dim);font-weight:700;font-size:var(--t-xs);text-transform:uppercase;letter-spacing:.4px}
+  </style>
 
   <script is:inline>
     (function () {
@@ -91,21 +147,81 @@ const faqItems = [
       function el(id){return document.getElementById(id);}
       function num(id){var v=parseFloat(el(id).value);return isFinite(v)?v:0;}
       function money(v){try{return new Intl.NumberFormat(loc,{style:'currency',currency:cur,maximumFractionDigits:0}).format(Math.round(v));}catch(e){return Math.round(v).toLocaleString();}}
+      function fmtDur(months){months=Math.round(months);var y=Math.floor(months/12),mo=months%12,s='';if(y)s+=y+'y';if(mo)s+=(s?' ':'')+mo+'m';return s||'0m';}
       function pair(a,b){el(a).addEventListener('input',function(){el(b).value=el(a).value;compute();});el(b).addEventListener('input',function(){el(a).value=el(b).value;compute();});}
+      // Month-by-month payoff sim with optional extra monthly + yearly lump sum.
+      function simulate(B, r, base, extra, annual){
+        var pmt = base + extra;
+        if (pmt <= 0) return { never:true };
+        if (r > 0 && pmt <= B*r && annual <= 0) return { never:true };  // payment never covers interest
+        var bal=B, totInt=0, m=0, cap=12*60;
+        var rows=[], yInt=0, yPrin=0, yExtra=0, yPaid=0;
+        while (bal > 0.005 && m < cap){
+          m++;
+          var interest = r>0 ? bal*r : 0;
+          var principal = pmt - interest;
+          if (principal <= 0 && annual <= 0) return { never:true };
+          if (principal < 0) principal = 0;
+          if (principal > bal) principal = bal;
+          bal -= principal; totInt += interest;
+          yInt += interest; yPrin += principal; yPaid += interest + principal;
+          if (extra > 0) yExtra += Math.min(extra, principal + interest);
+          if (m % 12 === 0){
+            var yr = m/12;
+            if (annual > 0 && bal > 0){ var a = Math.min(annual, bal); bal -= a; yExtra += a; yPaid += a; }
+            rows.push({ yr:yr, paid:yPaid, prin:yPrin, int:yInt, extra:yExtra, bal:bal });
+            yInt=0; yPrin=0; yExtra=0; yPaid=0;
+          }
+          if (bal <= 0.005) break;
+        }
+        if (m % 12 !== 0) rows.push({ yr:Math.ceil(m/12), paid:yPaid, prin:yPrin, int:yInt, extra:yExtra, bal:bal });
+        return { months:m, totInt:totInt, rows:rows, never:false };
+      }
       function compute(){
-        var B=num('bal'), R=num('rate'), PMT=num('pmt')+num('extra');
-        var r=R/12/100;
-        if(PMT<=0){ show('—','Enter a monthly payment','—','—'); return; }
-        if(r>0 && PMT<=B*r){ show('Never','Payment is less than monthly interest — increase it','—','—'); return; }
+        var B=num('bal'), R=num('rate'), base=num('pmt'), extra=num('extra'), annual=num('annual');
+        var r=R/12/100, PMT=base+extra;
+        if(PMT<=0){ show('—','Enter a monthly payment','—','—'); clearAdv('Enter a monthly payment.'); return; }
+        if(r>0 && PMT<=B*r && annual<=0){ show('Never','Payment is less than monthly interest — increase it','—','—'); clearAdv('Payment is less than monthly interest — increase it.'); return; }
         var n = (r>0) ? -Math.log(1-(r*B)/PMT)/Math.log(1+r) : B/PMT;
         n=Math.ceil(n);
         var totalPaid=PMT*n, interest=totalPaid-B;
         var yrs=Math.floor(n/12), mo=n%12;
         var t = (yrs>0?yrs+' yr ':'')+(mo>0?mo+' mo':(yrs>0?'':'0 mo'));
         show(t.trim(), n+' monthly payments', money(interest), money(totalPaid));
+
+        // Advanced: minimum-only (no extras) vs accelerated (extra monthly + yearly lump)
+        var baseSim = simulate(B, r, base, 0, 0);
+        var optSim  = simulate(B, r, base, extra, annual);
+        var body = el('schedBody'); body.innerHTML='';
+        if (baseSim.never || optSim.never){ clearAdv('Raise the monthly payment until it covers the interest to compare scenarios.'); return; }
+        var saved = baseSim.totInt - optSim.totInt, mSaved = baseSim.months - optSim.months;
+        var hasExtra = (extra > 0 || annual > 0);
+        el('basePay').textContent = fmtDur(baseSim.months);
+        el('newPay').textContent = fmtDur(optSim.months);
+        if (hasExtra && saved > 0.5){
+          el('saveInt').textContent = money(saved);
+          el('saveTime').textContent = mSaved > 0 ? fmtDur(mSaved) : '—';
+          el('saveHint').textContent = 'You cut total interest by ' + money(saved) + ' and become debt-free ' + fmtDur(mSaved) + ' earlier than paying the minimum.';
+        } else {
+          el('saveInt').textContent = money(0);
+          el('saveTime').textContent = '—';
+          el('saveHint').textContent = 'Add an extra monthly or yearly payment above to compare against the minimum-only payoff.';
+        }
+        for (var k=0; k<optSim.rows.length; k++){
+          var row=optSim.rows[k], tr=document.createElement('tr');
+          tr.innerHTML = '<td>'+row.yr+'</td><td>'+money(row.paid)+'</td><td>'+money(row.prin)+
+            '</td><td>'+money(row.int)+'</td><td>'+(row.extra>0?money(row.extra):'—')+
+            '</td><td>'+money(row.bal)+'</td>';
+          body.appendChild(tr);
+        }
+      }
+      function clearAdv(hint){
+        el('saveInt').textContent='—'; el('saveTime').textContent='—';
+        el('basePay').textContent='—'; el('newPay').textContent='—';
+        el('saveHint').textContent=hint; el('schedBody').innerHTML='';
       }
       function show(t,sub,intr,tot){el('time').textContent=t;el('sub').textContent=sub;el('bdInt').textContent=intr;el('bdTot').textContent=tot;}
-      pair('bal','balR');pair('rate','rateR');pair('pmt','pmtR');pair('extra','extraR');
+      pair('bal','balR');pair('rate','rateR');pair('pmt','pmtR');pair('extra','extraR');pair('annual','annualR');
       el('cur').addEventListener('change',function(){var o=el('cur').selectedOptions[0];cur=el('cur').value;loc=o.dataset.loc;document.querySelectorAll('.valwrap .sym').forEach(function(s){s.textContent=o.dataset.sym;});compute();});
       compute();
     })();

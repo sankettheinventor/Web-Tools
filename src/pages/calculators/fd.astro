@@ -2,12 +2,13 @@
 import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
 import AppLd from '../../components/AppLd.astro';
-const title = 'FD Calculator — Adjust Deposit, Rate & Tenure Live';
-const description = 'Free fixed deposit (FD) calculator: get maturity amount and interest from your deposit, rate, tenure and compounding. Runs in your browser, nothing uploaded.';
+const title = 'FD Calculator with Post-Tax & Payout View';
+const description = 'Free fixed deposit (FD) calculator: maturity, interest, post-tax returns at your slab and a year-by-year interest table. Cumulative or payout. Runs in your browser.';
 const faqItems = [
   { q: 'How does this FD calculator work?', a: 'It applies the compound interest formula A = P x (1 + r/n)^(n x t) using your deposit, annual interest rate, tenure in years and compounding frequency. Results update live as you change any input.' },
   { q: 'Which compounding frequency should I choose?', a: 'Pick the one your bank uses. Most banks compound fixed deposits quarterly, which is the default here, but you can also select monthly, half-yearly or yearly.' },
-  { q: 'Does the maturity amount account for tax (TDS)?', a: 'No. The figure shown is the gross maturity amount before any tax. Interest on FDs may be taxable depending on your country and income, so your in-hand amount could be lower.' },
+  { q: 'How does this show post-tax FD returns?', a: 'Enter your income-tax slab percentage in the "Beat the taxman" panel. FD interest is fully taxable at your slab, and banks deduct TDS on it. The calculator subtracts tax on each year of interest and shows your post-tax maturity and effective post-tax yield, so you see what actually lands in your hand.' },
+  { q: 'What is the difference between cumulative and payout FDs?', a: 'A cumulative FD reinvests every interest payment, so it compounds and pays one lump sum at maturity. A periodic-payout FD pays the interest out each period (monthly, quarterly, etc.) and returns only your principal at maturity, so it does not compound — total interest is lower but you get regular income.' },
   { q: 'Why does more frequent compounding give a higher maturity value?', a: 'With more frequent compounding, interest is added to the principal more often, so you earn interest on interest sooner. For the same rate and tenure, this slightly increases the final maturity amount.' },
   { q: 'Is my data uploaded or stored anywhere?', a: 'No. Everything is calculated locally in your browser. Your deposit amount, rate and other inputs are never uploaded, stored or shared.' },
 ];
@@ -47,6 +48,42 @@ const faqItems = [
         <div class="bd"><div class="k">Interest earned</div><div class="v" id="bdI">—</div></div>
       </div>
     </div>
+
+    <div class="adv">
+      <div class="adv-h"><span>🧾 Beat the taxman</span><small>Optional — see post-tax returns &amp; payout income an AI snippet can't compute</small></div>
+      <div class="grid2">
+        <div class="field"><div class="field-top"><label for="payout">Interest handling</label></div>
+          <select id="payout" aria-label="Interest handling">
+            <option value="cum" selected>Cumulative (reinvest &amp; compound)</option>
+            <option value="pay">Periodic payout (simple interest)</option>
+          </select></div>
+        <div class="field"><div class="field-top"><label for="tax">Income-tax slab (TDS)</label>
+          <div class="valwrap"><input id="tax" type="number" inputmode="decimal" min="0" max="50" step="1" value="0" /><span>%</span></div></div>
+          <input id="taxR" type="range" min="0" max="42" step="1" value="0" aria-label="Income-tax slab percent" /></div>
+      </div>
+
+      <div class="save" aria-live="polite">
+        <div class="save-row">
+          <div class="save-box"><div class="k">Post-tax maturity</div><div class="v ok" id="ptMat">—</div></div>
+          <div class="save-box"><div class="k">Tax on interest</div><div class="v" id="ptTax">—</div></div>
+        </div>
+        <div class="save-row">
+          <div class="save-box"><div class="k" id="payLbl">Total interest</div><div class="v" id="ptInt">—</div></div>
+          <div class="save-box"><div class="k">Effective post-tax yield</div><div class="v" id="ptYield">—</div></div>
+        </div>
+        <p class="save-hint" id="taxHint">Enter your tax slab above to see post-tax returns; switch to payout for regular income instead of compounding.</p>
+      </div>
+
+      <details class="sched">
+        <summary>Year-by-year interest table</summary>
+        <div class="sched-wrap">
+          <table>
+            <thead><tr><th>Yr</th><th>Opening</th><th>Interest</th><th>Tax</th><th>Post-tax int.</th><th>Closing</th></tr></thead>
+            <tbody id="schedBody"></tbody>
+          </table>
+        </div>
+      </details>
+    </div>
   </div></div>
   <div class="ad">Ad space</div>
   <div class="content">
@@ -54,19 +91,98 @@ const faqItems = [
     <p>A fixed deposit earns compound interest. The maturity value uses:</p>
     <div class="formula">A = P × (1 + r/n)^(n·t)</div>
     <p>where <b>P</b> is your deposit, <b>r</b> is the annual rate (as a decimal), <b>n</b> is how many times a year interest compounds, and <b>t</b> is the tenure in years. Most banks compound FDs quarterly, so that's the default here.</p>
-    <p>The more frequently interest compounds, the slightly higher your maturity amount for the same rate. <em>Interest on FDs may be taxable depending on your country and income — this estimate is before tax.</em></p>
+    <p>The more frequently interest compounds, the slightly higher your maturity amount for the same rate.</p>
+
+    <h3>Cumulative vs payout, and what tax does to your return</h3>
+    <p>A <b>cumulative</b> FD reinvests each interest payment so it compounds and pays one lump sum at maturity. A <b>periodic-payout</b> FD pays interest out every period and returns only your principal — so it earns simple interest and gives you regular income instead of compounding. Switch between them in the panel above.</p>
+    <p>FD interest is <b>fully taxable at your income-tax slab</b>, and banks deduct TDS as it accrues. A headline 7% FD is worth far less after a 30% slab bites into every year of interest. Enter your slab above to see the <b>post-tax maturity</b> and the <b>effective post-tax yield</b> — the real return you keep. The year-by-year table shows exactly how much interest is taxed each year. This is the kind of multi-variable answer a search snippet can't give you — you have to model your own numbers.</p>
+
     <div class="xlinks"><a href="/calculators/compound-interest">Compound Interest →</a><a href="/#calculators">All calculators →</a></div>
   </div>
-  <AppLd name="FD Calculator" description="Drag the sliders for deposit, rate and tenure, pick your compounding frequency, and watch the fixed-deposit maturity and interest recalculate live in your browser." category="FinanceApplication" features={["Live deposit, rate and tenure sliders", "Quarterly, monthly, half-yearly and yearly compounding", "Maturity, deposited and interest-earned breakdown", "Multi-currency formatting (INR, USD, EUR, GBP)", "Instant in-browser recalculation, nothing uploaded"]} />
+  <AppLd name="FD Calculator with Post-Tax & Payout View" description="Drag the sliders for deposit, rate and tenure, choose cumulative or payout, enter your tax slab, and watch the fixed-deposit maturity, post-tax return and a year-by-year interest table recalculate live in your browser." category="FinanceApplication" features={["Live deposit, rate and tenure sliders", "Quarterly, monthly, half-yearly and yearly compounding", "Cumulative reinvest vs periodic interest payout", "Post-tax maturity and effective post-tax yield at your slab", "Year-by-year interest, tax and balance table", "Multi-currency formatting (INR, USD, EUR, GBP)", "Instant in-browser recalculation, nothing uploaded"]} />
   <Faq items={faqItems} />
+
+  <style is:global>
+    .adv{margin-top:var(--s5);border-top:1px solid var(--line);padding-top:var(--s5)}
+    .adv-h{display:flex;align-items:baseline;gap:var(--s3);margin-bottom:var(--s4);flex-wrap:wrap}
+    .adv-h span{font-weight:800;font-size:var(--t-md)}
+    .adv-h small{color:var(--dim);font-size:var(--t-sm)}
+    .save{background:var(--result-bg);border:1px solid var(--line);border-radius:var(--r-lg);padding:var(--s4);margin-top:var(--s4)}
+    .save-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3)}
+    .save-row+.save-row{margin-top:var(--s3)}
+    .save-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--s3) var(--s4)}
+    .save-box .k{font-size:var(--t-xs);color:var(--dim)}
+    .save-box .v{font-size:var(--t-lg);font-weight:800;margin-top:2px}
+    .save-box .v.ok{color:var(--ok)}
+    .save-hint{font-size:var(--t-sm);color:var(--dim);margin-top:var(--s3);line-height:1.5}
+    .sched{margin-top:var(--s4)}
+    .sched summary{cursor:pointer;font-weight:700;font-size:var(--t-sm);color:var(--brand);padding:var(--s2) 0}
+    .sched-wrap{overflow-x:auto;margin-top:var(--s3)}
+    .sched table{width:100%;border-collapse:collapse;font-size:var(--t-sm);min-width:540px}
+    .sched th,.sched td{text-align:right;padding:var(--s2) var(--s3);border-bottom:1px solid var(--line);white-space:nowrap}
+    .sched th:first-child,.sched td:first-child{text-align:left}
+    .sched th{color:var(--dim);font-weight:700;font-size:var(--t-xs);text-transform:uppercase;letter-spacing:.4px}
+  </style>
+
   <script is:inline>
     (function(){var cur='INR',loc='en-IN';function el(i){return document.getElementById(i);}function num(i){var v=parseFloat(el(i).value);return isFinite(v)?v:0;}
     function money(v){try{return new Intl.NumberFormat(loc,{style:'currency',currency:cur,maximumFractionDigits:0}).format(Math.round(v));}catch(e){return Math.round(v).toLocaleString();}}
     function pair(a,b){el(a).addEventListener('input',function(){el(b).value=el(a).value;c();});el(b).addEventListener('input',function(){el(a).value=el(b).value;c();});}
+    // Year-by-year simulation. Cumulative compounds within the year at frequency n;
+    // payout takes interest out each year (simple). Tax is applied to each year's interest.
+    function simulate(P,R,Y,n,payout,taxPct){
+      var bal=P,rows=[],totInt=0,totTax=0,t=taxPct/100;
+      var full=Math.floor(Y+1e-9),frac=Y-full;
+      function step(open,yrs){
+        var grown=payout?open*(R/100)*yrs:open*Math.pow(1+R/100/n,n*yrs);
+        var interest=payout?grown:(grown-open);
+        var tax=interest*t;
+        // cumulative compounds GROSS interest (TDS is taken separately); payout returns principal only
+        var close=payout?open:grown;
+        totInt+=interest;totTax+=tax;
+        return {interest:interest,tax:tax,close:close};
+      }
+      var openBal=P;
+      for(var y=1;y<=full;y++){
+        var r=step(openBal,1);
+        rows.push({yr:y,open:openBal,interest:r.interest,tax:r.tax,net:r.interest-r.tax,close:r.close});
+        openBal=r.close;
+      }
+      if(frac>1e-9){
+        var r2=step(openBal,frac);
+        rows.push({yr:full+1,open:openBal,interest:r2.interest,tax:r2.tax,net:r2.interest-r2.tax,close:r2.close});
+        openBal=r2.close;
+      }
+      // post-tax maturity: gross corpus minus total tax on interest (works for both modes)
+      var grossMat=payout?P:openBal;
+      var postTaxMat=grossMat+(payout?(totInt-totTax):(-totTax));
+      return {rows:rows,totInt:totInt,totTax:totTax,grossMat:grossMat,postTaxMat:postTaxMat};
+    }
     function c(){var P=num('amt'),R=num('rate'),Y=num('years'),n=parseInt(el('freq').value,10);var A=P*Math.pow(1+R/100/n,n*Y);
       el('mat').textContent=money(A);el('sub').textContent=Y+' yr · '+el('freq').selectedOptions[0].textContent.toLowerCase();
-      el('bdP').textContent=money(P);el('bdI').textContent=money(A-P);}
-    pair('amt','amtR');pair('rate','rateR');pair('years','yearsR');el('freq').addEventListener('change',c);
+      el('bdP').textContent=money(P);el('bdI').textContent=money(A-P);
+      // Advanced: payout choice + post-tax view + year-by-year table
+      var payout=el('payout').value==='pay',taxPct=num('tax');
+      var sim=simulate(P,R,Y,n,payout,taxPct);
+      el('payLbl').textContent=payout?'Total interest (payout)':'Total interest';
+      el('ptInt').textContent=money(sim.totInt);
+      el('ptTax').textContent=money(sim.totTax);
+      el('ptMat').textContent=money(sim.postTaxMat);
+      var netGain=sim.postTaxMat-P;
+      var effYield=(P>0&&Y>0)?(Math.pow(sim.postTaxMat/P,1/Y)-1)*100:0;
+      el('ptYield').textContent=(P>0&&Y>0)?effYield.toFixed(2)+'%':'—';
+      if(taxPct>0||payout){
+        el('taxHint').textContent='After '+(taxPct>0?taxPct+'% tax':'no tax')+(payout?', paying interest out yearly,':',')+' you keep '+money(netGain)+' of interest — an effective '+effYield.toFixed(2)+'% post-tax yield.';
+      }else{
+        el('taxHint').textContent='Enter your tax slab above to see post-tax returns; switch to payout for regular income instead of compounding.';
+      }
+      var body=el('schedBody');body.innerHTML='';
+      for(var k=0;k<sim.rows.length;k++){var row=sim.rows[k],tr=document.createElement('tr');
+        tr.innerHTML='<td>'+row.yr+'</td><td>'+money(row.open)+'</td><td>'+money(row.interest)+'</td><td>'+(row.tax>0.5?money(row.tax):'—')+'</td><td>'+money(row.net)+'</td><td>'+money(row.close)+'</td>';
+        body.appendChild(tr);}
+    }
+    pair('amt','amtR');pair('rate','rateR');pair('years','yearsR');pair('tax','taxR');
+    el('freq').addEventListener('change',c);el('payout').addEventListener('change',c);
     el('cur').addEventListener('change',function(){var o=el('cur').selectedOptions[0];cur=el('cur').value;loc=o.dataset.loc;document.querySelectorAll('.valwrap .sym').forEach(function(s){s.textContent=o.dataset.sym;});c();});c();})();
   </script>
 </Base>
