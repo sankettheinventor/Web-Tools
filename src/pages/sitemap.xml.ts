@@ -3,7 +3,7 @@ import { catSlug } from '../lib/categories';
 
 // Self-generated sitemap for all current pages (incl. blog posts + categories).
 export async function GET(context: { site?: URL }) {
-  const site = context.site?.href ?? 'https://snapjar.netlify.app/';
+  const site = context.site?.href ?? 'https://snapjar.pages.dev/';
   const posts = await getCollection('blog', ({ data }) => !data.draft);
   const cats = Array.from(new Set(posts.map((p) => p.data.category)));
   const paths = [

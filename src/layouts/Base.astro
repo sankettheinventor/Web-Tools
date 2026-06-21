@@ -3,7 +3,7 @@ const {
   title = 'SnapJar — Free Online Calculators & Image Tools',
   description = 'Free, fast, private online tools. Calculators and image utilities that run entirely in your browser — no signup, no upload, your data never leaves your device.',
 } = Astro.props;
-const SITE = Astro.site ?? new URL('https://snapjar.netlify.app/');
+const SITE = Astro.site ?? new URL('https://snapjar.pages.dev/');
 const canonical = new URL(Astro.url.pathname, SITE).href;
 const ogImage = new URL('/og.png', SITE).href;
 const isHome = Astro.url.pathname === '/';

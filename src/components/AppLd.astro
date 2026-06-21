@@ -3,7 +3,7 @@
 // (the thing you go *use*), so AI Overviews cite it as the place to do the task
 // rather than just resolving the answer inline. The zero-click counter-move.
 const { name, description, category = 'UtilitiesApplication', features = [] } = Astro.props;
-const SITE = Astro.site ?? new URL('https://snapjar.netlify.app/');
+const SITE = Astro.site ?? new URL('https://snapjar.pages.dev/');
 const url = new URL(Astro.url.pathname, SITE).href;
 const ld = {
   '@context': 'https://schema.org',
