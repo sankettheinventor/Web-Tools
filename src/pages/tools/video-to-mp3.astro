@@ -3,48 +3,49 @@ import Base from '../../layouts/Base.astro';
 import Faq from '../../components/Faq.astro';
 import HowTo from '../../components/HowTo.astro';
 import AppLd from '../../components/AppLd.astro';
-const title = 'Video to MP3 Converter — Free, In Your Browser';
-const description = 'Free video to MP3 converter — extract audio from MP4, MOV, MKV, WebM, AVI and more to MP3, right in your browser. No upload, no signup, your file never leaves your device.';
+const title = 'Video to MP3 Converter — Convert Multiple Files';
+const description = 'Free video to MP3 converter — extract audio from one or many videos (MP4, MOV, MKV, WebM, AVI) to MP3 right in your browser. Batch convert, no upload, no signup.';
 const faqItems = [
-  { q: 'Is my video uploaded to a server?', a: 'No. The conversion runs entirely inside your browser using WebAssembly — your video file never leaves your device, is never uploaded, and nothing is stored. Closing the tab discards everything.' },
-  { q: 'Can I convert a YouTube link to MP3 here?', a: 'No. This tool converts a video FILE you already have on your device, not an online link. Downloading audio from YouTube or other sites needs a server and may break their terms, so it is not offered here — download the video first, then convert it on this page.' },
-  { q: 'Which video formats can I convert?', a: 'Most common formats work: MP4, MOV, MKV, WebM, AVI, FLV, and audio files like M4A or WAV. The tool extracts the audio track and re-encodes it to MP3 with the bitrate you choose.' },
-  { q: 'Why does the first conversion take a moment to start?', a: 'The first time you convert, your browser downloads the ~30 MB conversion engine once (then it is cached). After that it starts instantly. Larger videos take longer because everything is processed locally on your device.' },
-  { q: 'What MP3 quality should I pick?', a: '192 kbps is a good balance of quality and size for music and speech. Use 320 kbps for the best quality (larger file) or 128 kbps for the smallest file, such as podcasts or voice notes.' },
+  { q: 'Can I convert several videos at once?', a: 'Yes. Add as many video files as you like and the tool converts them one after another (the engine runs single-threaded for privacy), shows progress for each, and lets you download them individually or all together as a ZIP.' },
+  { q: 'Is my video uploaded to a server?', a: 'No. Every conversion runs entirely inside your browser using WebAssembly — your files never leave your device, are never uploaded, and nothing is stored. Closing the tab discards everything.' },
+  { q: 'Can I convert a YouTube link to MP3 here?', a: 'No. This tool converts video FILES you already have on your device, not online links. Downloading audio from YouTube or other sites needs a server and may break their terms, so it is not offered here — download the video first, then convert it on this page.' },
+  { q: 'Which video formats can I convert?', a: 'Most common formats work: MP4, MOV, MKV, WebM, AVI, FLV, and audio files like M4A or WAV. The tool extracts the audio track and re-encodes it to MP3 at the bitrate you choose.' },
+  { q: 'Why does the first conversion take a moment to start?', a: 'The first time you convert, your browser downloads the ~30 MB conversion engine once (then it is cached). After that it starts instantly. Larger files and longer batches take more time because everything is processed locally on your device.' },
 ];
 const howSteps = [
-  { name: 'Choose your video', text: 'Drop a video file onto the box or tap to browse — it stays on your device.' },
-  { name: 'Pick the MP3 quality', text: 'Select a bitrate (128–320 kbps); 192 kbps suits most music and speech.' },
-  { name: 'Convert', text: 'Click Convert to MP3 — your browser extracts and encodes the audio locally and shows a progress bar.' },
-  { name: 'Play and download', text: 'Preview the result, then download your MP3. Nothing was uploaded at any point.' },
+  { name: 'Add your videos', text: 'Drop one or more video files onto the box or tap to browse — they stay on your device.' },
+  { name: 'Pick the MP3 quality', text: 'Choose a bitrate (128–320 kbps) to apply to every file; 192 kbps suits most music and speech.' },
+  { name: 'Convert all', text: 'Click Convert all to MP3 — your browser converts each file in turn and shows per-file progress.' },
+  { name: 'Download', text: 'Download each MP3, or grab them all at once as a ZIP. Nothing was uploaded at any point.' },
 ];
 ---
 <Base title={title} description={description}>
   <Fragment slot="head">
-    <AppLd name="Video to MP3 Converter" description="Extract the audio from a video file and convert it to MP3 entirely in your browser — choose the bitrate, nothing is uploaded." category="MultimediaApplication" features={["Convert MP4, MOV, MKV, WebM, AVI and more to MP3","Choose MP3 quality from 128 to 320 kbps","Runs 100% in your browser via WebAssembly","Your file is never uploaded or stored","Live progress and instant audio preview"]} />
+    <AppLd name="Video to MP3 Converter" description="Extract audio from one or many video files and convert them to MP3 entirely in your browser — batch convert, choose the bitrate, nothing is uploaded." category="MultimediaApplication" features={["Batch convert multiple videos to MP3 at once","Supports MP4, MOV, MKV, WebM, AVI and more","Choose MP3 quality from 128 to 320 kbps","Runs 100% in your browser via WebAssembly","Download each MP3 or all together as a ZIP","Your files are never uploaded or stored"]} />
     <script is:inline src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
     <script is:inline src="https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
+    <script is:inline src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   </Fragment>
 
   <header class="head">
     <div class="wrap">
       <p class="kicker">Audio Tool</p>
       <h1>Video to MP3 Converter</h1>
-      <p>Pull the audio out of any video and save it as MP3 — converted right here in your browser, so your file never leaves your device.</p>
+      <p>Drop in one video or a whole batch and pull the audio out as MP3 — converted right here in your browser, so your files never leave your device.</p>
     </div>
   </header>
 
   <div class="wrap">
     <div class="tool">
       <label class="vdrop" id="drop">
-        <input id="file" type="file" accept="video/*,audio/*" hidden />
+        <input id="file" type="file" accept="video/*,audio/*" multiple hidden />
         <span class="vdrop-ic" aria-hidden="true">🎵</span>
-        <span class="vdrop-t" id="dropText">Drop a video here, or tap to choose a file</span>
-        <span class="vdrop-s">MP4 · MOV · MKV · WebM · AVI · M4A — stays on your device</span>
+        <span class="vdrop-t" id="dropText">Drop videos here, or tap to choose — you can add several</span>
+        <span class="vdrop-s">MP4 · MOV · MKV · WebM · AVI · M4A — all stay on your device</span>
       </label>
 
       <div class="field" style="margin-top:var(--s4)">
-        <div class="field-top"><label for="bitrate">MP3 quality</label></div>
+        <div class="field-top"><label for="bitrate">MP3 quality (applies to all)</label></div>
         <select id="bitrate" aria-label="MP3 bitrate">
           <option value="128">128 kbps — smallest (voice / podcasts)</option>
           <option value="192" selected>192 kbps — recommended (music &amp; speech)</option>
@@ -53,16 +54,13 @@ const howSteps = [
         </select>
       </div>
 
-      <button id="go" class="vbtn" type="button" style="margin-top:var(--s4)">Convert to MP3</button>
+      <ul class="vqueue" id="queue" hidden></ul>
 
-      <div class="vbar" id="barWrap" hidden><div class="vbar-fill" id="bar"></div></div>
-      <p class="status" id="status" role="status" aria-live="polite">The first conversion downloads a ~30&nbsp;MB converter once (then it's cached). Your file is processed on your device and never uploaded.</p>
-
-      <div class="result vout" id="out" hidden>
-        <div class="rlabel">Your MP3 is ready</div>
-        <audio id="audio" controls></audio>
-        <a id="dl" class="vbtn" download>⬇ Download MP3</a>
+      <div class="vactions">
+        <button id="go" class="vbtn" type="button" hidden>Convert all to MP3</button>
+        <button id="zip" class="vbtn ghost" type="button" hidden>⬇ Download all (.zip)</button>
       </div>
+      <p class="status" id="status" role="status" aria-live="polite">The first conversion downloads a ~30&nbsp;MB converter once (then it's cached). Your files are processed on your device and never uploaded.</p>
     </div>
   </div>
 
@@ -70,7 +68,7 @@ const howSteps = [
 
   <div class="content">
     <h2>Extract audio from video — privately, in your browser</h2>
-    <p>This converter takes a video file you already have and saves its audio as an MP3. Unlike most online converters, <b>nothing is uploaded</b> — the entire conversion happens on your own device using WebAssembly, so even large or personal videos stay completely private.</p>
+    <p>This converter takes the video files you already have and saves their audio as MP3. Unlike most online converters, <b>nothing is uploaded</b> — the entire conversion happens on your own device using WebAssembly, so even large or personal videos stay completely private. Add several files and it works through them one after another.</p>
     <p>It's ideal for saving a song, lecture, interview, podcast or voice note from a video clip, or for shrinking a video down to just its audio. Pick a higher bitrate (256–320 kbps) for music, or a lower one (128 kbps) for speech to keep the file small.</p>
     <h3>A note on online links</h3>
     <p>This tool works on video <b>files</b>, not web links. It does not download from YouTube or other sites — that requires a server and can break those sites' terms. If you have the video file, this page converts it instantly and privately.</p>
@@ -81,7 +79,7 @@ const howSteps = [
     </div>
   </div>
 
-  <HowTo task="convert a video to MP3" steps={howSteps} />
+  <HowTo task="convert videos to MP3" steps={howSteps} />
   <Faq items={faqItems} />
 
   <style is:global>
@@ -92,39 +90,103 @@ const howSteps = [
     .vdrop-ic{font-size:34px;line-height:1}
     .vdrop-t{font-weight:700;color:var(--txt);font-size:var(--t-base)}
     .vdrop-s{font-size:var(--t-xs);color:var(--dim)}
-    .vbtn{display:inline-flex;align-items:center;gap:8px;justify-content:center;width:100%;padding:13px 22px;border-radius:var(--r-sm);
-      border:0;cursor:pointer;font-weight:700;font-size:var(--t-base);color:#fff;background:linear-gradient(135deg,#ff5e7e,#7c5cff);text-decoration:none}
-    .vbtn:hover{filter:brightness(1.05);text-decoration:none}
-    .vbtn:disabled{opacity:.5;cursor:not-allowed;filter:none}
-    .vbar{height:8px;background:var(--surface2);border:1px solid var(--line);border-radius:999px;overflow:hidden;margin:var(--s4) 0 6px}
+    .vqueue{list-style:none;margin:var(--s4) 0 0;padding:0;display:flex;flex-direction:column;gap:var(--s2)}
+    .vitem{display:flex;align-items:center;gap:var(--s3);background:var(--surface2);border:1px solid var(--line);
+      border-radius:var(--r);padding:var(--s3) var(--s4)}
+    .vitem-main{min-width:0;flex:1}
+    .vitem-name{display:block;font-weight:600;font-size:var(--t-sm);color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .vitem-meta{font-size:var(--t-xs);color:var(--dim)}
+    .vitem-meta.ok{color:var(--ok)}.vitem-meta.err{color:var(--err)}
+    .vbar{height:8px;background:var(--surface);border:1px solid var(--line);border-radius:999px;overflow:hidden;margin:var(--s4) 0 6px}
+    .vbar.mini{height:5px;margin:6px 0 0;background:var(--bg)}
     .vbar-fill{height:100%;width:0;background:linear-gradient(90deg,#ff5e7e,#7c5cff);transition:width .2s}
+    .vitem-act{display:flex;align-items:center;gap:6px;flex:0 0 auto}
+    .vdl{font-size:var(--t-xs);font-weight:700;color:var(--brand);white-space:nowrap;text-decoration:none}
+    .vrm{width:28px;height:28px;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--surface);
+      color:var(--dim);cursor:pointer;font-size:13px;line-height:1;display:grid;place-items:center}
+    .vrm:hover{border-color:var(--err);color:var(--err)}
+    .vactions{display:flex;flex-wrap:wrap;gap:var(--s3);margin-top:var(--s4)}
+    .vbtn{display:inline-flex;align-items:center;gap:8px;justify-content:center;flex:1;min-width:200px;padding:13px 22px;
+      border-radius:var(--r-sm);border:0;cursor:pointer;font-weight:700;font-size:var(--t-base);color:#fff;
+      background:linear-gradient(135deg,#ff5e7e,#7c5cff);text-decoration:none}
+    .vbtn.ghost{background:var(--surface2);color:var(--txt);border:1px solid var(--line)}
+    .vbtn:hover{filter:brightness(1.05);text-decoration:none}
+    .vbtn.ghost:hover{border-color:var(--brand);filter:none}
+    .vbtn:disabled{opacity:.5;cursor:not-allowed;filter:none}
     .status{font-size:var(--t-sm);color:var(--dim);line-height:1.5;margin-top:10px}
     .status.err{color:var(--err)}
-    .vout{margin-top:var(--s5);text-align:center}
-    .vout audio{width:100%;margin:10px 0 14px}
     .content .attrib{font-size:var(--t-xs);color:var(--dim);margin-top:var(--s4)}
   </style>
 
   <script is:inline>
     (function () {
-      var ffmpeg = null, loaded = false, busy = false, outURL = null, fileObj = null;
+      var ffmpeg = null, loaded = false, busy = false, items = [], seq = 0, curId = null;
       function el(id){ return document.getElementById(id); }
       function show(msg, err){ var s = el('status'); s.textContent = msg; s.className = 'status' + (err ? ' err' : ''); }
-      function setBar(p){ el('barWrap').hidden = false; el('bar').style.width = (Math.max(0, Math.min(1, p)) * 100).toFixed(1) + '%'; }
+      function fmtSize(b){ var kb = b/1024; return kb > 1024 ? (kb/1024).toFixed(1) + ' MB' : Math.round(kb) + ' KB'; }
 
-      var drop = el('drop'), input = el('file');
-      function pickFile(f){
-        if (!f) return;
-        fileObj = f;
-        el('dropText').textContent = f.name + '  (' + (f.size/1048576).toFixed(1) + ' MB)';
-        el('out').hidden = true; el('barWrap').hidden = true;
-        show('Ready. Choose a quality and click Convert to MP3.');
+      // ---- queue model + render ----
+      function addFiles(list){
+        for (var i = 0; i < list.length; i++){
+          var f = list[i];
+          if (!f) continue;
+          items.push({ id: ++seq, file: f, name: f.name, status: 'queued', pct: 0, blob: null, url: null });
+        }
+        render();
       }
-      input.addEventListener('change', function(){ pickFile(input.files && input.files[0]); });
+      function itemById(id){ for (var i=0;i<items.length;i++){ if (items[i].id===id) return items[i]; } return null; }
+      function render(){
+        var q = el('queue');
+        q.hidden = items.length === 0;
+        el('go').hidden = items.length === 0;
+        q.innerHTML = '';
+        var anyDone = false;
+        items.forEach(function(it){
+          if (it.status === 'done') anyDone = true;
+          var li = document.createElement('li'); li.className = 'vitem';
+          var metaCls = it.status === 'done' ? 'ok' : (it.status === 'error' ? 'err' : '');
+          var metaTxt = it.status === 'queued' ? fmtSize(it.file.size) + ' · queued'
+            : it.status === 'converting' ? 'converting… ' + Math.round(it.pct*100) + '%'
+            : it.status === 'done' ? fmtSize(it.blob.size) + ' MP3 · done'
+            : 'failed';
+          li.innerHTML =
+            '<div class="vitem-main"><span class="vitem-name"></span>' +
+            '<span class="vitem-meta ' + metaCls + '"></span>' +
+            (it.status === 'converting' ? '<div class="vbar mini"><div class="vbar-fill" style="width:' + (it.pct*100).toFixed(1) + '%"></div></div>' : '') +
+            '</div><div class="vitem-act"></div>';
+          li.querySelector('.vitem-name').textContent = it.name;
+          li.querySelector('.vitem-meta').textContent = metaTxt;
+          var act = li.querySelector('.vitem-act');
+          if (it.status === 'done' && it.url){
+            var a = document.createElement('a'); a.className = 'vdl'; a.href = it.url; a.download = it.name.replace(/\.[^.]+$/, '') + '.mp3'; a.textContent = '⬇ MP3';
+            act.appendChild(a);
+          }
+          if (!busy){
+            var rm = document.createElement('button'); rm.className = 'vrm'; rm.type = 'button'; rm.setAttribute('aria-label', 'Remove ' + it.name); rm.textContent = '✕';
+            rm.addEventListener('click', function(){ removeItem(it.id); });
+            act.appendChild(rm);
+          }
+          q.appendChild(li);
+        });
+        el('zip').hidden = !anyDone || items.filter(function(i){return i.status==='done';}).length < 2;
+        el('go').disabled = busy || items.filter(function(i){return i.status==='queued';}).length === 0;
+        el('go').textContent = busy ? 'Converting…' : 'Convert all to MP3';
+      }
+      function removeItem(id){
+        if (busy) return;
+        items = items.filter(function(it){ if (it.id===id && it.url){ URL.revokeObjectURL(it.url); } return it.id !== id; });
+        render();
+        if (items.length === 0) show('Add one or more video files to begin. Nothing is uploaded — it all runs in your browser.');
+      }
+
+      // ---- input / drag-drop ----
+      var drop = el('drop'), input = el('file');
+      input.addEventListener('change', function(){ if (input.files && input.files.length){ addFiles(input.files); input.value=''; } });
       ['dragover','dragenter'].forEach(function(ev){ drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.add('drag'); }); });
       ['dragleave','dragend','drop'].forEach(function(ev){ drop.addEventListener(ev, function(){ drop.classList.remove('drag'); }); });
-      drop.addEventListener('drop', function(e){ e.preventDefault(); if (e.dataTransfer && e.dataTransfer.files[0]) pickFile(e.dataTransfer.files[0]); });
+      drop.addEventListener('drop', function(e){ e.preventDefault(); if (e.dataTransfer && e.dataTransfer.files.length) addFiles(e.dataTransfer.files); });
 
+      // ---- engine ----
       async function ensureLoaded(){
         if (loaded) return true;
         if (typeof FFmpegWASM === 'undefined' || typeof FFmpegUtil === 'undefined'){
@@ -135,9 +197,12 @@ const howSteps = [
           var FFmpeg = FFmpegWASM.FFmpeg, toBlobURL = FFmpegUtil.toBlobURL;
           ffmpeg = new FFmpeg();
           ffmpeg.on('progress', function(ev){
-            if (busy && ev && typeof ev.progress === 'number' && isFinite(ev.progress) && ev.progress >= 0 && ev.progress <= 1){
-              setBar(ev.progress); show('Converting… ' + Math.round(ev.progress * 100) + '%');
-            }
+            if (curId == null || !ev || typeof ev.progress !== 'number' || !isFinite(ev.progress)) return;
+            var it = itemById(curId); if (!it) return;
+            it.pct = Math.max(0, Math.min(1, ev.progress));
+            var li = el('queue').children[items.indexOf(it)];
+            if (li){ var m = li.querySelector('.vitem-meta'); if (m) m.textContent = 'converting… ' + Math.round(it.pct*100) + '%';
+              var bf = li.querySelector('.vbar-fill'); if (bf) bf.style.width = (it.pct*100).toFixed(1) + '%'; }
           });
           var base = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
           await ffmpeg.load({
@@ -148,35 +213,64 @@ const howSteps = [
         } catch (e){ show('Could not load the converter: ' + (e && e.message ? e.message : e), true); return false; }
       }
 
-      async function convert(){
-        if (busy) return;
-        if (!fileObj){ show('Choose a video file first.', true); return; }
-        busy = true; el('go').disabled = true; setBar(0); show('Preparing…');
-        var ok = await ensureLoaded();
-        if (!ok){ busy = false; el('go').disabled = false; return; }
+      async function convertOne(it, br){
+        curId = it.id; it.status = 'converting'; it.pct = 0; render();
+        var m = it.name.match(/\.[a-z0-9]+$/i);
+        var inName = 'in_' + it.id + (m ? m[0].toLowerCase() : '.mp4');
+        var outName = 'out_' + it.id + '.mp3';
         try {
-          var fetchFile = FFmpegUtil.fetchFile;
-          var m = fileObj.name.match(/\.[a-z0-9]+$/i);
-          var inName = 'input' + (m ? m[0].toLowerCase() : '.mp4');
-          show('Reading file…');
-          await ffmpeg.writeFile(inName, await fetchFile(fileObj));
-          var br = el('bitrate').value;
-          show('Converting…'); setBar(0);
-          await ffmpeg.exec(['-i', inName, '-vn', '-acodec', 'libmp3lame', '-b:a', br + 'k', 'output.mp3']);
-          var data = await ffmpeg.readFile('output.mp3');
-          var blob = new Blob([data.buffer], { type: 'audio/mpeg' });
-          if (outURL) URL.revokeObjectURL(outURL);
-          outURL = URL.createObjectURL(blob);
-          el('audio').src = outURL;
-          var a = el('dl'); a.href = outURL; a.download = (fileObj.name.replace(/\.[^.]+$/, '') || 'audio') + '.mp3';
-          el('out').hidden = false; setBar(1);
-          var kb = blob.size / 1024;
-          show('Done — ' + (kb > 1024 ? (kb/1024).toFixed(1) + ' MB' : Math.round(kb) + ' KB') + ' MP3 ready below.');
-          try { await ffmpeg.deleteFile(inName); await ffmpeg.deleteFile('output.mp3'); } catch (e){}
-        } catch (e){ show('Conversion failed: ' + (e && e.message ? e.message : e) + '. Try a different file or quality.', true); }
-        busy = false; el('go').disabled = false;
+          await ffmpeg.writeFile(inName, await FFmpegUtil.fetchFile(it.file));
+          await ffmpeg.exec(['-i', inName, '-vn', '-acodec', 'libmp3lame', '-b:a', br + 'k', outName]);
+          var data = await ffmpeg.readFile(outName);
+          it.blob = new Blob([data.buffer], { type: 'audio/mpeg' });
+          it.url = URL.createObjectURL(it.blob);
+          it.status = 'done';
+        } catch (e){ it.status = 'error'; }
+        try { await ffmpeg.deleteFile(inName); await ffmpeg.deleteFile(outName); } catch (e){}
+        curId = null;
       }
-      el('go').addEventListener('click', convert);
+
+      async function convertAll(){
+        if (busy) return;
+        var queue = items.filter(function(i){ return i.status === 'queued'; });
+        if (!queue.length){ show('Add a video file first.', true); return; }
+        busy = true; render();
+        var ok = await ensureLoaded();
+        if (!ok){ busy = false; render(); return; }
+        var br = el('bitrate').value, n = queue.length;
+        for (var i = 0; i < queue.length; i++){
+          show('Converting ' + (i+1) + ' of ' + n + ' — ' + queue[i].name);
+          await convertOne(queue[i], br);
+          render();
+        }
+        busy = false; render();
+        var done = items.filter(function(i){ return i.status === 'done'; }).length;
+        var failed = items.filter(function(i){ return i.status === 'error'; }).length;
+        show('Done — ' + done + ' MP3' + (done===1?'':'s') + ' ready' + (failed ? ', ' + failed + ' failed' : '') + '. Download below.' + (failed?' Some files may use an unsupported codec — try another.':''));
+      }
+
+      async function zipAll(){
+        if (typeof JSZip === 'undefined'){ show('ZIP engine not loaded — download files individually instead.', true); return; }
+        var done = items.filter(function(i){ return i.status === 'done'; });
+        if (!done.length) return;
+        show('Building ZIP…');
+        try {
+          var zip = new JSZip(), used = {};
+          done.forEach(function(it){
+            var nm = it.name.replace(/\.[^.]+$/, '') + '.mp3';
+            if (used[nm]){ used[nm]++; nm = nm.replace(/\.mp3$/, '') + '-' + used[nm] + '.mp3'; } else used[nm] = 1;
+            zip.file(nm, it.blob);
+          });
+          var blob = await zip.generateAsync({ type: 'blob' });
+          var url = URL.createObjectURL(blob), a = document.createElement('a');
+          a.href = url; a.download = 'mp3-files.zip'; document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+          show(done.length + ' MP3s downloaded as mp3-files.zip.');
+        } catch (e){ show('Could not build ZIP: ' + (e && e.message ? e.message : e), true); }
+      }
+
+      el('go').addEventListener('click', convertAll);
+      el('zip').addEventListener('click', zipAll);
     })();
   </script>
 </Base>
