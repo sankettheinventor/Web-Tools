@@ -73,18 +73,25 @@ const howSteps = [
   <Faq items={faqItems} />
   <script is:inline>
     (function(){
-      var img=null, ar=1, lastBlob=null, name='image';
+      var img=null, ar=1, lastBlob=null, name='image', clampNoticeShown=false, webpSupported=null;
       function $(i){return document.getElementById(i);}
       function fmtKB(b){return b>1048576?(b/1048576).toFixed(2)+' MB':Math.round(b/1024)+' KB';}
+      function note(t){$('nSize').textContent=t;}
+      function webpOk(){ if(webpSupported===null){ try{ var t=document.createElement('canvas'); t.width=t.height=1; webpSupported=t.toDataURL('image/webp').indexOf('data:image/webp')===0; }catch(e){ webpSupported=false; } } return webpSupported; }
       function render(){
         if(!img)return;
+        var fmt=$('fmt').value;
+        if(fmt==='image/webp' && !webpOk()){ note('WebP is not supported on this device — choose PNG or JPG.'); return; }
         var w=parseInt($('w').value,10)||img.naturalWidth, h=parseInt($('h').value,10)||img.naturalHeight;
+        var fit=window.SnapJarKit.fitDims(w,h);
+        if(fit.clamped && !clampNoticeShown){ clampNoticeShown=true; var i=$('info'); if(i)i.textContent='Large image downscaled to fit your device.'; }
+        w=fit.w; h=fit.h;
         var c=$('canvas'); c.width=w; c.height=h;
-        if($('fmt').value==='image/jpeg'){var x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,w,h);}
+        if(fmt==='image/jpeg'){var x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,w,h);}
         c.getContext('2d').drawImage(img,0,0,w,h);
-        c.toBlob(function(b){lastBlob=b;$('nSize').textContent=fmtKB(b.size);}, $('fmt').value, 0.92);
+        c.toBlob(function(b){ if(!b){ note('Could not create the image (your device may not support this format).'); return; } lastBlob=b;$('nSize').textContent=fmtKB(b.size);}, fmt, 0.92);
       }
-      function load(f){name=f.name.replace(/\.[^.]+$/,'');var im=new Image();im.onload=function(){img=im;ar=im.naturalWidth/im.naturalHeight;$('w').value=im.naturalWidth;$('h').value=im.naturalHeight;$('drop').hidden=true;$('editor').hidden=false;render();};im.src=URL.createObjectURL(f);}
+      function load(f){name=f.name.replace(/\.[^.]+$/,'');var im=new Image();im.onload=function(){img=im;clampNoticeShown=false;ar=im.naturalWidth/im.naturalHeight;$('w').value=im.naturalWidth;$('h').value=im.naturalHeight;$('drop').hidden=true;$('editor').hidden=false;render();};im.onerror=function(){note('Could not open this image — it may be corrupt or unsupported.');};im.src=URL.createObjectURL(f);}
       $('browse').onclick=function(){$('file').click();};
       $('drop').onclick=function(e){if(e.target.id==='drop'||e.target.className.indexOf('drop-')===0)$('file').click();};
       $('file').onchange=function(e){if(e.target.files[0])load(e.target.files[0]);};
@@ -94,7 +101,7 @@ const howSteps = [
       $('w').addEventListener('input',function(){if($('lock').checked&&img){$('h').value=Math.round((parseInt($('w').value,10)||0)/ar);}render();});
       $('h').addEventListener('input',function(){if($('lock').checked&&img){$('w').value=Math.round((parseInt($('h').value,10)||0)*ar);}render();});
       $('fmt').addEventListener('change',render);
-      $('dl').onclick=function(){if(!lastBlob)return;var ext=$('fmt').value.split('/')[1].replace('jpeg','jpg');var a=document.createElement('a');a.href=URL.createObjectURL(lastBlob);a.download=name+'.'+ext;a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);};
+      window.SnapJarKit.guard('dl', function(){if(!lastBlob)return;var ext=$('fmt').value.split('/')[1].replace('jpeg','jpg');var a=document.createElement('a');a.href=URL.createObjectURL(lastBlob);a.download=name+'.'+ext;a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);});
       $('reset').onclick=function(){img=null;lastBlob=null;$('file').value='';$('editor').hidden=true;$('drop').hidden=false;};
     })();
   </script>

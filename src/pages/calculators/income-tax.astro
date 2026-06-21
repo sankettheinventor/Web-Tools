@@ -182,7 +182,11 @@ const faqItems = [
         if(name==='new'){
           taxable=Math.max(0, gross-75000);
           tax=slabTax(taxable, NEW);
-          if(taxable<=1200000) tax=0;            // 87A rebate
+          // 87A: full rebate up to ₹12L taxable, then MARGINAL RELIEF — tax can never
+          // exceed the income above ₹12L (so ₹12,00,001 pays ₹1, not ~₹60k). This is the
+          // law for the new regime FY2025-26; without it the tool gives a wrong, scary number.
+          if(taxable<=1200000) tax=0;
+          else tax=Math.min(tax, taxable-1200000);
         } else {
           var oldDed = num('ded') + num('c80c') + num('c80d') + num('hra') + num('othded');
           taxable=Math.max(0, gross-50000-oldDed);

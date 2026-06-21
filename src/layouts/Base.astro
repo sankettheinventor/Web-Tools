@@ -77,12 +77,67 @@ const IS_APP = import.meta.env.PUBLIC_APP_BUILD === '1';
       } catch (e) { document.documentElement.setAttribute('data-theme', 'dark'); }
     })();
   </script>
+  <script is:inline>
+    /* ===== SnapJarKit — shared robustness toolkit (ONE source of truth) =====
+       Loaded before every tool. Closes the recurring root-cause bugs (canvas OOM,
+       frozen-on-bad-input, double-submit, blob leaks) so tools call helpers instead
+       of each re-implementing (and re-breaking) them. Plain global so BOTH inline and
+       bundled tool scripts can use it. */
+    (function () {
+      var MAX_SIDE = 4096, MAX_AREA = 16777216; // GPU-safe ceiling for budget Android WebViews
+      var K = {
+        MAX_SIDE: MAX_SIDE, MAX_AREA: MAX_AREA,
+        /* Scale (w,h) down to a canvas a budget phone can actually allocate.
+           Returns {w,h,scale,clamped}; scale=1 when no clamp needed (the common case). */
+        fitDims: function (w, h) {
+          w = Math.max(1, w | 0); h = Math.max(1, h | 0);
+          var s = 1;
+          if (w > MAX_SIDE || h > MAX_SIDE) s = Math.min(MAX_SIDE / w, MAX_SIDE / h);
+          if (w * s * (h * s) > MAX_AREA) s = Math.min(s, Math.sqrt(MAX_AREA / (w * h)));
+          return { w: Math.max(1, Math.floor(w * s)), h: Math.max(1, Math.floor(h * s)), scale: s, clamped: s < 1 };
+        },
+        /* Load an image with onerror + a timeout so a corrupt/huge file can NEVER hang
+           the UI forever. Resolves an HTMLImageElement, rejects on error/timeout. */
+        loadImage: function (src, timeoutMs) {
+          return new Promise(function (resolve, reject) {
+            var img = new Image(), done = false;
+            var t = setTimeout(function () { if (!done) { done = true; img.src = ''; reject(new Error('Image load timed out')); } }, timeoutMs || 20000);
+            img.onload = function () { if (!done) { done = true; clearTimeout(t); resolve(img); } };
+            img.onerror = function () { if (!done) { done = true; clearTimeout(t); reject(new Error('Could not load this image — it may be corrupt or unsupported.')); } };
+            img.src = src;
+          });
+        },
+        /* Wrap an (async) action so it can't run twice at once: disables the button for
+           the duration (kills double-submit + concurrent-op corruption). onErr(e) optional. */
+        guard: function (btn, fn, onErr) {
+          return function (ev) {
+            var b = typeof btn === 'string' ? document.getElementById(btn) : btn;
+            if (b && b.disabled) return;
+            if (b) b.disabled = true;
+            var self = this, args = arguments;
+            Promise.resolve().then(function () { return fn.apply(self, args); })
+              .catch(function (e) { try { (onErr || function (x) { console.error(x); })(e); } catch (_) {} })
+              .then(function () { if (b) b.disabled = false; });
+          };
+        },
+        /* Yield to the UI thread inside long loops so the page never looks frozen
+           (and the GC can run between heavy pages). await SnapJarKit.breathe(). */
+        breathe: function () { return new Promise(function (r) { setTimeout(r, 0); }); },
+        /* Object-URL helpers: track() URLs for thumbnails and clear() them on reset
+           so batch tools stop leaking decoded bitmaps for the whole session. */
+        _urls: [],
+        track: function (blob) { var u = URL.createObjectURL(blob); K._urls.push(u); return u; },
+        clear: function () { K._urls.forEach(function (u) { try { URL.revokeObjectURL(u); } catch (e) {} }); K._urls = []; }
+      };
+      window.SnapJarKit = K;
+    })();
+  </script>
   {!IS_APP && ADSENSE_CLIENT && (
     <script async src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`} crossorigin="anonymous"></script>
   )}
   <slot name="head" />
 </head>
-<body>
+<body class={IS_APP ? 'is-app' : undefined}>
   <div class="promise">
     <span class="pi">Free</span>
     <span class="pi">No signup</span>
@@ -143,12 +198,7 @@ const IS_APP = import.meta.env.PUBLIC_APP_BUILD === '1';
             <a role="menuitem" href="/tools/favicon">Favicon &amp; Icons</a>
             <a role="menuitem" href="/tools/svg-optimizer">SVG Optimizer</a>
           </div>
-          {!IS_APP && (
-            <Fragment>
-              <a role="menuitem" href="/tools/video-to-mp3">🎵 Video to MP3 (in your browser)</a>
-              <a class="mega-media" role="menuitem" href="https://elegant-crostata-510d7b.netlify.app/" target="_blank" rel="noopener">🎬 Video Downloader — save from YouTube, TikTok &amp; 1000+ sites ↗</a>
-            </Fragment>
-          )}
+          <a class="mega-media" role="menuitem" href="/tools/video-to-mp3">🎵 Video to MP3 — extract audio from any video, in your browser</a>
         </div>
       </div>
       <a href="/#calculators" class="hide-sm">Calculators</a>

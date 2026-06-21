@@ -150,10 +150,14 @@ const howSteps = [
       function $(i){return document.getElementById(i);}
       function v(i){var e=$(i);return e?e.value:'';}
       function enc(s){return encodeURIComponent(s||'');}
+      // Escape per spec or a value containing ; , : " \ (e.g. a WiFi password "a;b")
+      // produces a malformed, unscannable code. WiFi escapes \;,:" ; vCard escapes \;, and newlines.
+      function wifiEsc(s){return (s||'').replace(/([\\;,:"])/g,'\\$1');}
+      function vcEsc(s){return (s||'').replace(/([\\;,])/g,'\\$1').replace(/\r?\n/g,'\\n');}
       function vcard(){
         var fn=(v('v_first')+' '+v('v_last')).trim();
-        return 'BEGIN:VCARD\nVERSION:3.0\nN:'+v('v_last')+';'+v('v_first')+';;;\nFN:'+fn+
-          '\nTITLE:'+v('v_title')+'\nORG:'+v('v_org')+
+        return 'BEGIN:VCARD\nVERSION:3.0\nN:'+vcEsc(v('v_last'))+';'+vcEsc(v('v_first'))+';;;\nFN:'+vcEsc(fn)+
+          '\nTITLE:'+vcEsc(v('v_title'))+'\nORG:'+vcEsc(v('v_org'))+
           '\nTEL;TYPE=WORK:'+v('v_phone')+'\nTEL;TYPE=CELL:'+v('v_mobile')+
           '\nEMAIL:'+v('v_email')+'\nURL:'+v('v_url')+'\nEND:VCARD';
       }
@@ -162,7 +166,7 @@ const howSteps = [
           case 'url': return v('u_url');
           case 'text': return v('t_text');
           case 'pdf': return v('pdf_url');
-          case 'wifi': return 'WIFI:T:'+v('w_enc')+';S:'+v('w_ssid')+';P:'+v('w_pass')+';'+($('w_hidden').checked?'H:true;':'')+';';
+          case 'wifi': return 'WIFI:T:'+v('w_enc')+';S:'+wifiEsc(v('w_ssid'))+';P:'+wifiEsc(v('w_pass'))+';'+($('w_hidden').checked?'H:true;':'')+';';
           case 'email': return 'mailto:'+v('e_to')+'?subject='+enc(v('e_sub'))+'&body='+enc(v('e_body'));
           case 'sms': return 'SMSTO:'+v('s_num')+':'+v('s_msg');
           case 'phone': return 'tel:'+v('p_num');

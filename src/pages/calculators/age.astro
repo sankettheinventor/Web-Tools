@@ -49,11 +49,15 @@ const faqItems = [
   <script is:inline>
     (function(){
       function el(i){return document.getElementById(i);}
-      function pad(d){return d.toISOString().slice(0,10);}
+      // Build/parse yyyy-mm-dd in LOCAL time. toISOString() is UTC, which shifts the
+      // date by a day for any non-UTC timezone (e.g. IST) → wrong default DOB and a
+      // wrong age/weekday by one day. Parse the same way so both ends stay local.
+      function pad(d){var m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return d.getFullYear()+'-'+m+'-'+day;}
+      function parse(s){var p=(s||'').split('-');return p.length===3?new Date(+p[0],+p[1]-1,+p[2]):new Date(NaN);}
       var today=new Date(); el('asof').value=pad(today);
       var d18=new Date(today.getFullYear()-25,today.getMonth(),today.getDate()); el('dob').value=pad(d18);
       function c(){
-        var b=new Date(el('dob').value), a=new Date(el('asof').value);
+        var b=parse(el('dob').value), a=parse(el('asof').value);
         if(isNaN(b)||isNaN(a)||a<b){el('age').textContent='—';el('bdM').textContent=el('bdW').textContent=el('bdD').textContent=el('bdDow').textContent=el('bdB').textContent='—';return;}
         var y=a.getFullYear()-b.getFullYear(), m=a.getMonth()-b.getMonth(), d=a.getDate()-b.getDate();
         if(d<0){m--;d+=new Date(a.getFullYear(),a.getMonth(),0).getDate();}

@@ -98,9 +98,12 @@ const howSteps = [
       function showSize(b){ lastBlob=b; $('nSize').textContent=fmtKB(b.size);
         var pct=origSize?Math.max(0,Math.round((1-b.size/origSize)*100)):0;
         $('saved').textContent = b.size<origSize ? ('▼ '+pct+'% smaller') : ''; }
+      var clampNoticeShown=false;
       // Draw img to canvas at a given scale and return the canvas.
       function draw(scale){
         var w=Math.max(1,Math.round(img.naturalWidth*scale)), h=Math.max(1,Math.round(img.naturalHeight*scale));
+        var fit=window.SnapJarKit.fitDims(w,h); w=fit.w; h=fit.h;
+        if(fit.clamped && !clampNoticeShown){ clampNoticeShown=true; tmsg('Large image downscaled to fit your device.'); }
         var c=$('canvas'); c.width=w; c.height=h;
         var ctx=c.getContext('2d'); ctx.clearRect(0,0,w,h); ctx.drawImage(img,0,0,w,h);
         return c;
@@ -114,7 +117,7 @@ const howSteps = [
         var c=draw(scale);
         $('wV').textContent = scale<1 ? c.width+'px' : 'original';
         var fmt=$('fmt').value, q=parseInt($('q').value,10)/100;
-        c.toBlob(function(b){ if(b) showSize(b); }, fmt, q);
+        c.toBlob(function(b){ if(b){ showSize(b); } else { $('nSize').textContent='—'; tmsg('Could not create the image (your device may not support this format).','warn'); } }, fmt, q);
       }
       // TARGET mode: binary-search quality, then downscale if still too big. Iteration-capped.
       var QUAL_STEPS=8;   // binary-search iterations per scale (caps ~256 quality levels)
@@ -167,7 +170,7 @@ const howSteps = [
         if(man){ render(); } else { tmsg(''); }
       }
       function load(f){ name=f.name.replace(/\.[^.]+$/,''); origSize=f.size; $('oSize').textContent=fmtKB(f.size);
-        var im=new Image(); im.onload=function(){img=im;$('drop').hidden=true;$('editor').hidden=false;setMode('manual');}; im.src=URL.createObjectURL(f); }
+        var im=new Image(); im.onload=function(){img=im;clampNoticeShown=false;$('drop').hidden=true;$('editor').hidden=false;setMode('manual');}; im.onerror=function(){ tmsg('Could not open this image — it may be corrupt or unsupported.','warn'); }; im.src=URL.createObjectURL(f); }
       $('browse').onclick=function(){$('file').click();};
       $('drop').onclick=function(e){if(e.target.id==='drop'||e.target.className.indexOf('drop-')===0)$('file').click();};
       $('file').onchange=function(e){if(e.target.files[0])load(e.target.files[0]);};
@@ -178,8 +181,8 @@ const howSteps = [
       $('fmt').addEventListener('change',function(){ if(mode==='manual'){ render(); } else { tmsg('Format changed — click Compress to target again.'); } });
       $('mManual').onclick=function(){setMode('manual');};
       $('mTarget').onclick=function(){setMode('target');};
-      $('tgo').onclick=function(){runTarget();};
-      $('dl').onclick=function(){if(!lastBlob)return;var ext=$('fmt').value.split('/')[1].replace('jpeg','jpg');var a=document.createElement('a');a.href=URL.createObjectURL(lastBlob);a.download=name+'-compressed.'+ext;a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);};
+      window.SnapJarKit.guard('tgo', function(){ return runTarget(); });
+      window.SnapJarKit.guard('dl', function(){if(!lastBlob)return;var ext=$('fmt').value.split('/')[1].replace('jpeg','jpg');var a=document.createElement('a');a.href=URL.createObjectURL(lastBlob);a.download=name+'-compressed.'+ext;a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);});
       $('reset').onclick=function(){img=null;lastBlob=null;$('file').value='';$('editor').hidden=true;$('drop').hidden=false;tmsg('');};
     })();
   </script>

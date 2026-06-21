@@ -85,10 +85,12 @@ const howSteps = [
       function fmtSize(b){return b>1048576?(b/1048576).toFixed(2)+' MB':Math.round(b/1024)+' KB';}
       function libsReady(){return typeof pdfjsLib!=='undefined' && typeof PDFLib!=='undefined';}
       function load(f){
-        srcName=f.name.replace(/\.[^.]+$/,''); origSize=f.size;
-        $('oSize').textContent=fmtSize(f.size);
-        $('nSize').textContent='—'; $('saved').textContent=''; $('dl').hidden=true; lastBytes=null;
-        f.arrayBuffer().then(function(buf){ pdfBuf=buf; $('drop').hidden=true; $('editor').hidden=false; $('status').textContent=''; });
+        try{
+          srcName=f.name.replace(/\.[^.]+$/,''); origSize=f.size;
+          $('oSize').textContent=fmtSize(f.size);
+          $('nSize').textContent='—'; $('saved').textContent=''; $('dl').hidden=true; lastBytes=null;
+          f.arrayBuffer().then(function(buf){ pdfBuf=buf; $('drop').hidden=true; $('editor').hidden=false; $('status').textContent=''; }).catch(function(){ $('status').textContent='Could not read this file — it may be corrupt or password-protected.'; });
+        }catch(err){ $('status').textContent='Could not read this file — it may be corrupt or password-protected.'; }
       }
       async function compress(){
         if(!pdfBuf){return;}
@@ -104,6 +106,8 @@ const howSteps = [
             $('status').textContent='Compressing page '+n+' of '+pdf.numPages+'…';
             var page=await pdf.getPage(n);
             var vp=page.getViewport({scale:scale});
+            var fit=window.SnapJarKit.fitDims(vp.width,vp.height);
+            if(fit.clamped){ vp=page.getViewport({scale:scale*fit.scale}); }
             var c=document.createElement('canvas');
             c.width=Math.max(1,Math.round(vp.width));
             c.height=Math.max(1,Math.round(vp.height));
@@ -111,10 +115,12 @@ const howSteps = [
             ctx.fillStyle='#fff'; ctx.fillRect(0,0,c.width,c.height);
             await page.render({canvasContext:ctx,viewport:vp}).promise;
             var blob=await new Promise(function(res){c.toBlob(res,'image/jpeg',q);});
+            if(!blob){ throw new Error('Could not encode this page'); }
             var bytes=new Uint8Array(await blob.arrayBuffer());
             var jpg=await out.embedJpg(bytes);
             var pg=out.addPage([c.width,c.height]);
             pg.drawImage(jpg,{x:0,y:0,width:c.width,height:c.height});
+            await window.SnapJarKit.breathe();
           }
           var saved=await out.save();
           lastBytes=saved;
@@ -148,7 +154,7 @@ const howSteps = [
       $('drop').addEventListener('drop',function(e){if(e.dataTransfer.files[0])load(e.dataTransfer.files[0]);});
       $('q').addEventListener('input',function(){$('qV').textContent=$('q').value+'%';});
       $('s').addEventListener('input',function(){$('sV').textContent=$('s').value+'x';});
-      $('make').onclick=compress;
+      $('make').onclick=window.SnapJarKit.guard('make',compress);
       $('dl').onclick=download;
       $('reset').onclick=function(){pdfBuf=null;lastBytes=null;$('file').value='';$('status').textContent='';$('nSize').textContent='—';$('saved').textContent='';$('dl').hidden=true;$('editor').hidden=true;$('drop').hidden=false;};
     })();

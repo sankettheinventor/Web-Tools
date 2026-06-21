@@ -55,13 +55,24 @@ const howSteps = [
     (function(){
       var bytes=null,count=0;
       function $(i){return document.getElementById(i);}
-      async function load(f){bytes=await f.arrayBuffer();var doc=await PDFLib.PDFDocument.load(bytes,{ignoreEncryption:true});count=doc.getPageCount();$('drop').hidden=true;$('editor').hidden=false;$('info').textContent=f.name+' · '+count+' pages';}
+      async function load(f){
+        $('drop').hidden=true;$('editor').hidden=false;
+        try{
+          bytes=await f.arrayBuffer();var doc=await PDFLib.PDFDocument.load(bytes,{ignoreEncryption:true});count=doc.getPageCount();$('info').textContent=f.name+' · '+count+' pages';
+        }catch(err){
+          $('status').textContent='Could not process this file — it may be corrupt or password-protected.';
+        }
+      }
       async function go(){
         if(!bytes||typeof PDFLib==='undefined')return;$('status').textContent='Splitting…';
-        var src=await PDFLib.PDFDocument.load(bytes,{ignoreEncryption:true}),zip=new JSZip();
-        for(var i=0;i<count;i++){var d=await PDFLib.PDFDocument.create();var[p]=await d.copyPages(src,[i]);d.addPage(p);zip.file('page-'+(i+1)+'.pdf',await d.save());}
-        var blob=await zip.generateAsync({type:'blob'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='split-pages.zip';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);
-        $('status').textContent='Done — '+count+' pages.';
+        try{
+          var src=await PDFLib.PDFDocument.load(bytes,{ignoreEncryption:true}),zip=new JSZip();
+          for(var i=0;i<count;i++){$('status').textContent='Processing page '+(i+1)+' of '+count+'…';var d=await PDFLib.PDFDocument.create();var[p]=await d.copyPages(src,[i]);d.addPage(p);zip.file('page-'+(i+1)+'.pdf',await d.save());await window.SnapJarKit.breathe();}
+          var blob=await zip.generateAsync({type:'blob'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='split-pages.zip';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);
+          $('status').textContent='Done — '+count+' pages.';
+        }catch(err){
+          $('status').textContent='Could not process this file — it may be corrupt or password-protected.';
+        }
       }
       $('browse').onclick=function(e){e.stopPropagation();$('file').click();};
       $('drop').onclick=function(e){if(e.target.id==='drop'||e.target.className.indexOf('drop-')===0)$('file').click();};
@@ -69,7 +80,7 @@ const howSteps = [
       ['dragover','dragenter'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.add('drag');});});
       ['dragleave','drop'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.remove('drag');});});
       $('drop').addEventListener('drop',function(e){if(e.dataTransfer.files[0])load(e.dataTransfer.files[0]);});
-      $('go').onclick=go;$('reset').onclick=function(){bytes=null;$('file').value='';$('status').textContent='';$('editor').hidden=true;$('drop').hidden=false;};
+      $('go').onclick=window.SnapJarKit.guard('go',go);$('reset').onclick=function(){bytes=null;$('file').value='';$('status').textContent='';$('editor').hidden=true;$('drop').hidden=false;};
     })();
   </script>
 </Base>

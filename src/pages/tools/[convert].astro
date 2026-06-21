@@ -121,28 +121,33 @@ const howSteps = [
     import JSZip from 'jszip';
     (function(){
       var cfg=document.getElementById('cfg'), MIME=cfg.dataset.mime, EXT=cfg.dataset.ext, LOSSY=cfg.dataset.lossy==='1';
-      var images=[], sel=0;
+      var images=[], sel=0, clampNoticeShown=false, webpSupported=null;
       function $(i){return document.getElementById(i);}
       function fmtKB(b){return b>1048576?(b/1048576).toFixed(2)+' MB':Math.round(b/1024)+' KB';}
       function quality(){var q=$('q');return q?parseInt(q.value,10)/100:0.92;}
+      function webpOk(){ if(webpSupported===null){ try{ var t=document.createElement('canvas'); t.width=t.height=1; webpSupported=t.toDataURL('image/webp').indexOf('data:image/webp')===0; }catch(e){ webpSupported=false; } } return webpSupported; }
       function render(c, item){
-        var w=item.img.naturalWidth,h=item.img.naturalHeight;c.width=w;c.height=h;var x=c.getContext('2d');
+        var fit=window.SnapJarKit.fitDims(item.img.naturalWidth,item.img.naturalHeight);
+        if(fit.clamped && !clampNoticeShown){ clampNoticeShown=true; status('Large image downscaled to fit your device.',false); }
+        var w=fit.w,h=fit.h;c.width=w;c.height=h;var x=c.getContext('2d');
         if(MIME==='image/jpeg'){x.fillStyle='#fff';x.fillRect(0,0,w,h);} x.drawImage(item.img,0,0,w,h);
       }
-      function preview(){ if(!images[sel])return; render($('canvas'),images[sel]);
-        $('canvas').toBlob(function(b){if(b)$('nSize').textContent=fmtKB(b.size);},MIME,quality()); }
-      function thumbs(){var t=$('thumbs');t.innerHTML='';images.forEach(function(it,i){var im=document.createElement('img');im.src=it.img.src;im.className='thumb'+(i===sel?' sel':'');im.onclick=function(){sel=i;preview();thumbs();};t.appendChild(im);});$('dlall').hidden=images.length<2;}
-      function add(files){Array.prototype.slice.call(files).filter(function(f){return f.type.indexOf('image/')===0;}).forEach(function(f){var im=new Image();im.onload=function(){images.push({img:im,name:f.name.replace(/\.[^.]+$/,'')});$('drop').hidden=true;$('editor').hidden=false;sel=images.length-1;preview();thumbs();};im.src=URL.createObjectURL(f);});}
+      function preview(){ if(!images[sel])return;
+        if(MIME==='image/webp' && !webpOk()){ status('WebP encoding is not supported on this device — your browser is too old to create '+EXT.toUpperCase()+' files.',true); return; }
+        render($('canvas'),images[sel]);
+        $('canvas').toBlob(function(b){if(b){$('nSize').textContent=fmtKB(b.size);}else{$('nSize').textContent='—';status('Could not create the image (your device may not support this format).',true);}},MIME,quality()); }
+      function thumbs(){var t=$('thumbs');t.innerHTML='';images.forEach(function(it,i){var im=document.createElement('img');im.src=it.url;im.className='thumb'+(i===sel?' sel':'');im.onclick=function(){sel=i;preview();thumbs();};t.appendChild(im);});$('dlall').hidden=images.length<2;}
+      function add(files){Array.prototype.slice.call(files).filter(function(f){return f.type.indexOf('image/')===0;}).forEach(function(f){var url=window.SnapJarKit.track(f);var im=new Image();im.onload=function(){images.push({img:im,name:f.name.replace(/\.[^.]+$/,''),url:url});$('drop').hidden=true;$('editor').hidden=false;sel=images.length-1;preview();thumbs();};im.onerror=function(){status('Could not open "'+f.name+'" — it may be corrupt or unsupported.',true);};im.src=url;});}
       function status(msg,isErr){var s=$('status');if(!s)return;s.textContent=msg||'';s.className='status'+(isErr?' err':'');}
       function blobFor(item){return new Promise(function(res){var c=document.createElement('canvas');render(c,item);c.toBlob(function(b){res(b);},MIME,quality());});}
-      function download(item){blobFor(item).then(function(b){var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=item.name+'.'+EXT;a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);});}
+      function download(item){blobFor(item).then(function(b){if(!b){status('Could not create the image (your device may not support this format).',true);return;}var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=item.name+'.'+EXT;a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);});}
       function uniqueName(used,base){var n=base+'.'+EXT,i=2;while(used[n]){n=base+'-'+i+'.'+EXT;i++;}used[n]=true;return n;}
       function downloadAll(){
         if(!images.length)return;
         if(typeof JSZip==='undefined'){status('Could not load the .zip library — please check your connection and reload, or use Download '+EXT.toUpperCase()+' to save each image individually.',true);return;}
         status('Building .zip…',false);
         var zip=new JSZip(),used={};
-        Promise.all(images.map(function(it){return blobFor(it).then(function(b){if(b)zip.file(uniqueName(used,it.name),b);});})).then(function(){
+        return Promise.all(images.map(function(it){return blobFor(it).then(function(b){if(b)zip.file(uniqueName(used,it.name),b);});})).then(function(){
           return zip.generateAsync({type:'blob'});
         }).then(function(blob){
           var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='converted-'+EXT+'.zip';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);
@@ -156,9 +161,9 @@ const howSteps = [
       ['dragleave','drop'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.remove('drag');});});
       $('drop').addEventListener('drop',function(e){add(e.dataTransfer.files);});
       if($('q'))$('q').addEventListener('input',function(){$('qV').textContent=$('q').value+'%';preview();});
-      $('dl').onclick=function(){if(images[sel])download(images[sel]);};
-      $('dlall').onclick=downloadAll;
-      $('reset').onclick=function(){images=[];sel=0;$('thumbs').innerHTML='';$('file').value='';status('',false);$('editor').hidden=true;$('drop').hidden=false;};
+      window.SnapJarKit.guard('dl', function(){if(images[sel])return download(images[sel]);});
+      window.SnapJarKit.guard('dlall', function(){return downloadAll();});
+      $('reset').onclick=function(){images=[];sel=0;window.SnapJarKit.clear();$('thumbs').innerHTML='';$('file').value='';status('',false);clampNoticeShown=false;$('editor').hidden=true;$('drop').hidden=false;};
     })();
   </script>
 </Base>

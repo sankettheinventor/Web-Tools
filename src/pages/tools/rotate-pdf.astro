@@ -57,13 +57,24 @@ const howSteps = [
     (function(){
       var bytes=null;
       function $(i){return document.getElementById(i);}
-      async function load(f){bytes=await f.arrayBuffer();var doc=await PDFLib.PDFDocument.load(bytes,{ignoreEncryption:true});$('drop').hidden=true;$('editor').hidden=false;$('info').textContent=f.name+' · '+doc.getPageCount()+' pages';}
+      async function load(f){
+        $('drop').hidden=true;$('editor').hidden=false;
+        try{
+          bytes=await f.arrayBuffer();var doc=await PDFLib.PDFDocument.load(bytes,{ignoreEncryption:true});$('info').textContent=f.name+' · '+doc.getPageCount()+' pages';
+        }catch(err){
+          $('status').textContent='Could not process this file — it may be corrupt or password-protected.';
+        }
+      }
       async function go(){
         if(!bytes)return;$('status').textContent='Working…';var deg=parseInt($('deg').value,10);
-        var doc=await PDFLib.PDFDocument.load(bytes,{ignoreEncryption:true});
-        doc.getPages().forEach(function(p){var cur=p.getRotation().angle||0;p.setRotation(PDFLib.degrees((cur+deg)%360));});
-        var out=await doc.save();var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([out],{type:'application/pdf'}));a.download='rotated.pdf';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);
-        $('status').textContent='Done.';
+        try{
+          var doc=await PDFLib.PDFDocument.load(bytes,{ignoreEncryption:true});
+          doc.getPages().forEach(function(p){var cur=p.getRotation().angle||0;p.setRotation(PDFLib.degrees((cur+deg)%360));});
+          var out=await doc.save();var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([out],{type:'application/pdf'}));a.download='rotated.pdf';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);
+          $('status').textContent='Done.';
+        }catch(err){
+          $('status').textContent='Could not process this file — it may be corrupt or password-protected.';
+        }
       }
       $('browse').onclick=function(e){e.stopPropagation();$('file').click();};
       $('drop').onclick=function(e){if(e.target.id==='drop'||e.target.className.indexOf('drop-')===0)$('file').click();};
@@ -71,7 +82,7 @@ const howSteps = [
       ['dragover','dragenter'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.add('drag');});});
       ['dragleave','drop'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.remove('drag');});});
       $('drop').addEventListener('drop',function(e){if(e.dataTransfer.files[0])load(e.dataTransfer.files[0]);});
-      $('go').onclick=go;$('reset').onclick=function(){bytes=null;$('file').value='';$('status').textContent='';$('editor').hidden=true;$('drop').hidden=false;};
+      $('go').onclick=window.SnapJarKit.guard('go',go);$('reset').onclick=function(){bytes=null;$('file').value='';$('status').textContent='';$('editor').hidden=true;$('drop').hidden=false;};
     })();
   </script>
 </Base>

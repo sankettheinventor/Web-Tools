@@ -141,7 +141,7 @@ const howSteps = [
       ['dragover','dragenter'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.add('drag');});});
       ['dragleave','drop'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.remove('drag');});});
       $('drop').addEventListener('drop',function(e){add(e.dataTransfer.files);});
-      $('merge').onclick=merge;
+      $('merge').onclick=window.SnapJarKit.guard('merge',merge);
       $('reset').onclick=function(){files=[];$('flist').innerHTML='';$('file').value='';setStatus('',false);$('editor').hidden=true;$('drop').hidden=false;};
     })();
   </script>

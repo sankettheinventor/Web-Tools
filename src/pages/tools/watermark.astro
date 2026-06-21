@@ -220,28 +220,38 @@ const howSteps = [
         else if(mode==='sign') drawText(ctx,w,h,{text:v('s_text'),font:v('s_font'),bold:false,italic:false,color:v('s_color'),size:n('s_size'),op:n('s_op')/100,rot:0,vpos:v('s_v'),align:salign,shadow:false,tile:false});
         else if(mode==='logo') drawLogo(ctx,w,h);
       }
+      var clampNoticeShown=false;
       function render(item){
         item = item || images[sel]; if(!item) return;
         ['t_size:t_sizeV:%','t_op:t_opV:%','t_rot:t_rotV:°','l_size:l_sizeV:%','l_op:l_opV:%','l_rot:l_rotV:°','s_size:s_sizeV:%','s_op:s_opV:%'].forEach(function(m){var p=m.split(':');if($(p[0]))$(p[1]).textContent=$(p[0]).value+p[2];});
-        var w=item.img.naturalWidth,h=item.img.naturalHeight,c=$('canvas');
+        var fit=window.SnapJarKit.fitDims(item.img.naturalWidth,item.img.naturalHeight);
+        if(fit.clamped && !clampNoticeShown){ clampNoticeShown=true; $('info').textContent='Large image downscaled to fit your device.'; }
+        var w=fit.w,h=fit.h,c=$('canvas');
         c.width=w;c.height=h;var ctx=c.getContext('2d');ctx.clearRect(0,0,w,h);ctx.drawImage(item.img,0,0,w,h);apply(ctx,w,h);
         $('info').textContent=(sel+1)+' of '+images.length+' · '+w+'×'+h;
       }
       function thumbs(){
         var t=$('thumbs');t.innerHTML='';
         if(!images.length){t.innerHTML='<span class="thint">Your images appear here →</span>';}
-        images.forEach(function(it,i){var im=document.createElement('img');im.src=it.img.src;im.className=i===sel?'sel':'';im.title=it.name;im.onclick=function(){sel=i;render();thumbs();};t.appendChild(im);});
+        images.forEach(function(it,i){var im=document.createElement('img');im.src=it.url||it.img.src;im.className=i===sel?'sel':'';im.title=it.name;im.onclick=function(){sel=i;render();thumbs();};t.appendChild(im);});
         $('dlall').hidden=images.length<2;
       }
       function addFiles(files){
         Array.prototype.slice.call(files).filter(function(f){return f.type.indexOf('image/')===0;}).forEach(function(f){
-          var im=new Image();im.onload=function(){images.push({img:im,name:f.name.replace(/\.[^.]+$/,'')});$('prompt').hidden=true;$('canvas').hidden=false;sel=images.length-1;render();thumbs();};im.src=URL.createObjectURL(f);
+          var url=window.SnapJarKit.track(f);var im=new Image();im.onload=function(){images.push({img:im,name:f.name.replace(/\.[^.]+$/,''),url:url});$('prompt').hidden=true;$('canvas').hidden=false;sel=images.length-1;render();thumbs();};im.onerror=function(){$('info').textContent='Could not open "'+f.name+'" — it may be corrupt or unsupported.';};im.src=url;
         });
       }
+      // Encode + download one item, fully, before returning (serialized batch).
       function download(item){
-        var c=document.createElement('canvas'),w=item.img.naturalWidth,h=item.img.naturalHeight;c.width=w;c.height=h;
-        var ctx=c.getContext('2d');ctx.drawImage(item.img,0,0,w,h);apply(ctx,w,h);
-        c.toBlob(function(b){var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='watermarked-'+item.name+'.png';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);},'image/png');
+        return new Promise(function(resolve){
+          var fit=window.SnapJarKit.fitDims(item.img.naturalWidth,item.img.naturalHeight);
+          var c=document.createElement('canvas'),w=fit.w,h=fit.h;c.width=w;c.height=h;
+          var ctx=c.getContext('2d');ctx.drawImage(item.img,0,0,w,h);apply(ctx,w,h);
+          c.toBlob(function(b){
+            if(!b){$('info').textContent='Could not create the image (your device may not support this format).';resolve();return;}
+            var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='watermarked-'+item.name+'.png';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);resolve();
+          },'image/png');
+        });
       }
 
       document.querySelector('.wm-tabs').addEventListener('click',function(e){
@@ -256,16 +266,20 @@ const howSteps = [
       document.querySelectorAll('.wm-panel input,.wm-panel select,.wm-panel textarea').forEach(function(el){
         if(el.id==='l_file')return; el.addEventListener('input',function(){render();});
       });
-      $('l_file').onchange=function(e){var f=e.target.files[0];if(!f)return;var im=new Image();im.onload=function(){logoImg=im;render();};im.src=URL.createObjectURL(f);};
+      $('l_file').onchange=function(e){var f=e.target.files[0];if(!f)return;var im=new Image();im.onload=function(){logoImg=im;render();};im.onerror=function(){$('info').textContent='Could not open that logo image — it may be corrupt or unsupported.';};im.src=URL.createObjectURL(f);};
       $('browse').onclick=function(e){e.stopPropagation();$('file').click();};
       $('dropzone').onclick=function(){ if($('canvas').hidden) $('file').click(); };
       $('file').onchange=function(e){addFiles(e.target.files);};
       ['dragover','dragenter'].forEach(function(ev){$('dropzone').addEventListener(ev,function(e){e.preventDefault();$('dropzone').classList.add('drag');});});
       ['dragleave','drop'].forEach(function(ev){$('dropzone').addEventListener(ev,function(e){e.preventDefault();$('dropzone').classList.remove('drag');});});
       $('dropzone').addEventListener('drop',function(e){addFiles(e.dataTransfer.files);});
-      $('dl').onclick=function(){if(images[sel])download(images[sel]);};
-      $('dlall').onclick=function(){images.forEach(function(it,i){setTimeout(function(){download(it);},i*400);});};
-      $('reset').onclick=function(){images=[];sel=0;logoImg=null;$('l_file').value='';$('file').value='';$('canvas').hidden=true;$('prompt').hidden=false;$('info').textContent='Drop a photo to begin';thumbs();};
+      window.SnapJarKit.guard('dl', function(){if(images[sel])return download(images[sel]);});
+      // Serialize: encode + download one image fully before the next, yielding between, to avoid OOM from N concurrent full-res encodes.
+      window.SnapJarKit.guard('dlall', async function(){
+        for(var i=0;i<images.length;i++){ $('info').textContent='Downloading '+(i+1)+' of '+images.length+'…'; await download(images[i]); await window.SnapJarKit.breathe(); }
+        $('info').textContent='Done — '+images.length+' image(s) downloaded.';
+      });
+      $('reset').onclick=function(){images=[];sel=0;logoImg=null;window.SnapJarKit.clear();clampNoticeShown=false;$('l_file').value='';$('file').value='';$('canvas').hidden=true;$('prompt').hidden=false;$('info').textContent='Drop a photo to begin';thumbs();};
     })();
   </script>
 </Base>

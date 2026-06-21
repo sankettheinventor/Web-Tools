@@ -61,16 +61,20 @@ const howSteps = [
         Array.prototype.slice.call(list).filter(function(f){return f.type.indexOf('image/')===0;}).forEach(function(f){files.push(f);});
         if(files.length){$('drop').hidden=true;$('editor').hidden=false;thumbs();}
       }
-      function thumbs(){$('thumbs').innerHTML='';files.forEach(function(f){var im=document.createElement('img');im.src=URL.createObjectURL(f);$('thumbs').appendChild(im);});}
+      function thumbs(){$('thumbs').innerHTML='';window.SnapJarKit.clear();files.forEach(function(f){var im=document.createElement('img');im.src=window.SnapJarKit.track(f);$('thumbs').appendChild(im);});}
       function toJpeg(f){return new Promise(function(res){var im=new Image();im.onload=function(){var c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;var x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0);c.toBlob(function(b){b.arrayBuffer().then(function(buf){res({buf:buf,w:c.width,h:c.height});});},'image/jpeg',0.92);};im.src=URL.createObjectURL(f);});}
       async function make(){
         if(!files.length||typeof PDFLib==='undefined')return;
         $('status').textContent='Building PDF…';
-        var doc=await PDFLib.PDFDocument.create();
-        for(var i=0;i<files.length;i++){var img=await toJpeg(files[i]);var emb=await doc.embedJpg(img.buf);var pg=doc.addPage([img.w,img.h]);pg.drawImage(emb,{x:0,y:0,width:img.w,height:img.h});}
-        var bytes=await doc.save();var blob=new Blob([bytes],{type:'application/pdf'});
-        var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='images.pdf';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);
-        $('status').textContent='Done — '+files.length+' image(s) in your PDF.';
+        try{
+          var doc=await PDFLib.PDFDocument.create();
+          for(var i=0;i<files.length;i++){$('status').textContent='Processing image '+(i+1)+' of '+files.length+'…';var img=await toJpeg(files[i]);var emb=await doc.embedJpg(img.buf);var pg=doc.addPage([img.w,img.h]);pg.drawImage(emb,{x:0,y:0,width:img.w,height:img.h});await window.SnapJarKit.breathe();}
+          var bytes=await doc.save();var blob=new Blob([bytes],{type:'application/pdf'});
+          var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='images.pdf';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);
+          $('status').textContent='Done — '+files.length+' image(s) in your PDF.';
+        }catch(err){
+          $('status').textContent='Could not process these images — one may be corrupt or unsupported.';
+        }
       }
       $('browse').onclick=function(e){e.stopPropagation();$('file').click();};
       $('drop').onclick=function(e){if(e.target.id==='drop'||e.target.className.indexOf('drop-')===0)$('file').click();};
@@ -78,8 +82,8 @@ const howSteps = [
       ['dragover','dragenter'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.add('drag');});});
       ['dragleave','drop'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.remove('drag');});});
       $('drop').addEventListener('drop',function(e){add(e.dataTransfer.files);});
-      $('make').onclick=make;
-      $('reset').onclick=function(){files=[];$('thumbs').innerHTML='';$('file').value='';$('status').textContent='';$('editor').hidden=true;$('drop').hidden=false;};
+      $('make').onclick=window.SnapJarKit.guard('make',make);
+      $('reset').onclick=function(){files=[];window.SnapJarKit.clear();$('thumbs').innerHTML='';$('file').value='';$('status').textContent='';$('editor').hidden=true;$('drop').hidden=false;};
     })();
   </script>
 </Base>

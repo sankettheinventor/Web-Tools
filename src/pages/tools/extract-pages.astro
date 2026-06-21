@@ -58,14 +58,26 @@ const howSteps = [
     (function(){
       var bytes=null,count=0;
       function $(i){return document.getElementById(i);}
-      function parse(str,max){var out=[];(str||'').split(',').forEach(function(p){p=p.trim();if(!p)return;if(p.indexOf('-')>=0){var r=p.split('-'),a=parseInt(r[0],10),b=parseInt(r[1],10);for(var i=a;i<=b;i++)if(i>=1&&i<=max)out.push(i);}else{var n=parseInt(p,10);if(n>=1&&n<=max)out.push(n);}});return out;}
-      async function load(f){bytes=await f.arrayBuffer();var doc=await PDFLib.PDFDocument.load(bytes,{ignoreEncryption:true});count=doc.getPageCount();$('drop').hidden=true;$('editor').hidden=false;$('info').textContent=f.name+' · '+count+' pages';}
+      function parse(str,max){var out=[];(str||'').split(',').forEach(function(p){p=p.trim();if(!p)return;if(p.indexOf('-')>=0){var r=p.split('-'),a=parseInt(r[0],10),b=parseInt(r[1],10);if(isNaN(a)||isNaN(b))return;if(a>b){var t=a;a=b;b=t;}for(var i=a;i<=b;i++)if(i>=1&&i<=max)out.push(i);}else{var n=parseInt(p,10);if(n>=1&&n<=max)out.push(n);}});return out;}
+      async function load(f){
+        $('drop').hidden=true;$('editor').hidden=false;
+        try{
+          bytes=await f.arrayBuffer();var doc=await PDFLib.PDFDocument.load(bytes,{ignoreEncryption:true});count=doc.getPageCount();$('info').textContent=f.name+' · '+count+' pages';
+        }catch(err){
+          $('status').textContent='Could not process this file — it may be corrupt or password-protected.';
+        }
+      }
       async function go(){
         if(!bytes)return;var keep=parse($('pages').value,count);if(!keep.length){$('status').textContent='Enter pages to keep.';return;}
-        $('status').textContent='Working…';var src=await PDFLib.PDFDocument.load(bytes,{ignoreEncryption:true}),doc=await PDFLib.PDFDocument.create();
-        var pages=await doc.copyPages(src,keep.map(function(n){return n-1;}));pages.forEach(function(p){doc.addPage(p);});
-        var out=await doc.save();var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([out],{type:'application/pdf'}));a.download='extracted.pdf';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);
-        $('status').textContent='Done — '+keep.length+' page(s).';
+        $('status').textContent='Working…';
+        try{
+          var src=await PDFLib.PDFDocument.load(bytes,{ignoreEncryption:true}),doc=await PDFLib.PDFDocument.create();
+          var pages=await doc.copyPages(src,keep.map(function(n){return n-1;}));pages.forEach(function(p){doc.addPage(p);});
+          var out=await doc.save();var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([out],{type:'application/pdf'}));a.download='extracted.pdf';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);
+          $('status').textContent='Done — '+keep.length+' page(s).';
+        }catch(err){
+          $('status').textContent='Could not process this file — it may be corrupt or password-protected.';
+        }
       }
       $('browse').onclick=function(e){e.stopPropagation();$('file').click();};
       $('drop').onclick=function(e){if(e.target.id==='drop'||e.target.className.indexOf('drop-')===0)$('file').click();};
@@ -73,7 +85,7 @@ const howSteps = [
       ['dragover','dragenter'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.add('drag');});});
       ['dragleave','drop'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.remove('drag');});});
       $('drop').addEventListener('drop',function(e){if(e.dataTransfer.files[0])load(e.dataTransfer.files[0]);});
-      $('go').onclick=go;$('reset').onclick=function(){bytes=null;$('file').value='';$('pages').value='';$('status').textContent='';$('editor').hidden=true;$('drop').hidden=false;};
+      $('go').onclick=window.SnapJarKit.guard('go',go);$('reset').onclick=function(){bytes=null;$('file').value='';$('pages').value='';$('status').textContent='';$('editor').hidden=true;$('drop').hidden=false;};
     })();
   </script>
 </Base>

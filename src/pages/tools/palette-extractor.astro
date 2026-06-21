@@ -89,14 +89,14 @@ const howSteps = [
           p.appendChild(d);
         });
       }
-      function load(f){var im=new Image();im.onload=function(){$('drop').hidden=true;$('editor').hidden=false;render(im);};im.src=URL.createObjectURL(f);}
+      function load(f){var im=new Image();im.onload=function(){$('drop').hidden=true;$('editor').hidden=false;render(im);};im.onerror=function(){$('drop').querySelector('.drop-t').textContent='Could not open this image — it may be corrupt or unsupported.';};im.src=window.SnapJarKit.track(f);}
       $('browse').onclick=function(e){e.stopPropagation();$('file').click();};
       $('drop').onclick=function(e){if(e.target.id==='drop'||e.target.className.indexOf('drop-')===0)$('file').click();};
       $('file').onchange=function(e){if(e.target.files[0])load(e.target.files[0]);};
       ['dragover','dragenter'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.add('drag');});});
       ['dragleave','drop'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.remove('drag');});});
       $('drop').addEventListener('drop',function(e){if(e.dataTransfer.files[0])load(e.dataTransfer.files[0]);});
-      $('reset').onclick=function(){$('file').value='';$('editor').hidden=true;$('drop').hidden=false;};
+      $('reset').onclick=function(){window.SnapJarKit.clear();$('file').value='';$('editor').hidden=true;$('drop').hidden=false;};
     })();
   </script>
 </Base>

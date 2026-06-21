@@ -67,7 +67,7 @@ const howSteps = [
       function add(blob,name){
         var item={blob:blob,name:name.replace(/\.(heic|heif)$/i,'')+'.jpg'};results.push(item);
         var w=document.createElement('div');w.className='cv-item';
-        var im=document.createElement('img');im.src=URL.createObjectURL(blob);
+        var im=document.createElement('img');im.src=window.SnapJarKit.track(blob);
         var nm=document.createElement('div');nm.className='nm';nm.textContent=item.name;
         var b=document.createElement('button');b.textContent='Download';b.onclick=function(){dl(item.blob,item.name);};
         w.appendChild(im);w.appendChild(nm);w.appendChild(b);$('grid').appendChild(w);

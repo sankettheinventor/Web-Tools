@@ -33,9 +33,9 @@ const howSteps = [
         <canvas id="canvas" aria-label="Click to pick a color"></canvas>
         <div class="cp-side">
           <div class="cp-sw" id="sw"></div>
-          <div class="cin"><input id="hex" type="text" readonly /><button class="cpy" data-c="hex">Copy</button></div>
-          <div class="cin"><input id="rgb" type="text" readonly /><button class="cpy" data-c="rgb">Copy</button></div>
-          <div class="cin"><input id="hsl" type="text" readonly /><button class="cpy" data-c="hsl">Copy</button></div>
+          <div class="cin"><input id="hex" type="text" readonly aria-label="HEX color value" /><button class="cpy" data-c="hex" aria-label="Copy HEX value">Copy</button></div>
+          <div class="cin"><input id="rgb" type="text" readonly aria-label="RGB color value" /><button class="cpy" data-c="rgb" aria-label="Copy RGB value">Copy</button></div>
+          <div class="cin"><input id="hsl" type="text" readonly aria-label="HSL color value" /><button class="cpy" data-c="hsl" aria-label="Copy HSL value">Copy</button></div>
           <button id="reset" type="button" class="randbtn">↩ New image</button>
         </div>
       </div>
@@ -69,7 +69,7 @@ const howSteps = [
       function hex(r,g,b){return '#'+[r,g,b].map(function(x){return ('0'+x.toString(16)).slice(-2);}).join('').toUpperCase();}
       function setColor(r,g,b){var hx=hex(r,g,b),hl=hsl(r,g,b);$('sw').style.background=hx;$('hex').value=hx;$('rgb').value='rgb('+r+', '+g+', '+b+')';$('hsl').value='hsl('+hl[0]+', '+hl[1]+'%, '+hl[2]+'%)';}
       var ctx;
-      function load(f){var im=new Image();im.onload=function(){var c=$('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;ctx=c.getContext('2d');ctx.drawImage(im,0,0);$('drop').hidden=true;$('editor').hidden=false;};im.src=URL.createObjectURL(f);}
+      function load(f){var im=new Image();im.onload=function(){var c=$('canvas');var fit=window.SnapJarKit.fitDims(im.naturalWidth,im.naturalHeight);c.width=fit.w;c.height=fit.h;ctx=c.getContext('2d');ctx.drawImage(im,0,0,fit.w,fit.h);$('drop').hidden=true;$('editor').hidden=false;};im.onerror=function(){var d=$('drop');d.querySelector('.drop-t').textContent='Could not open this image — it may be corrupt or unsupported.';};im.src=window.SnapJarKit.track(f);}
       function pick(e){var c=$('canvas'),rect=c.getBoundingClientRect();var x=Math.floor((e.clientX-rect.left)*c.width/rect.width),y=Math.floor((e.clientY-rect.top)*c.height/rect.height);if(x<0||y<0||x>=c.width||y>=c.height)return;var d=ctx.getImageData(x,y,1,1).data;setColor(d[0],d[1],d[2]);}
       $('canvas').addEventListener('click',pick);
       $('canvas').addEventListener('mousemove',function(e){if(e.buttons)pick(e);});
@@ -79,7 +79,7 @@ const howSteps = [
       ['dragover','dragenter'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.add('drag');});});
       ['dragleave','drop'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.remove('drag');});});
       $('drop').addEventListener('drop',function(e){if(e.dataTransfer.files[0])load(e.dataTransfer.files[0]);});
-      $('reset').onclick=function(){$('file').value='';$('editor').hidden=true;$('drop').hidden=false;};
+      $('reset').onclick=function(){window.SnapJarKit.clear();$('file').value='';$('editor').hidden=true;$('drop').hidden=false;};
       document.querySelectorAll('.cpy').forEach(function(b){b.onclick=function(){navigator.clipboard&&navigator.clipboard.writeText($(b.dataset.c).value);b.textContent='✓';setTimeout(function(){b.textContent='Copy';},900);};});
       if(window.EyeDropper){var sb=$('screen');sb.hidden=false;sb.onclick=async function(e){e.stopPropagation();try{var r=await new EyeDropper().open();var n=parseInt(r.sRGBHex.slice(1),16);setColor((n>>16)&255,(n>>8)&255,n&255);$('drop').hidden=true;$('editor').hidden=false;}catch(_){}}; }
     })();

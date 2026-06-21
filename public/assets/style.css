@@ -313,3 +313,27 @@ input[type=range]:active::-moz-range-thumb{transform:scale(1.18)}
    to the result/download button when work completes; `.anim-rise` for a calmer entrance. */
 .anim-pop{animation:pop-in var(--d-base) var(--ease-spring) both}
 .anim-rise{animation:rise-in var(--d-base) var(--ease-out) both}
+
+/* =========================================================================
+   SMALL-PHONE HARDENING — ≤360px budget Android is the PRIMARY target (file 16 §5)
+   Each tool defines its own .row2 / .wm-grid / .acts; many shipped without a phone
+   breakpoint, so paired controls stayed 2-up and cramped on 320–360px screens.
+   These global overrides guarantee correct stacking regardless of per-tool CSS.
+   `!important` is deliberate — it must beat per-tool scoped/global rules on phones.
+   ========================================================================= */
+@media(max-width:560px){
+  /* stack any paired control row, generic 2-col grid, and preview/controls split */
+  .row2,.grid2,.wm-grid{grid-template-columns:1fr !important}
+  /* action button rows wrap instead of overflowing the viewport */
+  .wm-actions,.acts{flex-wrap:wrap !important}
+  /* never let a control row force horizontal scroll */
+  .tool,.wm-controls,.wm-preview{min-width:0}
+}
+/* Touch-target floor — on touch devices the small per-page icon buttons
+   (PDF reorder / rotate / delete) must clear the ~44px tappable minimum. */
+@media(pointer:coarse){
+  .pbtns button,.fl-btn{min-width:44px !important;min-height:44px !important}
+}
+/* App build only: hide the empty ad PLACEHOLDERS (dead dashed boxes). Real AdMob
+   native units replace them later. body.is-app is set only when PUBLIC_APP_BUILD=1. */
+body.is-app .ad{display:none}

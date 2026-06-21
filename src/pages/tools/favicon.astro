@@ -146,7 +146,7 @@ const howSteps = [
           cell.appendChild(c);cell.appendChild(l);p.appendChild(cell);
         });
       }
-      function blobFor(size){return new Promise(function(res){var c=document.createElement('canvas');paint(c,size);c.toBlob(res,'image/png');});}
+      function blobFor(size){return new Promise(function(res){var c=document.createElement('canvas');paint(c,size);c.toBlob(function(b){if(!b){$('note').textContent='Could not create the image (your device may not support this format).';}res(b);},'image/png');});}
       function buf(b){return b.arrayBuffer();}
 
       // multi-size .ico encoder (PNG-embedded)
@@ -167,23 +167,26 @@ const howSteps = [
       }
       function dl(blob,name){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);}
 
-      $('ico').onclick=async function(){
+      window.SnapJarKit.guard('ico', async function(){
         if(!ready())return;
         var entries=[];
-        for(var s of [16,32,48]){ entries.push({size:s,buffer:await buf(await blobFor(s))}); }
+        for(var s of [16,32,48]){ var b=await blobFor(s); if(!b)return; entries.push({size:s,buffer:await buf(b)}); }
         dl(makeIco(entries),'favicon.ico');
-      };
-      $('zip').onclick=async function(){
-        if(!ready()||typeof JSZip==='undefined')return;
+      });
+      window.SnapJarKit.guard('zip', async function(){
+        if(!ready()){return;}
+        if(typeof JSZip==='undefined'){$('note').textContent='Could not load the .zip library — please check your connection and reload.';return;}
         $('zip').textContent='Zipping…';
-        var zip=new JSZip();
-        for(var i=0;i<SIZES.length;i++){ zip.file(SIZES[i].name, await blobFor(SIZES[i].s)); }
-        var icoEntries=[]; for(var s of [16,32,48]){ icoEntries.push({size:s,buffer:await buf(await blobFor(s))}); }
-        zip.file('favicon.ico', makeIco(icoEntries));
-        zip.file('head-snippet.html', $('code').textContent);
-        var blob=await zip.generateAsync({type:'blob'});
-        dl(blob,'snapjar-icons.zip'); $('zip').textContent='⬇ All sizes (.zip)';
-      };
+        try{
+          var zip=new JSZip();
+          for(var i=0;i<SIZES.length;i++){ var pb=await blobFor(SIZES[i].s); if(!pb)return; zip.file(SIZES[i].name, pb); }
+          var icoEntries=[]; for(var s of [16,32,48]){ var ib=await blobFor(s); if(!ib)return; icoEntries.push({size:s,buffer:await buf(ib)}); }
+          zip.file('favicon.ico', makeIco(icoEntries));
+          zip.file('head-snippet.html', $('code').textContent);
+          var blob=await zip.generateAsync({type:'blob'});
+          dl(blob,'snapjar-icons.zip');
+        } finally { $('zip').textContent='⬇ All sizes (.zip)'; }
+      });
 
       // tabs
       document.querySelector('.fav-tabs').addEventListener('click',function(e){
@@ -194,7 +197,7 @@ const howSteps = [
       });
       document.querySelectorAll('.src[data-src="text"] input,.src[data-src="text"] select').forEach(function(el){el.addEventListener('input',render);});
       // image upload
-      function load(f){var im=new Image();im.onload=function(){img=im;render();};im.src=URL.createObjectURL(f);}
+      function load(f){var im=new Image();im.onload=function(){img=im;render();};im.onerror=function(){$('note').textContent='Could not open this image — it may be corrupt or unsupported.';};im.src=URL.createObjectURL(f);}
       $('browse').onclick=function(e){e.stopPropagation();$('file').click();};
       $('drop').onclick=function(e){if(e.target.id==='drop'||e.target.className.indexOf('drop-')===0)$('file').click();};
       $('file').onchange=function(e){if(e.target.files[0])load(e.target.files[0]);};

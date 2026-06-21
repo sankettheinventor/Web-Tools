@@ -83,19 +83,27 @@ const howSteps = [
       async function load(file){
         if(!libsReady()){$('warn').hidden=false;return;}
         $('warn').hidden=true;
-        bytes=await file.arrayBuffer();
         $('drop').hidden=true;$('editor').hidden=false;$('status').textContent='Rendering pages…';$('info').textContent=file.name;
-        var pdf=await pdfjsLib.getDocument({data:bytes.slice(0)}).promise;
-        pages=[];
-        for(var n=1;n<=pdf.numPages;n++){
-          var page=await pdf.getPage(n);var vp=page.getViewport({scale:0.5});
-          var c=document.createElement('canvas');c.width=vp.width;c.height=vp.height;
-          await page.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
-          pages.push({src:n-1,rot:0,thumb:c.toDataURL('image/jpeg',0.7)});
+        try{
+          bytes=await file.arrayBuffer();
+          var pdf=await pdfjsLib.getDocument({data:bytes.slice(0)}).promise;
+          pages=[];
+          for(var n=1;n<=pdf.numPages;n++){
+            $('status').textContent='Processing page '+n+' of '+pdf.numPages+'…';
+            var page=await pdf.getPage(n);var vp=page.getViewport({scale:0.5});
+            var fit=window.SnapJarKit.fitDims(vp.width,vp.height);
+            if(fit.clamped){ vp=page.getViewport({scale:0.5*fit.scale}); }
+            var c=document.createElement('canvas');c.width=Math.max(1,Math.round(vp.width));c.height=Math.max(1,Math.round(vp.height));
+            await page.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
+            pages.push({src:n-1,rot:0,thumb:c.toDataURL('image/jpeg',0.7)});
+            await window.SnapJarKit.breathe();
+          }
+          $('info').textContent=file.name+' · '+pages.length+' pages';
+          $('status').textContent='';
+          render();
+        }catch(err){
+          $('status').textContent='Could not process this file — it may be corrupt or password-protected.';
         }
-        $('info').textContent=file.name+' · '+pages.length+' pages';
-        $('status').textContent='';
-        render();
       }
       function render(){
         var t=$('thumbs');t.innerHTML='';
@@ -124,18 +132,22 @@ const howSteps = [
         if(!bytes||!pages.length){$('status').textContent='Add a PDF first.';return;}
         if(typeof PDFLib==='undefined'){$('warn').hidden=false;return;}
         $('status').textContent='Saving…';
-        var src=await PDFLib.PDFDocument.load(bytes,{ignoreEncryption:true});
-        var out=await PDFLib.PDFDocument.create();
-        var srcIdx=pages.map(function(p){return p.src;});
-        var copied=await out.copyPages(src,srcIdx);
-        copied.forEach(function(pg,i){
-          var add=pages[i].rot;
-          if(add){var cur=pg.getRotation().angle||0;pg.setRotation(PDFLib.degrees((cur+add)%360));}
-          out.addPage(pg);
-        });
-        var data=await out.save();
-        dl(new Blob([data],{type:'application/pdf'}),'organized.pdf');
-        $('status').textContent='Done — saved '+pages.length+' page(s).';
+        try{
+          var src=await PDFLib.PDFDocument.load(bytes,{ignoreEncryption:true});
+          var out=await PDFLib.PDFDocument.create();
+          var srcIdx=pages.map(function(p){return p.src;});
+          var copied=await out.copyPages(src,srcIdx);
+          copied.forEach(function(pg,i){
+            var add=pages[i].rot;
+            if(add){var cur=pg.getRotation().angle||0;pg.setRotation(PDFLib.degrees((cur+add)%360));}
+            out.addPage(pg);
+          });
+          var data=await out.save();
+          dl(new Blob([data],{type:'application/pdf'}),'organized.pdf');
+          $('status').textContent='Done — saved '+pages.length+' page(s).';
+        }catch(err){
+          $('status').textContent='Could not process this file — it may be corrupt or password-protected.';
+        }
       }
       $('browse').onclick=function(e){e.stopPropagation();$('file').click();};
       $('drop').onclick=function(e){if(e.target.id==='drop'||e.target.className.indexOf('drop-')===0)$('file').click();};
@@ -143,7 +155,7 @@ const howSteps = [
       ['dragover','dragenter'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.add('drag');});});
       ['dragleave','drop'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.remove('drag');});});
       $('drop').addEventListener('drop',function(e){if(e.dataTransfer.files[0])load(e.dataTransfer.files[0]);});
-      $('go').onclick=go;
+      $('go').onclick=window.SnapJarKit.guard('go',go);
       $('reset').onclick=function(){bytes=null;pages=[];$('thumbs').innerHTML='';$('file').value='';$('status').textContent='';$('warn').hidden=true;$('editor').hidden=true;$('drop').hidden=false;};
     })();
   </script>
