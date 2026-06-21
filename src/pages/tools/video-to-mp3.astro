@@ -22,8 +22,8 @@ const howSteps = [
 <Base title={title} description={description}>
   <Fragment slot="head">
     <AppLd name="Video to MP3 Converter" description="Extract audio from one or many video files and convert them to MP3 entirely in your browser — batch convert, choose the bitrate, nothing is uploaded." category="MultimediaApplication" features={["Batch convert multiple videos to MP3 at once","Supports MP4, MOV, MKV, WebM, AVI and more","Choose MP3 quality from 128 to 320 kbps","Runs 100% in your browser via WebAssembly","Download each MP3 or all together as a ZIP","Your files are never uploaded or stored"]} />
-    <script is:inline src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
-    <script is:inline src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
+    <script is:inline src="/ffmpeg/ffmpeg.js"></script>
+    <script is:inline src="/ffmpeg/util.js"></script>
     <script is:inline src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   </Fragment>
 
@@ -203,23 +203,23 @@ const howSteps = [
           show('The converter engine could not load — a content blocker or network may be blocking the CDN. Disable it or try another network, then refresh.', true); return false;
         }
         var FFmpeg = FFmpegWASM.FFmpeg, toBlobURL = FFmpegUtil.toBlobURL;
-        // Browsers forbid constructing a Worker from a cross-origin URL, so we
-        // fetch the worker + core as same-origin blobs (classWorkerURL). jsDelivr
-        // first, unpkg as fallback.
-        var cdns = [
-          { w: 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd', c: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd' },
-          { w: 'https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd', c: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd' }
+        // Worker + core glue are self-hosted on our own origin (/ffmpeg/) so there
+        // is no cross-origin Worker/import issue. Only the big 32 MB wasm is fetched
+        // from a CDN as data (jsDelivr primary, unpkg fallback).
+        var wasmCdns = [
+          'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm',
+          'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm'
         ];
         var lastErr = null;
-        for (var bi = 0; bi < cdns.length; bi++){
+        for (var bi = 0; bi < wasmCdns.length; bi++){
           show('Loading the converter (~30 MB, one time)…' + (bi ? ' trying a backup source…' : ''));
           try {
             ffmpeg = new FFmpeg();
             attachProgress();
             await ffmpeg.load({
-              classWorkerURL: await toBlobURL(cdns[bi].w + '/814.ffmpeg.js', 'text/javascript'),
-              coreURL: await toBlobURL(cdns[bi].c + '/ffmpeg-core.js', 'text/javascript'),
-              wasmURL: await toBlobURL(cdns[bi].c + '/ffmpeg-core.wasm', 'application/wasm')
+              classWorkerURL: '/ffmpeg/814.ffmpeg.js',
+              coreURL: '/ffmpeg/ffmpeg-core.js',
+              wasmURL: await toBlobURL(wasmCdns[bi], 'application/wasm')
             });
             loaded = true; return true;
           } catch (e){ lastErr = e; }

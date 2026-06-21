@@ -189,6 +189,7 @@ const itemList = {
       </div>
     </section>
 
+    {import.meta.env.PUBLIC_APP_BUILD !== '1' && (
     <section class="cat" id="media">
       <h2>🎬 Media</h2>
       <p class="csub">Audio &amp; video tools — one runs right in your browser, the downloader opens in a new tab.</p>
@@ -197,5 +198,6 @@ const itemList = {
         <a class="tcard" href="https://elegant-crostata-510d7b.netlify.app/" target="_blank" rel="noopener"><div class="ti">⬇️</div><h3>Video Downloader ↗</h3><p>Save video from YouTube, Vimeo, TikTok &amp; 1000+ sites.</p></a>
       </div>
     </section>
+    )}
   </div>
 </Base>
