@@ -3,7 +3,7 @@ const {
   title = 'SnapJar — Free Online Calculators & Image Tools',
   description = 'Free, fast, private online tools. Calculators and image utilities that run entirely in your browser — no signup, no upload, your data never leaves your device.',
 } = Astro.props;
-const SITE = Astro.site ?? new URL('https://snapjar.pages.dev/');
+const SITE = Astro.site ?? new URL('https://snapjar.sankettoraskar-business.workers.dev/');
 const canonical = new URL(Astro.url.pathname, SITE).href;
 const ogImage = new URL('/og.png', SITE).href;
 const isHome = Astro.url.pathname === '/';
@@ -29,6 +29,13 @@ const siteLd = {
 // Leaving it empty keeps ads OFF site-wide (placeholders show instead). Hybrid model:
 // this enables Google Auto Ads (ML placement); manual <AdSlot/> components add controlled spots.
 const ADSENSE_CLIENT = '';
+
+// ===== App build flag. Set PUBLIC_APP_BUILD=1 when building the bundle that ships
+// inside the Capacitor (SnapJar mobile) app, e.g. `PUBLIC_APP_BUILD=1 npm run build`.
+// In the app we strip everything that (a) reaches the network — so "your data never
+// leaves your device" is literally true — or (b) would risk a Play/App Store rejection
+// (the external video-downloader link, file 16 Rule #2). The plain web build is unchanged.
+const IS_APP = import.meta.env.PUBLIC_APP_BUILD === '1';
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -60,7 +67,7 @@ const ADSENSE_CLIENT = '';
   <link rel="stylesheet" href="/assets/style.css" />
   <script type="application/ld+json" set:html={JSON.stringify(orgLd)} />
   {isHome && <script type="application/ld+json" set:html={JSON.stringify(siteLd)} />}
-  <script is:inline defer src="/assets/cloud-import.js"></script>
+  {!IS_APP && <script is:inline defer src="/assets/cloud-import.js"></script>}
   <script is:inline>
     (function () {
       try {
@@ -70,7 +77,7 @@ const ADSENSE_CLIENT = '';
       } catch (e) { document.documentElement.setAttribute('data-theme', 'dark'); }
     })();
   </script>
-  {ADSENSE_CLIENT && (
+  {!IS_APP && ADSENSE_CLIENT && (
     <script async src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`} crossorigin="anonymous"></script>
   )}
   <slot name="head" />
@@ -136,8 +143,12 @@ const ADSENSE_CLIENT = '';
             <a role="menuitem" href="/tools/favicon">Favicon &amp; Icons</a>
             <a role="menuitem" href="/tools/svg-optimizer">SVG Optimizer</a>
           </div>
-          <a role="menuitem" href="/tools/video-to-mp3">🎵 Video to MP3 (in your browser)</a>
-          <a class="mega-media" role="menuitem" href="https://elegant-crostata-510d7b.netlify.app/" target="_blank" rel="noopener">🎬 Video Downloader — save from YouTube, TikTok &amp; 1000+ sites ↗</a>
+          {!IS_APP && (
+            <Fragment>
+              <a role="menuitem" href="/tools/video-to-mp3">🎵 Video to MP3 (in your browser)</a>
+              <a class="mega-media" role="menuitem" href="https://elegant-crostata-510d7b.netlify.app/" target="_blank" rel="noopener">🎬 Video Downloader — save from YouTube, TikTok &amp; 1000+ sites ↗</a>
+            </Fragment>
+          )}
         </div>
       </div>
       <a href="/#calculators" class="hide-sm">Calculators</a>
@@ -208,17 +219,19 @@ const ADSENSE_CLIENT = '';
     </div>
   </footer>
 
-  <div id="cookie-banner" class="cookie-banner" hidden role="dialog" aria-label="Cookie notice">
-    <div class="cb-ic" aria-hidden="true">🍪</div>
-    <div class="cb-body">
-      <p class="cb-lead">SnapJar processes your files on your device.</p>
-      <p class="cb-text">We use cookies, including marketing cookies, to keep our tools free. <a href="/privacy-policy">Privacy&nbsp;Policy</a></p>
-      <div class="cb-actions">
-        <button id="cb-decline" type="button" class="cb-btn ghost">Reject</button>
-        <button id="cb-accept" type="button" class="cb-btn">Accept</button>
+  {!IS_APP && (
+    <div id="cookie-banner" class="cookie-banner" hidden role="dialog" aria-label="Cookie notice">
+      <div class="cb-ic" aria-hidden="true">🍪</div>
+      <div class="cb-body">
+        <p class="cb-lead">SnapJar processes your files on your device.</p>
+        <p class="cb-text">We use cookies, including marketing cookies, to keep our tools free. <a href="/privacy-policy">Privacy&nbsp;Policy</a></p>
+        <div class="cb-actions">
+          <button id="cb-decline" type="button" class="cb-btn ghost">Reject</button>
+          <button id="cb-accept" type="button" class="cb-btn">Accept</button>
+        </div>
       </div>
     </div>
-  </div>
+  )}
 
   <script is:inline>
     (function () {

@@ -203,20 +203,23 @@ const howSteps = [
           show('The converter engine could not load — a content blocker or network may be blocking the CDN. Disable it or try another network, then refresh.', true); return false;
         }
         var FFmpeg = FFmpegWASM.FFmpeg, toBlobURL = FFmpegUtil.toBlobURL;
-        // Try jsDelivr first, fall back to unpkg if it can't be fetched.
-        var bases = [
-          'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd',
-          'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd'
+        // Browsers forbid constructing a Worker from a cross-origin URL, so we
+        // fetch the worker + core as same-origin blobs (classWorkerURL). jsDelivr
+        // first, unpkg as fallback.
+        var cdns = [
+          { w: 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd', c: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd' },
+          { w: 'https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd', c: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd' }
         ];
         var lastErr = null;
-        for (var bi = 0; bi < bases.length; bi++){
+        for (var bi = 0; bi < cdns.length; bi++){
           show('Loading the converter (~30 MB, one time)…' + (bi ? ' trying a backup source…' : ''));
           try {
             ffmpeg = new FFmpeg();
             attachProgress();
             await ffmpeg.load({
-              coreURL: await toBlobURL(bases[bi] + '/ffmpeg-core.js', 'text/javascript'),
-              wasmURL: await toBlobURL(bases[bi] + '/ffmpeg-core.wasm', 'application/wasm')
+              classWorkerURL: await toBlobURL(cdns[bi].w + '/814.ffmpeg.js', 'text/javascript'),
+              coreURL: await toBlobURL(cdns[bi].c + '/ffmpeg-core.js', 'text/javascript'),
+              wasmURL: await toBlobURL(cdns[bi].c + '/ffmpeg-core.wasm', 'application/wasm')
             });
             loaded = true; return true;
           } catch (e){ lastErr = e; }
