@@ -221,7 +221,9 @@ const howSteps = [
             attachProgress();
             await ffmpeg.load({
               classWorkerURL: ORIGIN + '/ffmpeg/814.ffmpeg.js',
-              coreURL: ORIGIN + '/ffmpeg/ffmpeg-core.js',
+              // Module worker → importScripts is unavailable, so it dynamic-imports
+              // the core. Must be the ESM build (has `export default`), not UMD.
+              coreURL: ORIGIN + '/ffmpeg/ffmpeg-core-esm.js',
               wasmURL: await toBlobURL(wasmCdns[bi], 'application/wasm')
             });
             loaded = true; return true;
