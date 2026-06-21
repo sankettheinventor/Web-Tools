@@ -260,3 +260,56 @@ footer{border-top:1px solid var(--line);margin-top:var(--s8);padding:var(--s6) 0
 .cloud-btn{display:inline-flex;align-items:center;gap:var(--s2);background:var(--surface);border:1px solid var(--line);
   border-radius:var(--r-sm);padding:var(--s2) var(--s4);font:inherit;font-weight:600;font-size:var(--t-sm);color:var(--txt);cursor:pointer}
 .cloud-btn:hover{border-color:var(--brand)}
+
+/* =========================================================================
+   MOTION & INTERACTION SYSTEM
+   Physics-based, transform/opacity-only (GPU, 60fps), reduced-motion-safe
+   (the global guard above collapses every duration to ~0). Character: clear &
+   confident — snappy ease-out, short honest durations, NO bounce on serious
+   controls (file 16 §3.3 pleasure layer; skill-03 doctrine). Motion only ever
+   communicates: press (did my tap register), drag (the drop target is live),
+   reveal (here is your result). Nothing decorative, nothing on a loop.
+   ========================================================================= */
+:root{
+  --ease-out:cubic-bezier(.22,1,.36,1);     /* entrances + feedback: fast start, soft settle */
+  --ease-in-out:cubic-bezier(.76,0,.24,1);  /* moves between two on-screen states */
+  --ease-spring:cubic-bezier(.34,1.4,.5,1); /* a little life — used sparingly, never bouncy */
+  --d-micro:140ms;  /* hover/tap/toggle */
+  --d-base:240ms;   /* panel / card / state change */
+  --d-ctx:400ms;    /* larger reveal / context shift */
+}
+
+/* Tactile press — every button & card confirms the tap (instant feedback, file 16 §3.3) */
+button,.tcard,.xlinks a,.cloud-btn,.tb{transition:transform var(--d-micro) var(--ease-out),
+  border-color var(--d-micro) var(--ease-out),background var(--d-micro) var(--ease-out),box-shadow var(--d-micro) var(--ease-out)}
+button:not(:disabled):active{transform:scale(.97)}
+/* The primary gradient action buttons (shared across every tool) gain a confident hover lift */
+@media(hover:hover){
+  .wm-btn:not(:disabled):hover,.dlbtn:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 10px 22px -12px var(--brand)}
+  .wm-btn:not(:disabled):active,.dlbtn:not(:disabled):active{transform:translateY(0) scale(.98)}
+}
+
+/* The drop zone feels alive the instant a file is dragged over it */
+.drop{transition:border-color var(--d-base) var(--ease-out),background var(--d-base) var(--ease-out),transform var(--d-base) var(--ease-out)}
+.drop.drag{transform:scale(1.01)}
+
+/* Inputs settle into focus instead of hard-snapping */
+input:not([type=range]),select,textarea{transition:border-color var(--d-micro) var(--ease-out),box-shadow var(--d-micro) var(--ease-out)}
+
+/* Slider thumb grows on grab — a small, felt pleasure */
+input[type=range]::-webkit-slider-thumb{transition:transform var(--d-micro) var(--ease-out)}
+input[type=range]:active::-webkit-slider-thumb{transform:scale(1.18)}
+input[type=range]::-moz-range-thumb{transition:transform var(--d-micro) var(--ease-out)}
+input[type=range]:active::-moz-range-thumb{transform:scale(1.18)}
+
+/* THE REVEAL — the payoff rises in once, on load (calculators). Never scroll-triggered,
+   never re-fires (updating the number doesn't restart the animation). */
+@keyframes rise-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes pop-in{from{opacity:0;transform:scale(.94)}55%{transform:scale(1.015)}to{opacity:1;transform:scale(1)}}
+.result{animation:rise-in var(--d-ctx) var(--ease-out) both}
+
+/* THE WIN — utility classes a tool adds (in JS) the moment an output is ready, so the
+   download/result lands with a celebratory pop (file 16 §3.4 "the win"). Add `.anim-pop`
+   to the result/download button when work completes; `.anim-rise` for a calmer entrance. */
+.anim-pop{animation:pop-in var(--d-base) var(--ease-spring) both}
+.anim-rise{animation:rise-in var(--d-base) var(--ease-out) both}
