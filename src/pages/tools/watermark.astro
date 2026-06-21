@@ -273,9 +273,9 @@ const howSteps = [
       ['dragover','dragenter'].forEach(function(ev){$('dropzone').addEventListener(ev,function(e){e.preventDefault();$('dropzone').classList.add('drag');});});
       ['dragleave','drop'].forEach(function(ev){$('dropzone').addEventListener(ev,function(e){e.preventDefault();$('dropzone').classList.remove('drag');});});
       $('dropzone').addEventListener('drop',function(e){addFiles(e.dataTransfer.files);});
-      window.SnapJarKit.guard('dl', function(){if(images[sel])return download(images[sel]);});
+      $('dl').onclick=window.SnapJarKit.guard('dl', function(){if(images[sel])return download(images[sel]);});
       // Serialize: encode + download one image fully before the next, yielding between, to avoid OOM from N concurrent full-res encodes.
-      window.SnapJarKit.guard('dlall', async function(){
+      $('dlall').onclick=window.SnapJarKit.guard('dlall', async function(){
         for(var i=0;i<images.length;i++){ $('info').textContent='Downloading '+(i+1)+' of '+images.length+'…'; await download(images[i]); await window.SnapJarKit.breathe(); }
         $('info').textContent='Done — '+images.length+' image(s) downloaded.';
       });

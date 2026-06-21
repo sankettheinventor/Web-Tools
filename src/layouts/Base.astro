@@ -199,6 +199,9 @@ const IS_APP = import.meta.env.PUBLIC_APP_BUILD === '1';
             <a role="menuitem" href="/tools/svg-optimizer">SVG Optimizer</a>
           </div>
           <a class="mega-media" role="menuitem" href="/tools/video-to-mp3">🎵 Video to MP3 — extract audio from any video, in your browser</a>
+          {import.meta.env.PUBLIC_APP_BUILD !== '1' && (
+            <a class="mega-media" role="menuitem" href="https://elegant-crostata-510d7b.netlify.app/" target="_blank" rel="nofollow noopener">⬇️ Video Downloader — save clips from Vimeo, TikTok &amp; more (separate tool) ↗</a>
+          )}
         </div>
       </div>
       <a href="/#calculators" class="hide-sm">Calculators</a>

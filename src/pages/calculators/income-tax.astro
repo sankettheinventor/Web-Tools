@@ -233,8 +233,11 @@ const faqItems = [
 
         // Slab-by-slab breakdown for both regimes.
         var body=el('schedBody'); body.innerHTML='';
-        var labels=['Up to ₹2.5L','₹2.5L–4L','₹4L–5L','₹5L–8L','₹8L–10L','₹10L–12L','₹12L–16L','₹16L+'];
-        var bands=[[0,250000],[250000,400000],[400000,500000],[500000,800000],[800000,1000000],[1000000,1200000],[1200000,1600000],[1600000,1e12]];
+        // Bands are the UNION of both regimes' slab edges so each row has ONE correct rate
+        // per regime. Must include the new-regime 20L & 24L edges, or the top row lumps the
+        // 20/25/30% slabs into one mislabeled "20%" line.
+        var labels=['Up to ₹2.5L','₹2.5L–4L','₹4L–5L','₹5L–8L','₹8L–10L','₹10L–12L','₹12L–16L','₹16L–20L','₹20L–24L','₹24L+'];
+        var bands=[[0,250000],[250000,400000],[400000,500000],[500000,800000],[800000,1000000],[1000000,1200000],[1200000,1600000],[1600000,2000000],[2000000,2400000],[2400000,1e12]];
         for(var k=0;k<bands.length;k++){
           var lo=bands[k][0], hi=bands[k][1];
           var nRate=rateAt(NEW,lo), oRate=rateAt(OLD,lo);

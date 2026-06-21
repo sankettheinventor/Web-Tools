@@ -75,8 +75,11 @@ const faqItems = [
     function money(v){try{return new Intl.NumberFormat(loc,{style:'currency',currency:cur,maximumFractionDigits:2}).format(v);}catch(e){return v.toFixed(2);}}
     function pair(a,b){el(a).addEventListener('input',function(){el(b).value=el(a).value;c();});el(b).addEventListener('input',function(){el(a).value=el(b).value;c();});}
     function c(){var bill=num('bill'),tip=num('tip'),split=Math.max(1,num('split'));var tipAmt=bill*tip/100,total=bill+tipAmt;
-      if(el('round').checked){total=Math.ceil(total);tipAmt=total-bill;}
-      var each=total/split;if(el('round').checked){each=Math.ceil(each);}
+      if(el('round').checked){total=Math.ceil(total);}
+      var each=total/split;
+      // Round each share up, then reconcile the total to each×split so the per-person
+      // amounts and the shown total always add up (no "26+26 but total says 51").
+      if(el('round').checked){each=Math.ceil(each);total=each*split;tipAmt=total-bill;}
       document.querySelectorAll('.preset').forEach(function(b){b.setAttribute('aria-pressed',(+b.dataset.tip===tip)?'true':'false');});
       el('each').textContent=money(each);el('sub').textContent='split between '+split;
       el('bdTip').textContent=money(tipAmt);el('bdTot').textContent=money(total);}

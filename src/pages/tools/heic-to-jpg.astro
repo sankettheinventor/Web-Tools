@@ -93,15 +93,15 @@ const howSteps = [
       ['dragleave','drop'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.remove('drag');});});
       $('drop').addEventListener('drop',function(e){if(e.dataTransfer.files.length)convert(e.dataTransfer.files);});
       $('q').addEventListener('input',function(){$('qV').textContent=$('q').value+'%';});
-      $('dlall').onclick=async function(){
+      $('dlall').onclick=window.SnapJarKit.guard('dlall', async function(){
         if(typeof JSZip==='undefined'){$('status').textContent='Zip engine still loading — please try again in a second.';return;}
         $('status').textContent='Building zip…';
         var z=new JSZip(), seen={};
         results.forEach(function(it){var n=it.name;if(seen[n]){var c=++seen[n];n=n.replace(/\.jpg$/i,'')+'-'+c+'.jpg';}else{seen[n]=1;}z.file(n,it.blob);});
         var b=await z.generateAsync({type:'blob'});dl(b,'heic-to-jpg.zip');
         $('status').textContent='Done — '+results.length+' converted.';
-      };
-      $('reset').onclick=function(){results=[];$('grid').innerHTML='';$('file').value='';$('status').textContent='';$('editor').hidden=true;$('drop').hidden=false;};
+      });
+      $('reset').onclick=function(){results=[];window.SnapJarKit.clear();$('grid').innerHTML='';$('file').value='';$('status').textContent='';$('editor').hidden=true;$('drop').hidden=false;};
     })();
   </script>
 </Base>

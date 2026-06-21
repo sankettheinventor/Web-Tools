@@ -191,9 +191,12 @@ const itemList = {
 
     <section class="cat" id="media">
       <h2>🎬 Audio &amp; Video</h2>
-      <p class="csub">Convert media right in your browser — nothing is uploaded.</p>
+      <p class="csub">Convert media in your browser, or grab clips from sites that allow it (separate tool).</p>
       <div class="tgrid">
         <a class="tcard" href="/tools/video-to-mp3"><div class="ti">🎵</div><h3>Video to MP3</h3><p>Extract audio to MP3 — 100% in your browser.</p></a>
+        {import.meta.env.PUBLIC_APP_BUILD !== '1' && (
+        <a class="tcard" href="https://elegant-crostata-510d7b.netlify.app/" target="_blank" rel="nofollow noopener"><div class="ti">⬇️</div><h3>Video Downloader ↗</h3><p>Save clips from Vimeo, TikTok, X &amp; more — opens in a new tab.</p></a>
+        )}
       </div>
     </section>
   </div>

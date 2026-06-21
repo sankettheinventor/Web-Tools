@@ -161,8 +161,8 @@ const howSteps = [
       ['dragleave','drop'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.remove('drag');});});
       $('drop').addEventListener('drop',function(e){add(e.dataTransfer.files);});
       if($('q'))$('q').addEventListener('input',function(){$('qV').textContent=$('q').value+'%';preview();});
-      window.SnapJarKit.guard('dl', function(){if(images[sel])return download(images[sel]);});
-      window.SnapJarKit.guard('dlall', function(){return downloadAll();});
+      $('dl').onclick=window.SnapJarKit.guard('dl', function(){if(images[sel])return download(images[sel]);});
+      $('dlall').onclick=window.SnapJarKit.guard('dlall', function(){return downloadAll();});
       $('reset').onclick=function(){images=[];sel=0;window.SnapJarKit.clear();$('thumbs').innerHTML='';$('file').value='';status('',false);clampNoticeShown=false;$('editor').hidden=true;$('drop').hidden=false;};
     })();
   </script>

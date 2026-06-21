@@ -167,13 +167,13 @@ const howSteps = [
       }
       function dl(blob,name){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);}
 
-      window.SnapJarKit.guard('ico', async function(){
+      $('ico').onclick=window.SnapJarKit.guard('ico', async function(){
         if(!ready())return;
         var entries=[];
         for(var s of [16,32,48]){ var b=await blobFor(s); if(!b)return; entries.push({size:s,buffer:await buf(b)}); }
         dl(makeIco(entries),'favicon.ico');
       });
-      window.SnapJarKit.guard('zip', async function(){
+      $('zip').onclick=window.SnapJarKit.guard('zip', async function(){
         if(!ready()){return;}
         if(typeof JSZip==='undefined'){$('note').textContent='Could not load the .zip library — please check your connection and reload.';return;}
         $('zip').textContent='Zipping…';

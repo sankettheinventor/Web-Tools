@@ -181,19 +181,21 @@ const faqItems = [
         var B=num('bal'), R=num('rate'), base=num('pmt'), extra=num('extra'), annual=num('annual');
         var r=R/12/100, PMT=base+extra;
         if(PMT<=0){ show('—','Enter a monthly payment','—','—'); clearAdv('Enter a monthly payment.'); return; }
-        if(r>0 && PMT<=B*r && annual<=0){ show('Never','Payment is less than monthly interest — increase it','—','—'); clearAdv('Payment is less than monthly interest — increase it.'); return; }
-        var n = (r>0) ? -Math.log(1-(r*B)/PMT)/Math.log(1+r) : B/PMT;
-        n=Math.ceil(n);
-        var totalPaid=PMT*n, interest=totalPaid-B;
+        // Headline reflects the user's ACTUAL scenario (incl. the yearly lump) via the
+        // month-by-month sim. The old closed-form ignored the yearly lump (wrong payoff
+        // time) and went NaN when the monthly payment alone didn't cover interest but a
+        // lump still cleared the loan — contradicting the schedule below.
+        var baseSim = simulate(B, r, base, 0, 0);
+        var optSim  = simulate(B, r, base, extra, annual);
+        if (optSim.never){ show('Never','Payment is less than monthly interest — increase it','—','—'); clearAdv('Payment is less than monthly interest — increase it.'); return; }
+        var n = optSim.months;
+        var totalPaid = B + optSim.totInt, interest = optSim.totInt;
         var yrs=Math.floor(n/12), mo=n%12;
         var t = (yrs>0?yrs+' yr ':'')+(mo>0?mo+' mo':(yrs>0?'':'0 mo'));
         show(t.trim(), n+' monthly payments', money(interest), money(totalPaid));
 
-        // Advanced: minimum-only (no extras) vs accelerated (extra monthly + yearly lump)
-        var baseSim = simulate(B, r, base, 0, 0);
-        var optSim  = simulate(B, r, base, extra, annual);
         var body = el('schedBody'); body.innerHTML='';
-        if (baseSim.never || optSim.never){ clearAdv('Raise the monthly payment until it covers the interest to compare scenarios.'); return; }
+        if (baseSim.never){ clearAdv('Your minimum payment alone never covers the interest — the extra payments above are what clear this loan.'); return; }
         var saved = baseSim.totInt - optSim.totInt, mSaved = baseSim.months - optSim.months;
         var hasExtra = (extra > 0 || annual > 0);
         el('basePay').textContent = fmtDur(baseSim.months);

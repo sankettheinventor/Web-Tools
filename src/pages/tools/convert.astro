@@ -101,7 +101,7 @@ const howSteps = [
       $('w').addEventListener('input',function(){if($('lock').checked&&img){$('h').value=Math.round((parseInt($('w').value,10)||0)/ar);}render();});
       $('h').addEventListener('input',function(){if($('lock').checked&&img){$('w').value=Math.round((parseInt($('h').value,10)||0)*ar);}render();});
       $('fmt').addEventListener('change',render);
-      window.SnapJarKit.guard('dl', function(){if(!lastBlob)return;var ext=$('fmt').value.split('/')[1].replace('jpeg','jpg');var a=document.createElement('a');a.href=URL.createObjectURL(lastBlob);a.download=name+'.'+ext;a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);});
+      $('dl').onclick=window.SnapJarKit.guard('dl', function(){if(!lastBlob)return;var ext=$('fmt').value.split('/')[1].replace('jpeg','jpg');var a=document.createElement('a');a.href=URL.createObjectURL(lastBlob);a.download=name+'.'+ext;a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);});
       $('reset').onclick=function(){img=null;lastBlob=null;$('file').value='';$('editor').hidden=true;$('drop').hidden=false;};
     })();
   </script>
