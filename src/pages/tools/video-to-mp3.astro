@@ -22,8 +22,8 @@ const howSteps = [
 <Base title={title} description={description}>
   <Fragment slot="head">
     <AppLd name="Video to MP3 Converter" description="Extract audio from one or many video files and convert them to MP3 entirely in your browser — batch convert, choose the bitrate, nothing is uploaded." category="MultimediaApplication" features={["Batch convert multiple videos to MP3 at once","Supports MP4, MOV, MKV, WebM, AVI and more","Choose MP3 quality from 128 to 320 kbps","Runs 100% in your browser via WebAssembly","Download each MP3 or all together as a ZIP","Your files are never uploaded or stored"]} />
-    <script is:inline src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
-    <script is:inline src="https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
+    <script is:inline src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
+    <script is:inline src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
     <script is:inline src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   </Fragment>
 
@@ -187,30 +187,42 @@ const howSteps = [
       drop.addEventListener('drop', function(e){ e.preventDefault(); if (e.dataTransfer && e.dataTransfer.files.length) addFiles(e.dataTransfer.files); });
 
       // ---- engine ----
+      function attachProgress(){
+        ffmpeg.on('progress', function(ev){
+          if (curId == null || !ev || typeof ev.progress !== 'number' || !isFinite(ev.progress)) return;
+          var it = itemById(curId); if (!it) return;
+          it.pct = Math.max(0, Math.min(1, ev.progress));
+          var li = el('queue').children[items.indexOf(it)];
+          if (li){ var m = li.querySelector('.vitem-meta'); if (m) m.textContent = 'converting… ' + Math.round(it.pct*100) + '%';
+            var bf = li.querySelector('.vbar-fill'); if (bf) bf.style.width = (it.pct*100).toFixed(1) + '%'; }
+        });
+      }
       async function ensureLoaded(){
         if (loaded) return true;
         if (typeof FFmpegWASM === 'undefined' || typeof FFmpegUtil === 'undefined'){
-          show('The converter engine could not load — check your connection and refresh the page.', true); return false;
+          show('The converter engine could not load — a content blocker or network may be blocking the CDN. Disable it or try another network, then refresh.', true); return false;
         }
-        show('Loading the converter (~30 MB, one time)…');
-        try {
-          var FFmpeg = FFmpegWASM.FFmpeg, toBlobURL = FFmpegUtil.toBlobURL;
-          ffmpeg = new FFmpeg();
-          ffmpeg.on('progress', function(ev){
-            if (curId == null || !ev || typeof ev.progress !== 'number' || !isFinite(ev.progress)) return;
-            var it = itemById(curId); if (!it) return;
-            it.pct = Math.max(0, Math.min(1, ev.progress));
-            var li = el('queue').children[items.indexOf(it)];
-            if (li){ var m = li.querySelector('.vitem-meta'); if (m) m.textContent = 'converting… ' + Math.round(it.pct*100) + '%';
-              var bf = li.querySelector('.vbar-fill'); if (bf) bf.style.width = (it.pct*100).toFixed(1) + '%'; }
-          });
-          var base = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
-          await ffmpeg.load({
-            coreURL: await toBlobURL(base + '/ffmpeg-core.js', 'text/javascript'),
-            wasmURL: await toBlobURL(base + '/ffmpeg-core.wasm', 'application/wasm')
-          });
-          loaded = true; return true;
-        } catch (e){ show('Could not load the converter: ' + (e && e.message ? e.message : e), true); return false; }
+        var FFmpeg = FFmpegWASM.FFmpeg, toBlobURL = FFmpegUtil.toBlobURL;
+        // Try jsDelivr first, fall back to unpkg if it can't be fetched.
+        var bases = [
+          'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd',
+          'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd'
+        ];
+        var lastErr = null;
+        for (var bi = 0; bi < bases.length; bi++){
+          show('Loading the converter (~30 MB, one time)…' + (bi ? ' trying a backup source…' : ''));
+          try {
+            ffmpeg = new FFmpeg();
+            attachProgress();
+            await ffmpeg.load({
+              coreURL: await toBlobURL(bases[bi] + '/ffmpeg-core.js', 'text/javascript'),
+              wasmURL: await toBlobURL(bases[bi] + '/ffmpeg-core.wasm', 'application/wasm')
+            });
+            loaded = true; return true;
+          } catch (e){ lastErr = e; }
+        }
+        show('Could not load the converter: ' + (lastErr && lastErr.message ? lastErr.message : lastErr) + '. A content blocker or firewall may be blocking the CDN — try disabling it or switching networks.', true);
+        return false;
       }
 
       async function convertOne(it, br){
