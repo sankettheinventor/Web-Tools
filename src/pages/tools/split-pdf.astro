@@ -19,10 +19,6 @@ const howSteps = [
 ];
 ---
 <Base title={title} description={description}>
-  <Fragment slot="head">
-    <script is:inline src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-    <script is:inline src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  </Fragment>
   <header class="head"><div class="wrap"><p class="kicker">PDF Tool</p><h1>Split PDF</h1>
     <p>Drop in your PDF and split every page into its own file — right here in your browser.</p></div></header>
   <div class="wrap"><div class="tool pdf">
@@ -53,7 +49,9 @@ const howSteps = [
   <HowTo task="split a PDF" steps={howSteps} />
   <AppLd name="Split PDF" description="Drag and drop a PDF to split every page into its own one-page file and download them all as a zip, processed entirely in your browser." category="BusinessApplication" features={["Drag-and-drop PDF upload", "Splits each page into a separate PDF", "Downloads all pages as a single zip", "Opens encrypted PDFs by ignoring basic encryption", "100% client-side — nothing uploaded"]} />
   <Faq items={faqItems} />
-  <script is:inline>
+  <script>
+    import * as PDFLib from 'pdf-lib';
+    import JSZip from 'jszip';
     (function(){
       var bytes=null,count=0;
       function $(i){return document.getElementById(i);}

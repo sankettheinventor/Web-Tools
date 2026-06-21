@@ -23,6 +23,7 @@ export async function GET(context: { site?: URL }) {
     'tools/split-pdf', 'tools/remove-pages', 'tools/extract-pages',
     'tools/rotate-pdf', 'tools/add-page-numbers', 'tools/watermark-pdf',
     'tools/organize-pdf', 'tools/compress-pdf',
+    'tools/video-to-mp3',
     'about', 'privacy-policy', 'terms',
   ];
   const urls = [

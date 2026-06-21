@@ -1,0 +1,182 @@
+---
+import Base from '../../layouts/Base.astro';
+import Faq from '../../components/Faq.astro';
+import HowTo from '../../components/HowTo.astro';
+import AppLd from '../../components/AppLd.astro';
+const title = 'Video to MP3 Converter — Free, In Your Browser';
+const description = 'Free video to MP3 converter — extract audio from MP4, MOV, MKV, WebM, AVI and more to MP3, right in your browser. No upload, no signup, your file never leaves your device.';
+const faqItems = [
+  { q: 'Is my video uploaded to a server?', a: 'No. The conversion runs entirely inside your browser using WebAssembly — your video file never leaves your device, is never uploaded, and nothing is stored. Closing the tab discards everything.' },
+  { q: 'Can I convert a YouTube link to MP3 here?', a: 'No. This tool converts a video FILE you already have on your device, not an online link. Downloading audio from YouTube or other sites needs a server and may break their terms, so it is not offered here — download the video first, then convert it on this page.' },
+  { q: 'Which video formats can I convert?', a: 'Most common formats work: MP4, MOV, MKV, WebM, AVI, FLV, and audio files like M4A or WAV. The tool extracts the audio track and re-encodes it to MP3 with the bitrate you choose.' },
+  { q: 'Why does the first conversion take a moment to start?', a: 'The first time you convert, your browser downloads the ~30 MB conversion engine once (then it is cached). After that it starts instantly. Larger videos take longer because everything is processed locally on your device.' },
+  { q: 'What MP3 quality should I pick?', a: '192 kbps is a good balance of quality and size for music and speech. Use 320 kbps for the best quality (larger file) or 128 kbps for the smallest file, such as podcasts or voice notes.' },
+];
+const howSteps = [
+  { name: 'Choose your video', text: 'Drop a video file onto the box or tap to browse — it stays on your device.' },
+  { name: 'Pick the MP3 quality', text: 'Select a bitrate (128–320 kbps); 192 kbps suits most music and speech.' },
+  { name: 'Convert', text: 'Click Convert to MP3 — your browser extracts and encodes the audio locally and shows a progress bar.' },
+  { name: 'Play and download', text: 'Preview the result, then download your MP3. Nothing was uploaded at any point.' },
+];
+---
+<Base title={title} description={description}>
+  <Fragment slot="head">
+    <AppLd name="Video to MP3 Converter" description="Extract the audio from a video file and convert it to MP3 entirely in your browser — choose the bitrate, nothing is uploaded." category="MultimediaApplication" features={["Convert MP4, MOV, MKV, WebM, AVI and more to MP3","Choose MP3 quality from 128 to 320 kbps","Runs 100% in your browser via WebAssembly","Your file is never uploaded or stored","Live progress and instant audio preview"]} />
+    <script is:inline src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
+    <script is:inline src="https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
+  </Fragment>
+
+  <header class="head">
+    <div class="wrap">
+      <p class="kicker">Audio Tool</p>
+      <h1>Video to MP3 Converter</h1>
+      <p>Pull the audio out of any video and save it as MP3 — converted right here in your browser, so your file never leaves your device.</p>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="tool">
+      <label class="vdrop" id="drop">
+        <input id="file" type="file" accept="video/*,audio/*" hidden />
+        <span class="vdrop-ic" aria-hidden="true">🎵</span>
+        <span class="vdrop-t" id="dropText">Drop a video here, or tap to choose a file</span>
+        <span class="vdrop-s">MP4 · MOV · MKV · WebM · AVI · M4A — stays on your device</span>
+      </label>
+
+      <div class="field" style="margin-top:var(--s4)">
+        <div class="field-top"><label for="bitrate">MP3 quality</label></div>
+        <select id="bitrate" aria-label="MP3 bitrate">
+          <option value="128">128 kbps — smallest (voice / podcasts)</option>
+          <option value="192" selected>192 kbps — recommended (music &amp; speech)</option>
+          <option value="256">256 kbps — high quality</option>
+          <option value="320">320 kbps — best quality (largest)</option>
+        </select>
+      </div>
+
+      <button id="go" class="vbtn" type="button" style="margin-top:var(--s4)">Convert to MP3</button>
+
+      <div class="vbar" id="barWrap" hidden><div class="vbar-fill" id="bar"></div></div>
+      <p class="status" id="status" role="status" aria-live="polite">The first conversion downloads a ~30&nbsp;MB converter once (then it's cached). Your file is processed on your device and never uploaded.</p>
+
+      <div class="result vout" id="out" hidden>
+        <div class="rlabel">Your MP3 is ready</div>
+        <audio id="audio" controls></audio>
+        <a id="dl" class="vbtn" download>⬇ Download MP3</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="ad">Ad space</div>
+
+  <div class="content">
+    <h2>Extract audio from video — privately, in your browser</h2>
+    <p>This converter takes a video file you already have and saves its audio as an MP3. Unlike most online converters, <b>nothing is uploaded</b> — the entire conversion happens on your own device using WebAssembly, so even large or personal videos stay completely private.</p>
+    <p>It's ideal for saving a song, lecture, interview, podcast or voice note from a video clip, or for shrinking a video down to just its audio. Pick a higher bitrate (256–320 kbps) for music, or a lower one (128 kbps) for speech to keep the file small.</p>
+    <h3>A note on online links</h3>
+    <p>This tool works on video <b>files</b>, not web links. It does not download from YouTube or other sites — that requires a server and can break those sites' terms. If you have the video file, this page converts it instantly and privately.</p>
+    <p class="attrib"><em>Powered by <a href="https://github.com/ffmpegwasm/ffmpeg.wasm" rel="noopener" target="_blank">ffmpeg.wasm</a> (MIT) and <a href="https://ffmpeg.org" rel="noopener" target="_blank">FFmpeg</a> (LGPL), running locally in your browser.</em></p>
+    <div class="xlinks">
+      <a href="/tools/compress">Image Compressor →</a>
+      <a href="/#tools">All tools →</a>
+    </div>
+  </div>
+
+  <HowTo task="convert a video to MP3" steps={howSteps} />
+  <Faq items={faqItems} />
+
+  <style is:global>
+    .vdrop{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;
+      padding:var(--s7) var(--s4);border:2px dashed var(--line);border-radius:var(--r-lg);background:var(--surface2);
+      cursor:pointer;transition:border-color .15s,background .15s}
+    .vdrop:hover,.vdrop.drag{border-color:var(--brand);background:var(--surface)}
+    .vdrop-ic{font-size:34px;line-height:1}
+    .vdrop-t{font-weight:700;color:var(--txt);font-size:var(--t-base)}
+    .vdrop-s{font-size:var(--t-xs);color:var(--dim)}
+    .vbtn{display:inline-flex;align-items:center;gap:8px;justify-content:center;width:100%;padding:13px 22px;border-radius:var(--r-sm);
+      border:0;cursor:pointer;font-weight:700;font-size:var(--t-base);color:#fff;background:linear-gradient(135deg,#ff5e7e,#7c5cff);text-decoration:none}
+    .vbtn:hover{filter:brightness(1.05);text-decoration:none}
+    .vbtn:disabled{opacity:.5;cursor:not-allowed;filter:none}
+    .vbar{height:8px;background:var(--surface2);border:1px solid var(--line);border-radius:999px;overflow:hidden;margin:var(--s4) 0 6px}
+    .vbar-fill{height:100%;width:0;background:linear-gradient(90deg,#ff5e7e,#7c5cff);transition:width .2s}
+    .status{font-size:var(--t-sm);color:var(--dim);line-height:1.5;margin-top:10px}
+    .status.err{color:var(--err)}
+    .vout{margin-top:var(--s5);text-align:center}
+    .vout audio{width:100%;margin:10px 0 14px}
+    .content .attrib{font-size:var(--t-xs);color:var(--dim);margin-top:var(--s4)}
+  </style>
+
+  <script is:inline>
+    (function () {
+      var ffmpeg = null, loaded = false, busy = false, outURL = null, fileObj = null;
+      function el(id){ return document.getElementById(id); }
+      function show(msg, err){ var s = el('status'); s.textContent = msg; s.className = 'status' + (err ? ' err' : ''); }
+      function setBar(p){ el('barWrap').hidden = false; el('bar').style.width = (Math.max(0, Math.min(1, p)) * 100).toFixed(1) + '%'; }
+
+      var drop = el('drop'), input = el('file');
+      function pickFile(f){
+        if (!f) return;
+        fileObj = f;
+        el('dropText').textContent = f.name + '  (' + (f.size/1048576).toFixed(1) + ' MB)';
+        el('out').hidden = true; el('barWrap').hidden = true;
+        show('Ready. Choose a quality and click Convert to MP3.');
+      }
+      input.addEventListener('change', function(){ pickFile(input.files && input.files[0]); });
+      ['dragover','dragenter'].forEach(function(ev){ drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.add('drag'); }); });
+      ['dragleave','dragend','drop'].forEach(function(ev){ drop.addEventListener(ev, function(){ drop.classList.remove('drag'); }); });
+      drop.addEventListener('drop', function(e){ e.preventDefault(); if (e.dataTransfer && e.dataTransfer.files[0]) pickFile(e.dataTransfer.files[0]); });
+
+      async function ensureLoaded(){
+        if (loaded) return true;
+        if (typeof FFmpegWASM === 'undefined' || typeof FFmpegUtil === 'undefined'){
+          show('The converter engine could not load — check your connection and refresh the page.', true); return false;
+        }
+        show('Loading the converter (~30 MB, one time)…');
+        try {
+          var FFmpeg = FFmpegWASM.FFmpeg, toBlobURL = FFmpegUtil.toBlobURL;
+          ffmpeg = new FFmpeg();
+          ffmpeg.on('progress', function(ev){
+            if (busy && ev && typeof ev.progress === 'number' && isFinite(ev.progress) && ev.progress >= 0 && ev.progress <= 1){
+              setBar(ev.progress); show('Converting… ' + Math.round(ev.progress * 100) + '%');
+            }
+          });
+          var base = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
+          await ffmpeg.load({
+            coreURL: await toBlobURL(base + '/ffmpeg-core.js', 'text/javascript'),
+            wasmURL: await toBlobURL(base + '/ffmpeg-core.wasm', 'application/wasm')
+          });
+          loaded = true; return true;
+        } catch (e){ show('Could not load the converter: ' + (e && e.message ? e.message : e), true); return false; }
+      }
+
+      async function convert(){
+        if (busy) return;
+        if (!fileObj){ show('Choose a video file first.', true); return; }
+        busy = true; el('go').disabled = true; setBar(0); show('Preparing…');
+        var ok = await ensureLoaded();
+        if (!ok){ busy = false; el('go').disabled = false; return; }
+        try {
+          var fetchFile = FFmpegUtil.fetchFile;
+          var m = fileObj.name.match(/\.[a-z0-9]+$/i);
+          var inName = 'input' + (m ? m[0].toLowerCase() : '.mp4');
+          show('Reading file…');
+          await ffmpeg.writeFile(inName, await fetchFile(fileObj));
+          var br = el('bitrate').value;
+          show('Converting…'); setBar(0);
+          await ffmpeg.exec(['-i', inName, '-vn', '-acodec', 'libmp3lame', '-b:a', br + 'k', 'output.mp3']);
+          var data = await ffmpeg.readFile('output.mp3');
+          var blob = new Blob([data.buffer], { type: 'audio/mpeg' });
+          if (outURL) URL.revokeObjectURL(outURL);
+          outURL = URL.createObjectURL(blob);
+          el('audio').src = outURL;
+          var a = el('dl'); a.href = outURL; a.download = (fileObj.name.replace(/\.[^.]+$/, '') || 'audio') + '.mp3';
+          el('out').hidden = false; setBar(1);
+          var kb = blob.size / 1024;
+          show('Done — ' + (kb > 1024 ? (kb/1024).toFixed(1) + ' MB' : Math.round(kb) + ' KB') + ' MP3 ready below.');
+          try { await ffmpeg.deleteFile(inName); await ffmpeg.deleteFile('output.mp3'); } catch (e){}
+        } catch (e){ show('Conversion failed: ' + (e && e.message ? e.message : e) + '. Try a different file or quality.', true); }
+        busy = false; el('go').disabled = false;
+      }
+      el('go').addEventListener('click', convert);
+    })();
+  </script>
+</Base>

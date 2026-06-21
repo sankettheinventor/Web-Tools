@@ -62,9 +62,6 @@ const howSteps = [
 ];
 ---
 <Base title={title} description={description}>
-  <Fragment slot="head">
-    <script is:inline src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  </Fragment>
   <header class="head"><div class="wrap">
     <p class="kicker">Image Converter</p><h1>{c.from} to {c.to} Converter</h1>
     <p>Drop your {c.from} images and watch them convert to {c.to} live — right here in your browser.</p>
@@ -120,7 +117,8 @@ const howSteps = [
   <HowTo task="convert an image to another format" steps={howSteps} />
   <AppLd name={`${c.from} to ${c.to} Converter`} description={`Drop or browse ${c.from} images and convert them to ${c.to} live in your browser${c.lossy ? ', dragging the Quality slider to watch the output size update' : ''} — batch-convert and download each file or the whole set, nothing uploaded.`} category="MultimediaApplication" features={["Drag-and-drop batch image conversion", ...(c.lossy ? ["Live Quality slider with instant size preview"] : ["Lossless conversion preserving every pixel"]), "Thumbnail strip to switch between batched images", "Download individual files or the whole batch as a .zip", "100% in-browser — nothing is uploaded"]} />
   <Faq items={faqItems} />
-  <script is:inline>
+  <script>
+    import JSZip from 'jszip';
     (function(){
       var cfg=document.getElementById('cfg'), MIME=cfg.dataset.mime, EXT=cfg.dataset.ext, LOSSY=cfg.dataset.lossy==='1';
       var images=[], sel=0;

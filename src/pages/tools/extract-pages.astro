@@ -19,7 +19,6 @@ const howSteps = [
 ];
 ---
 <Base title={title} description={description}>
-  <Fragment slot="head"><script is:inline src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script></Fragment>
   <header class="head"><div class="wrap"><p class="kicker">PDF Tool</p><h1>Extract Pages from PDF</h1>
     <p>Drop in your PDF, type the pages to keep, and download the trimmed file — right here in your browser.</p></div></header>
   <div class="wrap"><div class="tool pdf">
@@ -54,7 +53,8 @@ const howSteps = [
   <HowTo task="extract pages from a PDF" steps={howSteps} />
   <AppLd name="Extract Pages from PDF" description="Drop in a PDF, type the page numbers and ranges to keep, then download a brand-new PDF with only those pages — all in your browser." category="BusinessApplication" features={["Drag-and-drop or browse to load a PDF", "Pick pages with single numbers and ranges like 1, 3-5", "Reorder pages by the order you type them", "Download the extracted PDF instantly", "100% client-side — nothing is uploaded"]} />
   <Faq items={faqItems} />
-  <script is:inline>
+  <script>
+    import * as PDFLib from 'pdf-lib';
     (function(){
       var bytes=null,count=0;
       function $(i){return document.getElementById(i);}

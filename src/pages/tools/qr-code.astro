@@ -21,9 +21,6 @@ const howSteps = [
 ];
 ---
 <Base title={title} description={description}>
-  <Fragment slot="head">
-    <script is:inline src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.6.0/lib/qr-code-styling.js"></script>
-  </Fragment>
   <header class="head"><div class="wrap">
     <p class="kicker">Utility</p><h1>QR Code Generator</h1>
     <p>Type your details, style the dots and drop in a logo, then download your QR — live in your browser.</p>
@@ -146,7 +143,8 @@ const howSteps = [
 
   <Faq items={faqItems} />
 
-  <script is:inline>
+  <script>
+    import QRCodeStyling from 'qr-code-styling';
     (function () {
       var active = 'url', logoData = null, qr = null;
       function $(i){return document.getElementById(i);}

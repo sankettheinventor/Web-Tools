@@ -20,10 +20,6 @@ const howSteps = [
 ];
 ---
 <Base title={title} description={description}>
-  <Fragment slot="head">
-    <script is:inline src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
-    <script is:inline src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  </Fragment>
   <header class="head"><div class="wrap">
     <p class="kicker">Image Tool</p><h1>HEIC to JPG Converter</h1>
     <p>Drop your iPhone HEIC photos here to batch-convert them to JPG live in your browser.</p>
@@ -61,7 +57,9 @@ const howSteps = [
   <HowTo task="convert HEIC to JPG" steps={howSteps} />
   <AppLd name="HEIC to JPG Converter" description="Drop or browse to one or many iPhone HEIC/HEIF photos, drag the quality slider, and batch-convert them to JPG live in your browser with instant previews." category="MultimediaApplication" features={["Batch convert multiple HEIC/HEIF files at once", "Drag-and-drop or browse upload", "Adjustable JPG quality slider (40-100%)", "Instant preview thumbnails", "Download all converted JPGs as a single zip"]} />
   <Faq items={faqItems} />
-  <script is:inline>
+  <script>
+    import heic2any from 'heic2any';
+    import JSZip from 'jszip';
     (function(){
       var results=[];
       function $(i){return document.getElementById(i);}

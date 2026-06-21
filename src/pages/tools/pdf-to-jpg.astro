@@ -19,10 +19,6 @@ const howSteps = [
 ];
 ---
 <Base title={title} description={description}>
-  <Fragment slot="head">
-    <script is:inline src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
-    <script is:inline src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  </Fragment>
   <header class="head"><div class="wrap">
     <p class="kicker">PDF Tool</p><h1>PDF to JPG</h1>
     <p>Drop in a PDF to render every page to a downloadable JPG — right here in your browser.</p>
@@ -57,14 +53,17 @@ const howSteps = [
     .wm-actions{display:flex;gap:10px}.wm-btn{padding:11px 18px;border-radius:10px;font-weight:700;color:#fff;border:0;cursor:pointer;background:linear-gradient(135deg,var(--brand2),var(--brand))}
     .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line)}.status{margin-top:10px;font-size:13px;color:var(--dim)}
   </style>
-  <script is:inline>
+  <script>
+    import * as pdfjsLib from 'pdfjs-dist';
+    import JSZip from 'jszip';
+    import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.js?url';
+    pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
     (function(){
       var imgs=[];
       function $(i){return document.getElementById(i);}
       function dl(blob,name){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);}
       async function render(file){
         if(typeof pdfjsLib==='undefined'){$('status').textContent='PDF engine loading… try again in a second.';return;}
-        pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
         $('drop').hidden=true;$('editor').hidden=false;$('status').textContent='Rendering…';
         var buf=await file.arrayBuffer();
         var pdf=await pdfjsLib.getDocument({data:buf}).promise;

@@ -21,9 +21,6 @@ const howSteps = [
 ];
 ---
 <Base title={title} description={description}>
-  <Fragment slot="head">
-    <script is:inline src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  </Fragment>
   <header class="head"><div class="wrap">
     <p class="kicker">Image Tool</p><h1>Favicon &amp; App Icon Generator</h1>
     <p>Drop in an image or type an emoji, then download every favicon size and a real <code>.ico</code> — right in your browser.</p>
@@ -112,7 +109,8 @@ const howSteps = [
   <AppLd name="Favicon & App Icon Generator" description="Drop in a square image or type a letter or emoji, pick colours and a shape, preview your icon live, then download a real favicon.ico or a zip of every iOS, Android and PWA size — all in your browser." category="DesignApplication" features={["Drag-and-drop image upload or type a letter/emoji", "Pick text colour, background colour and shape (rounded, square, circle)", "Live previews at 16, 32, 48, 180 and 512 px", "Download a real multi-resolution favicon.ico", "Export all 11 sizes plus a head snippet as a .zip"]} />
   <Faq items={faqItems} />
 
-  <script is:inline>
+  <script>
+    import JSZip from 'jszip';
     (function () {
       var SIZES=[
         {s:16,name:'favicon-16x16.png'},{s:32,name:'favicon-32x32.png'},{s:48,name:'favicon-48x48.png'},{s:96,name:'favicon-96x96.png'},

@@ -19,7 +19,6 @@ const howSteps = [
 ];
 ---
 <Base title={title} description={description}>
-  <Fragment slot="head"><script is:inline src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script></Fragment>
   <header class="head"><div class="wrap"><p class="kicker">PDF Tool</p><h1>Remove Pages from PDF</h1>
     <p>Drop in your PDF, type the pages to delete, and download the trimmed file — right here in your browser.</p></div></header>
   <div class="wrap"><div class="tool pdf">
@@ -54,7 +53,8 @@ const howSteps = [
   <HowTo task="remove pages from a PDF" steps={howSteps} />
   <AppLd name="Remove Pages from PDF" description="Drop in a PDF, type the page numbers and ranges you want gone, then click to delete them and download the trimmed file — all in your browser." category="BusinessApplication" features={["Drag-and-drop or browse to load a PDF", "Delete single pages and ranges like 2, 5-7", "Live page count shown for your file", "One-click trim and download", "Runs fully client-side, nothing uploaded"]} />
   <Faq items={faqItems} />
-  <script is:inline>
+  <script>
+    import * as PDFLib from 'pdf-lib';
     (function(){
       var bytes=null,count=0;
       function $(i){return document.getElementById(i);}

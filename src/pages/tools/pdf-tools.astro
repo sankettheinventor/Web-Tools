@@ -21,9 +21,6 @@ const howSteps = [
 ];
 ---
 <Base title={title} description={description}>
-  <Fragment slot="head">
-    <script is:inline src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-  </Fragment>
   <header class="head"><div class="wrap">
     <p class="kicker">PDF Tool</p><h1>Merge PDF</h1>
     <p>Drop in your PDFs, drag-free reorder them with up/down arrows, then merge into one file — right here in your browser.</p>
@@ -73,7 +70,8 @@ const howSteps = [
     .wm-btn.ghost{background:var(--surface2);color:var(--dim);border:1px solid var(--line)}.status{margin-top:10px;font-size:13px;color:var(--dim)}
     .status.err{color:#e5484d}
   </style>
-  <script is:inline>
+  <script>
+    import * as PDFLib from 'pdf-lib';
     (function(){
       var files=[];
       function $(i){return document.getElementById(i);}

@@ -19,7 +19,6 @@ const howSteps = [
 ];
 ---
 <Base title={title} description={description}>
-  <Fragment slot="head"><script is:inline src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script></Fragment>
   <header class="head"><div class="wrap"><p class="kicker">PDF Tool</p><h1>Add Page Numbers to PDF</h1>
     <p>Drop in your PDF, pick a corner, and number every page — right here in your browser.</p></div></header>
   <div class="wrap"><div class="tool pdf">
@@ -53,7 +52,8 @@ const howSteps = [
   <HowTo task="add page numbers to a PDF" steps={howSteps} />
   <AppLd name="Add Page Numbers to PDF" description="Drop in a PDF, pick a position from the dropdown, and download a copy with sequential numbers drawn on every page — all in your browser." category="BusinessApplication" features={["Drag-and-drop PDF upload","Choose number position: bottom center, left or right","Automatic sequential numbering on every page","Instant download of the numbered PDF","100% in-browser, nothing uploaded"]} />
   <Faq items={faqItems} />
-  <script is:inline>
+  <script>
+    import * as PDFLib from 'pdf-lib';
     (function(){
       var bytes=null;
       function $(i){return document.getElementById(i);}

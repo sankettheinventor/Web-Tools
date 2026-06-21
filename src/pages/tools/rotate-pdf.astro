@@ -19,7 +19,6 @@ const howSteps = [
 ];
 ---
 <Base title={title} description={description}>
-  <Fragment slot="head"><script is:inline src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script></Fragment>
   <header class="head"><div class="wrap"><p class="kicker">PDF Tool</p><h1>Rotate PDF</h1>
     <p>Drop in your PDF, pick the turn, and download every page rotated — right here in your browser.</p></div></header>
   <div class="wrap"><div class="tool pdf">
@@ -53,7 +52,8 @@ const howSteps = [
   <HowTo task="rotate a PDF" steps={howSteps} />
   <AppLd name="Rotate PDF" description="Drop or browse to a PDF, pick 90° right, 180° or 90° left, then click to rotate every page and download the corrected file in your browser." category="BusinessApplication" features={["Drag-and-drop or browse PDF upload","Rotate every page 90°, 180° or 270°","Rotation written into the saved PDF","One-click rotate and download","100% in-browser, nothing uploaded"]} />
   <Faq items={faqItems} />
-  <script is:inline>
+  <script>
+    import * as PDFLib from 'pdf-lib';
     (function(){
       var bytes=null;
       function $(i){return document.getElementById(i);}

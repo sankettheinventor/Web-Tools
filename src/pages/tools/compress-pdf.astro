@@ -20,10 +20,6 @@ const howSteps = [
 ];
 ---
 <Base title={title} description={description}>
-  <Fragment slot="head">
-    <script is:inline src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
-    <script is:inline src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-  </Fragment>
   <header class="head"><div class="wrap">
     <p class="kicker">PDF Tool</p><h1>Compress PDF</h1>
     <p>Drop in a PDF and re-render its pages as JPEGs at a quality you choose to shrink the file — right here in your browser.</p>
@@ -78,7 +74,11 @@ const howSteps = [
   <HowTo task="compress a PDF" steps={howSteps} />
   <AppLd name="Compress PDF" description="Drop or browse to a PDF and this tool re-renders each page as a JPEG at a quality and scale you choose, rebuilds a new PDF, and shows the original size next to the new size before you download." category="BusinessApplication" features={["Drag-and-drop or browse to load a PDF", "Adjustable JPEG quality and render scale", "Rebuilds a new image-based PDF with pdf-lib", "Live original vs new file-size comparison", "Runs fully client-side — no uploads"]} />
   <Faq items={faqItems} />
-  <script is:inline>
+  <script>
+    import * as pdfjsLib from 'pdfjs-dist';
+    import * as PDFLib from 'pdf-lib';
+    import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.js?url';
+    pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
     (function(){
       var pdfBuf=null, srcName='document', origSize=0, lastBytes=null;
       function $(i){return document.getElementById(i);}
@@ -93,7 +93,6 @@ const howSteps = [
       async function compress(){
         if(!pdfBuf){return;}
         if(!libsReady()){ $('status').textContent='PDF engine still loading — please try again in a second.'; return; }
-        pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
         $('status').textContent='Rendering pages…'; $('dl').hidden=true; lastBytes=null;
         var q=parseInt($('q').value,10)/100;
         var scale=parseFloat($('s').value);

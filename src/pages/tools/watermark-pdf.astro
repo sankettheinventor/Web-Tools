@@ -20,7 +20,6 @@ const howSteps = [
 ];
 ---
 <Base title={title} description={description}>
-  <Fragment slot="head"><script is:inline src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script></Fragment>
   <header class="head"><div class="wrap"><p class="kicker">PDF Tool</p><h1>Add Watermark to PDF</h1>
     <p>Drop in your PDF, type your text, and drag the sliders to stamp it across every page — right here.</p></div></header>
   <div class="wrap"><div class="tool pdf">
@@ -59,7 +58,8 @@ const howSteps = [
   <HowTo task="add a watermark to a PDF" steps={howSteps} />
   <AppLd name="PDF Watermark Tool" description="Drop in a PDF, type your watermark text, then drag the opacity and angle sliders to stamp it diagonally across every page and download — all in your browser." category="BusinessApplication" features={["Drag-and-drop PDF upload", "Custom watermark text", "Opacity slider (5% to 60%)", "Angle slider (0° to 90°)", "Stamps every page and downloads instantly"]} />
   <Faq items={faqItems} />
-  <script is:inline>
+  <script>
+    import * as PDFLib from 'pdf-lib';
     (function(){
       var bytes=null;
       function $(i){return document.getElementById(i);}

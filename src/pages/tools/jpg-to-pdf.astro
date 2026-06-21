@@ -19,9 +19,6 @@ const howSteps = [
 ];
 ---
 <Base title={title} description={description}>
-  <Fragment slot="head">
-    <script is:inline src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-  </Fragment>
   <header class="head"><div class="wrap">
     <p class="kicker">PDF Tool</p><h1>JPG to PDF</h1>
     <p>Drop in your JPGs and merge them into one PDF in seconds — right here in your browser.</p>
@@ -55,7 +52,8 @@ const howSteps = [
   <HowTo task="convert JPG images to PDF" steps={howSteps} />
   <AppLd name="JPG to PDF Converter" description="Drop or browse to upload JPG, PNG or WebP images, reorder them as one-per-page thumbnails, and click Create PDF to merge them into a single downloadable PDF in your browser." category="BusinessApplication" features={["Drag-and-drop image upload","Combine multiple images into one PDF","One image per page sized to the image","Supports JPG, PNG and WebP","100% in-browser — nothing uploaded"]} />
   <Faq items={faqItems} />
-  <script is:inline>
+  <script>
+    import * as PDFLib from 'pdf-lib';
     (function(){
       var files=[];
       function $(i){return document.getElementById(i);}
