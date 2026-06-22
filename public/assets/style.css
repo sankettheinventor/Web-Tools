@@ -334,6 +334,5 @@ input[type=range]:active::-moz-range-thumb{transform:scale(1.18)}
 @media(pointer:coarse){
   .pbtns button,.fl-btn{min-width:44px !important;min-height:44px !important}
 }
-/* App build only: hide the empty ad PLACEHOLDERS (dead dashed boxes). Real AdMob
-   native units replace them later. body.is-app is set only when PUBLIC_APP_BUILD=1. */
-body.is-app .ad{display:none}
+/* APP SHELL styles live in a SEPARATE file — public/assets/app.css — loaded only in
+   the Capacitor app build (PUBLIC_APP_BUILD=1). Keeps this web stylesheet clean. */

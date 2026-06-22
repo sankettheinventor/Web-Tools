@@ -1,0 +1,153 @@
+/* ==========================================================================
+   SnapJar — APP styles (Capacitor app only, loaded via Base.astro when IS_APP).
+   Premium light aesthetic (CRED-inspired): white canvas, soft tiles with a hairline
+   border, real 3D icons, grey section labels, a search bar, and a grounded dark
+   bottom nav with a prominent center action. One accent: brand violet. Tokens from
+   style.css; app-local palette below. (Skill 02: system + restraint + one accent.)
+   ========================================================================== */
+
+/* App-local premium palette + force the clean light canvas */
+body.is-app {
+  /* LIGHT theme (default) */
+  --app-bg: #ffffff;
+  --app-tile: #ffffff;
+  --app-line: #ecebf3;
+  --app-ink: #16121f;
+  --app-dim: #8b85a0;
+  --app-nav: #141026;
+  --app-accent: #6b4dff;
+  background: var(--app-bg);
+  color: var(--app-ink);
+  padding-bottom: calc(86px + env(safe-area-inset-bottom));
+}
+/* DARK theme — premium too: deep canvas, raised tiles, light ink. Toggle works in-app. */
+:root[data-theme="dark"] body.is-app {
+  --app-bg: #0c0a14;
+  --app-tile: #17131f;
+  --app-line: #2c2440;
+  --app-ink: #ece8f5;
+  --app-dim: #9a93b5;
+  --app-nav: #16121f;
+  --app-accent: #8b7bff;
+}
+
+/* strip the web chrome the app doesn't use */
+body.is-app .promise,
+body.is-app .mega-trigger,
+body.is-app .nav-links a,
+body.is-app .trust-strip,
+body.is-app footer,
+body.is-app .ad { display: none; }
+/* keep the theme toggle visible in-app so users can switch light/dark */
+body.is-app .theme-btn { display: grid; }
+
+/* top bar: clean white, just the brand (NOT the bottom .appbar nav) */
+body.is-app nav:not(.appbar) { background: var(--app-bg); border-bottom: 1px solid var(--app-line); backdrop-filter: none; }
+body.is-app .brand { color: var(--app-ink); }
+
+/* ===================== APP HOME ===================== */
+.apphome { max-width: 640px; margin: 0 auto; padding: 0 var(--s4) var(--s5); }
+
+/* hero — centered */
+.apphero { padding: var(--s5) 0 var(--s2); text-align: center; }
+.apphero h1 { font-size: var(--t-lg); font-weight: 800; letter-spacing: -.4px; color: var(--app-ink); }
+.apphero-sub { margin-top: 6px; font-size: var(--t-sm); font-weight: 600; color: var(--app-dim); }
+.apphero-row { margin-top: var(--s3); display: inline-flex; align-items: center; gap: 8px; }
+.app-priv {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: var(--t-xs); font-weight: 700; color: var(--app-accent);
+  background: rgba(107,77,255,.10); border-radius: var(--r-pill); padding: 6px 12px;
+}
+.app-info {
+  width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--app-line); background: var(--app-tile);
+  color: var(--app-dim); font: italic 800 13px Georgia, serif; cursor: pointer; display: grid; place-items: center;
+  transition: transform var(--d-micro) var(--ease-out), color var(--d-micro) var(--ease-out), border-color var(--d-micro) var(--ease-out);
+}
+.app-info:hover { color: var(--app-accent); border-color: var(--app-accent); }
+.app-info:active { transform: scale(.9); }
+
+/* a section = a grey uppercase label + a 3-across icon grid */
+.app-sec { margin-top: var(--s6); }
+.app-sec-h { font-size: 11px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase; color: var(--app-dim); margin-bottom: var(--s4); }
+.app-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s4) var(--s2); }
+
+/* a tool = a compact soft white tile (hairline border + lift) holding a real 3D icon, label below */
+.atile { display: flex; flex-direction: column; align-items: center; gap: 7px; text-align: center; color: var(--app-ink); }
+.atile:hover { text-decoration: none; }
+.atile-ic {
+  width: 56px; height: 56px; border-radius: 16px;
+  background: var(--app-tile); border: 1px solid var(--app-line);
+  box-shadow: 0 6px 16px -12px rgba(30,20,70,.22); display: grid; place-items: center;
+  transition: transform var(--d-micro) var(--ease-out), box-shadow var(--d-micro) var(--ease-out);
+}
+.atile-ic img { width: 60%; height: 60%; object-fit: contain; }
+.atile:active .atile-ic { transform: translateY(2px) scale(.95); box-shadow: 0 4px 12px -10px rgba(30,20,70,.3); }
+.atile-l { font-size: 10.5px; font-weight: 600; line-height: 1.2; color: var(--app-ink); }
+
+/* app ad card — clean, labeled, reserved (AdMob native fills it later); MULTIPLE slots */
+.app-ad {
+  margin: var(--s6) 0 0; min-height: 92px; display: flex; align-items: center; justify-content: center;
+  background: var(--app-tile); border: 1px solid var(--app-line); border-radius: var(--r-lg);
+  color: var(--app-dim); font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+}
+.app-ad::before { content: "Advertisement"; }
+
+@media (max-width: 340px) { .app-grid { grid-template-columns: repeat(3, 1fr); gap: var(--s4) var(--s2); } }
+
+/* ===================== BOTTOM NAVIGATION (grounded dark bar) ===================== */
+.appbar {
+  position: fixed; left: 0; right: 0; bottom: 0; top: auto; height: auto; z-index: 90; display: grid;
+  grid-template-columns: repeat(5, 1fr); align-items: end;
+  background: var(--app-nav); border-top: 0; border-bottom: 0;
+  box-shadow: 0 -8px 30px -12px rgba(0,0,0,.35); padding-bottom: env(safe-area-inset-bottom);
+}
+.appbar-i {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+  padding: 11px 0 10px; color: rgba(255,255,255,.55); font-size: 10px; font-weight: 700; letter-spacing: .3px;
+  background: none; border: 0; font-family: inherit; cursor: pointer;
+  transition: color var(--d-micro) var(--ease-out), transform var(--d-micro) var(--ease-out);
+}
+.appbar-i:hover { text-decoration: none; }
+.appbar-i .abi svg { width: 24px; height: 24px; display: block; }
+.appbar-i .abl { text-transform: uppercase; letter-spacing: .6px; font-size: 9px; font-weight: 800; }
+.appbar-i.on { color: #fff; }
+.appbar-i:active { transform: scale(.88); }
+
+/* prominent elevated center button — the flagship (Scan) */
+.appbar-c { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
+.appbar-c button {
+  width: 62px; height: 62px; border-radius: 50%; border: 4px solid var(--app-bg); cursor: pointer;
+  background: linear-gradient(150deg, var(--brand2), var(--brand)); color: #fff; display: grid; place-items: center;
+  margin-top: -26px; box-shadow: 0 0 0 6px rgba(124,92,255,.16), 0 14px 30px -8px rgba(124,92,255,.85);
+  transition: transform var(--d-micro) var(--ease-out);
+}
+.appbar-c button svg { width: 26px; height: 26px; }
+.appbar-c button:active { transform: scale(.9); }
+.appbar-c .abl { text-transform: uppercase; letter-spacing: .6px; font-size: 9px; font-weight: 800; color: rgba(255,255,255,.85); margin: 3px 0 10px; }
+
+@keyframes app-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+/* micro-animation: tiles cascade in (staggered). Reduced-motion-safe via the global guard. */
+@keyframes app-pop { from { opacity: 0; transform: translateY(8px) scale(.97); } to { opacity: 1; transform: none; } }
+.app-grid .atile { animation: app-pop .4s var(--ease-out) both; }
+.app-grid .atile:nth-child(2){ animation-delay:.03s }
+.app-grid .atile:nth-child(3){ animation-delay:.06s }
+.app-grid .atile:nth-child(4){ animation-delay:.09s }
+.app-grid .atile:nth-child(5){ animation-delay:.12s }
+.app-grid .atile:nth-child(6){ animation-delay:.15s }
+.app-grid .atile:nth-child(7){ animation-delay:.18s }
+.app-grid .atile:nth-child(n+8){ animation-delay:.2s }
+
+/* "why free?" info sheet */
+.app-modal { position: fixed; inset: 0; z-index: 200; background: rgba(8,6,16,.55); display: flex; align-items: flex-end; justify-content: center; padding: 14px; animation: app-fade .2s ease both; }
+.app-modal[hidden] { display: none; }
+.app-modal-card { background: var(--app-bg); color: var(--app-ink); border: 1px solid var(--app-line); border-radius: 22px; padding: 26px 22px 20px; max-width: 430px; width: 100%; text-align: center; box-shadow: 0 -12px 44px -10px rgba(0,0,0,.45); animation: app-rise .3s var(--ease-out) both; }
+.amc-ic { font-size: 34px; }
+.app-modal-card h3 { font-size: var(--t-md); font-weight: 800; margin: 8px 0 10px; color: var(--app-ink); }
+.app-modal-card p { font-size: var(--t-sm); color: var(--app-dim); line-height: 1.6; margin: 0 0 10px; }
+.app-modal-card p b { color: var(--app-ink); }
+.amc-close { margin-top: 10px; width: 100%; padding: 13px; border-radius: 13px; border: 0; background: linear-gradient(135deg, var(--brand2), var(--brand)); color: #fff; font: inherit; font-weight: 800; cursor: pointer; transition: transform var(--d-micro) var(--ease-out); }
+.amc-close:active { transform: scale(.98); }
+.amc-later { margin-top: 4px; width: 100%; padding: 11px; border-radius: 13px; border: 0; background: none; color: var(--app-dim); font: inherit; font-weight: 700; cursor: pointer; }
+.amc-later:active { color: var(--app-ink); }
+@keyframes app-fade { from { opacity: 0 } to { opacity: 1 } }

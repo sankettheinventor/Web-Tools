@@ -53,12 +53,12 @@ const howSteps = [
     import * as PDFLib from 'pdf-lib';
     import JSZip from 'jszip';
     (function(){
-      var bytes=null,count=0;
+      var bytes=null,count=0,srcName='document';
       function $(i){return document.getElementById(i);}
       async function load(f){
         $('drop').hidden=true;$('editor').hidden=false;
         try{
-          bytes=await f.arrayBuffer();var doc=await PDFLib.PDFDocument.load(bytes,{ignoreEncryption:true});count=doc.getPageCount();$('info').textContent=f.name+' · '+count+' pages';
+          bytes=await f.arrayBuffer();srcName=(f.name.replace(/\.[^.]+$/,'')||'document');var doc=await PDFLib.PDFDocument.load(bytes,{ignoreEncryption:true});count=doc.getPageCount();$('info').textContent=f.name+' · '+count+' pages';
         }catch(err){
           $('status').textContent='Could not process this file — it may be corrupt or password-protected.';
         }
@@ -68,7 +68,7 @@ const howSteps = [
         try{
           var src=await PDFLib.PDFDocument.load(bytes,{ignoreEncryption:true}),zip=new JSZip();
           for(var i=0;i<count;i++){$('status').textContent='Processing page '+(i+1)+' of '+count+'…';var d=await PDFLib.PDFDocument.create();var[p]=await d.copyPages(src,[i]);d.addPage(p);zip.file('page-'+(i+1)+'.pdf',await d.save());await window.SnapJarKit.breathe();}
-          var blob=await zip.generateAsync({type:'blob'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='split-pages.zip';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);
+          var blob=await zip.generateAsync({type:'blob'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=srcName+'-split-pages.zip';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);
           $('status').textContent='Done — '+count+' pages.';
         }catch(err){
           $('status').textContent='Could not process this file — it may be corrupt or password-protected.';

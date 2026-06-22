@@ -38,11 +38,13 @@ wired to call them. Build green; all 65 pages compile; app strips intact.
 - ⏳ **pdfjs worker offline** — confirm the bundled `pdf.worker` loads under the `https://localhost` Capacitor scheme on-device.
 - ⏳ **No explicit Cancel button** on long ops — the UI no longer *freezes* (`breathe()` yields + progress), but there's still no way to abort a huge job mid-run. Add a Cancel that flips a flag the loops check. *(Worth doing with the device to feel the timing.)*
 
-**Minor logic / cosmetic (low impact, deterministic — can be done anytime):**
-- ⏳ **income-tax slab breakdown table** (~line 232) labels/bands don't match the new-regime slab edges (4L/8L/12L). Headline tax is now correct (marginal relief fixed); only the per-row breakdown display is mislabeled.
-- ⏳ **loan-payoff** headline shows "Never" while the schedule shows a real payoff when only an annual lump is set — contradictory.
-- ⏳ **tip** round-up: per-person × split can exceed the rounded total by a rupee or two.
-- ⏳ Fixed download filenames collide across runs (`merged.pdf`, `page-1.jpg`) — append source/timestamp.
+**Minor logic / cosmetic — FIXED 2026-06-22:**
+- ✅ **income-tax slab breakdown table** — extended bands/labels to include the new-regime 16L/20L/24L edges, so the top row no longer lumps 20/25/30% into one mislabeled "20%" line.
+- ✅ **loan-payoff headline** — now derived from the month-by-month sim (incl. yearly lump), not the closed-form (which ignored the lump and went NaN when a lump cleared a loan whose monthly payment alone didn't cover interest).
+- ✅ **tip round-up** — per-person amounts now reconcile: total = `each × split`, tip = total − bill (no more "26+26 but total says 51").
+- ✅ **Filename collisions** — the 6 single-source PDF tools (add-page-numbers/extract/remove/rotate/watermark-pdf/split) now prefix the output with the source filename (`report-rotated.pdf`), fixing collisions and giving useful names.
+
+**Still minor / open (truly trivial):**
 - ⏳ download `revokeObjectURL` on a fixed 1500ms timer — on a very slow phone the blob could be revoked before the download consumes it. Gate on the download instead.
 - ⏳ svg-optimizer whitespace-collapse can alter text spacing inside `<text>`/`xml:space="preserve"`.
 - ⏳ fd post-tax yield model deducts tax from a gross-compounded balance — internally inconsistent (not user-facing-broken).

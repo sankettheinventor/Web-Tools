@@ -1,4 +1,5 @@
 ---
+import BottomNav from '../app/BottomNav.astro';
 const {
   title = 'SnapJar — Free Online Calculators & Image Tools',
   description = 'Free, fast, private online tools. Calculators and image utilities that run entirely in your browser — no signup, no upload, your data never leaves your device.',
@@ -65,6 +66,7 @@ const IS_APP = import.meta.env.PUBLIC_APP_BUILD === '1';
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
   <link rel="stylesheet" href="/assets/style.css" />
+  {IS_APP && <link rel="stylesheet" href="/assets/app.css" />}
   <script type="application/ld+json" set:html={JSON.stringify(orgLd)} />
   {isHome && <script type="application/ld+json" set:html={JSON.stringify(siteLd)} />}
   {!IS_APP && <script is:inline defer src="/assets/cloud-import.js"></script>}
@@ -176,12 +178,12 @@ const IS_APP = import.meta.env.PUBLIC_APP_BUILD === '1';
           </div>
           <div class="mega-col">
             <div class="mega-h">📄 PDF</div>
+            <a role="menuitem" href="/tools/pdf-studio">PDF Studio ✦</a>
             <a role="menuitem" href="/tools/pdf-tools">Merge PDF</a>
             <a role="menuitem" href="/tools/compress-pdf">Compress PDF</a>
             <a role="menuitem" href="/tools/organize-pdf">Organize PDF</a>
             <a role="menuitem" href="/tools/split-pdf">Split PDF</a>
-            <a role="menuitem" href="/tools/rotate-pdf">Rotate PDF</a>
-            <a role="menuitem" class="all" href="/#pdf-tools">All 12 PDF →</a>
+            <a role="menuitem" class="all" href="/#pdf-tools">All 13 PDF →</a>
           </div>
           <div class="mega-col">
             <div class="mega-h">🎨 Color</div>
@@ -213,6 +215,8 @@ const IS_APP = import.meta.env.PUBLIC_APP_BUILD === '1';
   </div></nav>
 
   <slot />
+
+  {IS_APP && <BottomNav />}
 
   <section class="trust-strip">
     <div class="wrap trust-in">

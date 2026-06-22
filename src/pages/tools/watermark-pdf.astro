@@ -61,12 +61,12 @@ const howSteps = [
   <script>
     import * as PDFLib from 'pdf-lib';
     (function(){
-      var bytes=null;
+      var bytes=null,srcName='document';
       function $(i){return document.getElementById(i);}
       async function load(f){
         $('drop').hidden=true;$('editor').hidden=false;
         try{
-          bytes=await f.arrayBuffer();var doc=await PDFLib.PDFDocument.load(bytes,{ignoreEncryption:true});$('info').textContent=f.name+' · '+doc.getPageCount()+' pages';
+          bytes=await f.arrayBuffer();srcName=(f.name.replace(/\.[^.]+$/,'')||'document');var doc=await PDFLib.PDFDocument.load(bytes,{ignoreEncryption:true});$('info').textContent=f.name+' · '+doc.getPageCount()+' pages';
         }catch(err){
           $('status').textContent='Could not process this file — it may be corrupt or password-protected.';
         }
@@ -79,7 +79,7 @@ const howSteps = [
           doc.getPages().forEach(function(p){var w=p.getWidth(),h=p.getHeight();var size=Math.min(w,h)*0.10;var tw=font.widthOfTextAtSize(text,size);
             while(tw>w*0.9 && size>6){ size-=1; tw=font.widthOfTextAtSize(text,size); }
             p.drawText(text,{x:w/2-Math.cos(ag*Math.PI/180)*tw/2,y:h/2-Math.sin(ag*Math.PI/180)*tw/2,size:size,font:font,color:PDFLib.rgb(0.5,0.5,0.55),opacity:op,rotate:PDFLib.degrees(ag)});});
-          var out=await doc.save();var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([out],{type:'application/pdf'}));a.download='watermarked.pdf';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);
+          var out=await doc.save();var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([out],{type:'application/pdf'}));a.download=srcName+'-watermarked.pdf';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);
           $('status').textContent='Done.';
         }catch(err){
           $('status').textContent='Could not process this file — it may be corrupt or password-protected.';

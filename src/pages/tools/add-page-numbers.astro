@@ -55,12 +55,12 @@ const howSteps = [
   <script>
     import * as PDFLib from 'pdf-lib';
     (function(){
-      var bytes=null;
+      var bytes=null,srcName='document';
       function $(i){return document.getElementById(i);}
       async function load(f){
         $('drop').hidden=true;$('editor').hidden=false;
         try{
-          bytes=await f.arrayBuffer();var doc=await PDFLib.PDFDocument.load(bytes,{ignoreEncryption:true});$('info').textContent=f.name+' · '+doc.getPageCount()+' pages';
+          bytes=await f.arrayBuffer();srcName=(f.name.replace(/\.[^.]+$/,'')||'document');var doc=await PDFLib.PDFDocument.load(bytes,{ignoreEncryption:true});$('info').textContent=f.name+' · '+doc.getPageCount()+' pages';
         }catch(err){
           $('status').textContent='Could not process this file — it may be corrupt or password-protected.';
         }
@@ -72,7 +72,7 @@ const howSteps = [
           doc.getPages().forEach(function(p,i){var w=p.getWidth();var t=String(i+1);var size=11;var tw=font.widthOfTextAtSize(t,size);
             var x=pos==='bl'?34:pos==='br'?w-34-tw:w/2-tw/2;
             p.drawText(t,{x:x,y:24,size:size,font:font,color:PDFLib.rgb(0.25,0.25,0.3)});});
-          var out=await doc.save();var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([out],{type:'application/pdf'}));a.download='numbered.pdf';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);
+          var out=await doc.save();var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([out],{type:'application/pdf'}));a.download=srcName+'-numbered.pdf';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);
           $('status').textContent='Done.';
         }catch(err){
           $('status').textContent='Could not process this file — it may be corrupt or password-protected.';

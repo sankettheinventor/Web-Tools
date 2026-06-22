@@ -1,0 +1,126 @@
+---
+/* SnapJar APP home (app build only). Premium CRED-style: search + Popular row +
+   category grids of real 3D icons (Microsoft Fluent, bundled in /assets/icons),
+   with multiple ad slots. Tools link to the SHARED tool pages. */
+const popular = [
+  { ic: 'open_book',       l: 'PDF Reader',   h: '/tools/pdf-reader' },
+  { ic: 'bookmark_tabs',   l: 'Merge PDF',    h: '/tools/pdf-tools' },
+  { ic: 'clamp',           l: 'Compress PDF', h: '/tools/compress-pdf' },
+  { ic: 'page_facing_up',  l: 'PDF → JPG',    h: '/tools/pdf-to-jpg' },
+  { ic: 'framed_picture',  l: 'Compress',     h: '/tools/compress' },
+  { ic: 'mobile_phone',    l: 'HEIC → JPG',   h: '/tools/heic-to-jpg' },
+  { ic: 'input_symbols',   l: 'QR Code',      h: '/tools/qr-code' },
+  { ic: 'droplet',         l: 'Watermark',    h: '/tools/watermark' },
+  { ic: 'bank',            l: 'EMI',          h: '/calculators/emi' },
+];
+const sections = [
+  { id: 'watermark', h: 'Watermark', items: [
+    { ic: 'droplet',        l: 'Photo',     h: '/tools/watermark' },
+    { ic: 'droplet',        l: 'PDF',       h: '/tools/watermark-pdf' },
+  ]},
+  { id: 'pdf-tools', h: 'PDF Tools', items: [
+    { ic: 'bookmark_tabs',                 l: 'Merge',      h: '/tools/pdf-tools' },
+    { ic: 'clamp',                         l: 'Compress',   h: '/tools/compress-pdf' },
+    { ic: 'card_index_dividers',           l: 'Organize',   h: '/tools/organize-pdf' },
+    { ic: 'scissors',                      l: 'Split',      h: '/tools/split-pdf' },
+    { ic: 'wastebasket',                   l: 'Remove',     h: '/tools/remove-pages' },
+    { ic: 'outbox_tray',                   l: 'Extract',    h: '/tools/extract-pages' },
+    { ic: 'counterclockwise_arrows_button',l: 'Rotate',     h: '/tools/rotate-pdf' },
+    { ic: 'input_numbers',                 l: 'Numbers',    h: '/tools/add-page-numbers' },
+    { ic: 'droplet',                       l: 'Watermark',  h: '/tools/watermark-pdf' },
+    { ic: 'framed_picture',                l: 'JPG → PDF',  h: '/tools/jpg-to-pdf' },
+    { ic: 'page_facing_up',                l: 'PDF → JPG',  h: '/tools/pdf-to-jpg' },
+    { ic: 'memo',                          l: 'Text → PDF', h: '/tools/text-to-pdf' },
+  ]},
+  { id: 'image-tools', h: 'Image Tools', items: [
+    { ic: 'clamp',                    l: 'Compress',  h: '/tools/compress' },
+    { ic: 'clockwise_vertical_arrows',l: 'Convert',   h: '/tools/convert' },
+    { ic: 'droplet',                  l: 'Watermark', h: '/tools/watermark' },
+    { ic: 'mobile_phone',             l: 'HEIC → JPG',h: '/tools/heic-to-jpg' },
+    { ic: 'star',                     l: 'Favicon',   h: '/tools/favicon' },
+    { ic: 'framed_picture',           l: 'JPG → PNG', h: '/tools/jpg-to-png' },
+    { ic: 'framed_picture',           l: 'PNG → JPG', h: '/tools/png-to-jpg' },
+    { ic: 'framed_picture',           l: 'WebP → JPG',h: '/tools/webp-to-jpg' },
+  ]},
+  { id: 'calculators', h: 'Calculators', items: [
+    { ic: 'bank',                     l: 'EMI',        h: '/calculators/emi' },
+    { ic: 'house',                    l: 'Mortgage',   h: '/calculators/mortgage' },
+    { ic: 'chart_increasing',         l: 'SIP',        h: '/calculators/sip' },
+    { ic: 'receipt',                  l: 'Income Tax', h: '/calculators/income-tax' },
+    { ic: 'money_bag',                l: 'FD',         h: '/calculators/fd' },
+    { ic: 'credit_card',              l: 'Loan Payoff',h: '/calculators/loan-payoff' },
+    { ic: 'bar_chart',                l: 'Percentage', h: '/calculators/percentage' },
+    { ic: 'balance_scale',            l: 'BMI',        h: '/calculators/bmi' },
+    { ic: 'birthday_cake',            l: 'Age',        h: '/calculators/age' },
+    { ic: 'fork_and_knife_with_plate',l: 'Tip',        h: '/calculators/tip' },
+    { ic: 'label',                    l: 'Discount',   h: '/calculators/discount' },
+    { ic: 'straight_ruler',           l: 'Units',      h: '/calculators/unit-converter' },
+  ]},
+  { id: 'text-tools', h: 'Color & Text', items: [
+    { ic: 'artist_palette',         l: 'Color Pick', h: '/tools/color-picker' },
+    { ic: 'artist_palette',         l: 'Palette',    h: '/tools/palette-extractor' },
+    { ic: 'input_numbers',          l: 'Convert',    h: '/tools/color-converter' },
+    { ic: 'rainbow',                l: 'Gradient',   h: '/tools/gradient-generator' },
+    { ic: 'input_latin_letters',    l: 'Word Count', h: '/tools/word-counter' },
+    { ic: 'straight_ruler',         l: 'Char Count', h: '/tools/character-counter' },
+    { ic: 'input_latin_uppercase',  l: 'Case',       h: '/tools/case-converter' },
+    { ic: 'musical_note',           l: 'Video → MP3',h: '/tools/video-to-mp3' },
+  ]},
+];
+const adAfter = { 1: true, 3: true }; // ad slots after PDF and after Calculators (plus one after Popular)
+---
+<div class="apphome">
+  <header class="apphero">
+    <h1>Your tools, all private</h1>
+    <p class="apphero-sub">No signup · No payment · 100% free</p>
+    <div class="apphero-row">
+      <span class="app-priv">🔒 100% on-device</span>
+      <button class="app-info" id="appInfo" type="button" aria-label="Why is SnapJar free?">i</button>
+    </div>
+  </header>
+
+  <section class="app-sec">
+    <div class="app-sec-h">Popular</div>
+    <div class="app-grid">
+      {popular.map((t) => (
+        <a class="atile" href={t.h} data-l={t.l.toLowerCase()}><span class="atile-ic"><img src={`/assets/icons/${t.ic}.png`} alt="" loading="lazy" /></span><span class="atile-l">{t.l}</span></a>
+      ))}
+    </div>
+  </section>
+
+  <div class="app-ad"></div>
+
+  {sections.map((s, idx) => (
+    <Fragment>
+      <section class="app-sec" id={s.id}>
+        <div class="app-sec-h">{s.h}</div>
+        <div class="app-grid">
+          {s.items.map((t) => (
+            <a class="atile" href={t.h} data-l={t.l.toLowerCase()}><span class="atile-ic"><img src={`/assets/icons/${t.ic}.png`} alt="" loading="lazy" /></span><span class="atile-l">{t.l}</span></a>
+          ))}
+        </div>
+      </section>
+      {adAfter[idx] && <div class="app-ad"></div>}
+    </Fragment>
+  ))}
+</div>
+
+<!-- Why-free info sheet -->
+<div class="app-modal" id="appWhy" hidden>
+  <div class="app-modal-card" role="dialog" aria-modal="true" aria-label="Why SnapJar is free">
+    <div class="amc-ic">💜</div>
+    <h3>Free, forever — here's how</h3>
+    <p>SnapJar has <b>no signup</b> and <b>no payment</b>. We show clearly-labeled ads to make sure the app stays <b>completely free for you, forever</b>.</p>
+    <p>Your files never leave your device — <b>ads never see your documents</b>.</p>
+    <button class="amc-close" id="appWhyClose" type="button">Got it</button>
+  </div>
+</div>
+
+<script is:inline>
+  (function () {
+    var modal = document.getElementById('appWhy'), btn = document.getElementById('appInfo'), close = document.getElementById('appWhyClose');
+    if (btn) btn.addEventListener('click', function () { if (modal) modal.hidden = false; });
+    if (close) close.addEventListener('click', function () { if (modal) modal.hidden = true; });
+    if (modal) modal.addEventListener('click', function (e) { if (e.target === modal) modal.hidden = true; });
+  })();
+</script>

@@ -1,0 +1,97 @@
+---
+/* SnapJar app bottom navigation. Rendered only in the app build (Base.astro gates it
+   behind IS_APP), so this app-only markup never ships to the website. The center
+   "Scan" button is the flagship (file 16): it drives the native ML Kit document
+   scanner → PDF → Share/Save, reached via window.Capacitor.registerPlugin so no
+   Capacitor import leaks into the web bundle. */
+---
+<nav class="appbar" aria-label="App navigation">
+  <a class="appbar-i" data-nav="home" href="/">
+    <span class="abi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9v12h14V9"/></svg></span><span class="abl">Home</span>
+  </a>
+  <a class="appbar-i" data-nav="pdf" href="/#pdf-tools">
+    <span class="abi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v4h4"/></svg></span><span class="abl">PDF</span>
+  </a>
+  <div class="appbar-c">
+    <button id="navScan" type="button" aria-label="Scan a document">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2"/><path d="M16 4h2a2 2 0 0 1 2 2v2"/><path d="M20 16v2a2 2 0 0 1-2 2h-2"/><path d="M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M4 12h16"/></svg>
+    </button>
+    <span class="abl">Scan</span>
+  </div>
+  <a class="appbar-i" data-nav="reader" href="/tools/pdf-reader">
+    <span class="abi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5.5A2.5 2.5 0 0 1 5.5 3H11v16H5.5A2.5 2.5 0 0 0 3 21.5V5.5Z"/><path d="M21 5.5A2.5 2.5 0 0 0 18.5 3H13v16h5.5a2.5 2.5 0 0 1 2.5 2.5V5.5Z"/></svg></span><span class="abl">Reader</span>
+  </a>
+  <a class="appbar-i" data-nav="image" href="/#image-tools">
+    <span class="abi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="m21 16-4.5-4.5L7 21"/></svg></span><span class="abl">Image</span>
+  </a>
+</nav>
+
+<!-- Leaving message: ask for a rating when the user tries to exit the app -->
+<div class="app-modal" id="appRate" hidden>
+  <div class="app-modal-card" role="dialog" aria-modal="true" aria-label="Rate SnapJar">
+    <div class="amc-ic">⭐</div>
+    <h3>Enjoying SnapJar?</h3>
+    <p>A quick rating helps SnapJar reach everyone — a <b>virus-free</b>, <b>100% free</b> toolkit with <b>real working tools</b> that keeps your files private.</p>
+    <button class="amc-close" id="appRateGo" type="button">Rate the app ⭐</button>
+    <button class="amc-later" id="appRateExit" type="button">Exit</button>
+  </div>
+</div>
+
+<script is:inline>
+  (function () {
+    /* highlight the active tab from the current path */
+    var p = (location.pathname.replace(/\/$/, '') || '/');
+    var cat = p === '/' ? 'home'
+      : p.indexOf('/tools/pdf-reader') === 0 ? 'reader'
+      : /(pdf-tools|compress-pdf|split-pdf|organize-pdf|rotate-pdf|add-page-numbers|watermark-pdf|extract-pages|remove-pages|jpg-to-pdf|pdf-to-jpg|text-to-pdf)/.test(p) ? 'pdf'
+      : /(\/compress|\/convert|\/watermark|favicon|heic-to-jpg|color-picker|color-converter|gradient-generator|palette-extractor|qr-code|svg-optimizer|jpg-to-|png-to-|webp-to-)/.test(p) ? 'image'
+      : 'home';
+    var on = document.querySelector('.appbar-i[data-nav="' + cat + '"]');
+    if (on) on.classList.add('on');
+
+    /* "Scan" → native ML Kit document scanner → PDF → system share/save sheet */
+    var scanBtn = document.getElementById('navScan');
+    var Cap = window.Capacitor;
+    if (scanBtn && Cap && Cap.registerPlugin) {
+      var DocumentScanner = Cap.registerPlugin('DocumentScanner');
+      var Share = Cap.registerPlugin('Share');
+      scanBtn.addEventListener('click', async function () {
+        if (scanBtn.disabled) return; scanBtn.disabled = true;
+        try {
+          var res = await DocumentScanner.scanDocument({ resultFormats: 'PDF', pageLimit: 20 });
+          var uri = res && res.pdf && res.pdf.uri;
+          if (uri) { try { await Share.share({ title: 'Scanned document', url: uri }); } catch (e) {} }
+        } catch (e) {
+          /* user cancelled, or the scanner module is still installing — fail quietly */
+          console.error('scan', e);
+        } finally { scanBtn.disabled = false; }
+      });
+    } else if (scanBtn) {
+      /* not in a Capacitor context (shouldn't happen in the app) */
+      scanBtn.addEventListener('click', function () { location.href = '/tools/pdf-to-jpg'; });
+    }
+
+    /* Leaving message — intercept hardware Back: navigate back in-page if possible,
+       otherwise (about to exit) show the rate prompt before quitting. */
+    var rate = document.getElementById('appRate');
+    function showRate(){ if (rate) rate.hidden = false; }
+    if (Cap && Cap.registerPlugin) {
+      var App = Cap.registerPlugin('App');
+      try {
+        App.addListener('backButton', function (info) {
+          if (rate && !rate.hidden) { rate.hidden = true; try { App.exitApp(); } catch (e) {} return; }
+          if (info && info.canGoBack) { window.history.back(); }
+          else { showRate(); }
+        });
+      } catch (e) {}
+      var go = document.getElementById('appRateGo'), ex = document.getElementById('appRateExit');
+      if (go) go.addEventListener('click', function () {
+        try { window.open('market://details?id=com.snapjar.app', '_system'); }
+        catch (e) { try { window.open('https://play.google.com/store/apps/details?id=com.snapjar.app', '_system'); } catch (_) {} }
+        if (rate) rate.hidden = true;
+      });
+      if (ex) ex.addEventListener('click', function () { try { App.exitApp(); } catch (e) { if (rate) rate.hidden = true; } });
+      if (rate) rate.addEventListener('click', function (e) { if (e.target === rate) rate.hidden = true; });
+    }
+  })();
+</script>
