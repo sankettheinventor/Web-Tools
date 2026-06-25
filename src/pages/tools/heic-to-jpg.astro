@@ -66,10 +66,10 @@ const howSteps = [
       function dl(blob,name){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);}
       function add(blob,name){
         var item={blob:blob,name:name.replace(/\.(heic|heif)$/i,'')+'.jpg'};results.push(item);
-        var w=document.createElement('div');w.className='cv-item';
-        var im=document.createElement('img');im.src=window.SnapJarKit.track(blob);
-        var nm=document.createElement('div');nm.className='nm';nm.textContent=item.name;
-        var b=document.createElement('button');b.textContent='Download';b.onclick=function(){dl(item.blob,item.name);};
+        var w=document.createElement('div');w.className='cv-item';w.style.cssText='width:140px;text-align:center';
+        var im=document.createElement('img');im.src=window.SnapJarKit.track(blob);im.style.cssText='width:140px;height:110px;object-fit:cover;border:1px solid var(--line);border-radius:10px;background:var(--surface2)';
+        var nm=document.createElement('div');nm.className='nm';nm.textContent=item.name;nm.style.cssText='font-size:11.5px;color:var(--dim);margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+        var b=document.createElement('button');b.textContent='Download';b.style.cssText='margin-top:5px;font-size:11px;font-weight:700;color:var(--brand);background:none;border:0;cursor:pointer';b.onclick=function(){dl(item.blob,item.name);};
         w.appendChild(im);w.appendChild(nm);w.appendChild(b);$('grid').appendChild(w);
         $('dlall').hidden=results.length<2;
       }

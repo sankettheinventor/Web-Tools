@@ -72,15 +72,16 @@ const howSteps = [
         }
       }
       async function go(){
-        if(!bytes)return;$('status').textContent='Working…';
+        if(!bytes)return;$('status').textContent='Applying watermark…';
         var text=$('text').value||'WATERMARK',op=parseInt($('op').value,10)/100,ag=parseInt($('ag').value,10);
         try{
           var doc=await PDFLib.PDFDocument.load(bytes,{ignoreEncryption:true});var font=await doc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+          var np=doc.getPages().length;
           doc.getPages().forEach(function(p){var w=p.getWidth(),h=p.getHeight();var size=Math.min(w,h)*0.10;var tw=font.widthOfTextAtSize(text,size);
             while(tw>w*0.9 && size>6){ size-=1; tw=font.widthOfTextAtSize(text,size); }
             p.drawText(text,{x:w/2-Math.cos(ag*Math.PI/180)*tw/2,y:h/2-Math.sin(ag*Math.PI/180)*tw/2,size:size,font:font,color:PDFLib.rgb(0.5,0.5,0.55),opacity:op,rotate:PDFLib.degrees(ag)});});
           var out=await doc.save();var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([out],{type:'application/pdf'}));a.download=srcName+'-watermarked.pdf';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);
-          $('status').textContent='Done.';
+          $('status').textContent='Done — watermarked '+np+' page'+(np===1?'':'s')+'.';
         }catch(err){
           $('status').textContent='Could not process this file — it may be corrupt or password-protected.';
         }

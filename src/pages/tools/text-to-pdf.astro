@@ -62,8 +62,10 @@ const howSteps = [
           var y=m;
           lines.forEach(function(ln){ if(y>ph-m){doc.addPage();y=m;} doc.text(ln,m,y); y+=lh; });
           doc.save('document.pdf');
+          if(window.SnapJarKit) window.SnapJarKit.toast('PDF ready — saved to your device','ok');
         }catch(err){
-          alert('Could not generate the PDF — please try again with shorter or simpler text.');
+          if(window.SnapJarKit) window.SnapJarKit.toast('Could not generate the PDF — try shorter or simpler text','err');
+          else alert('Could not generate the PDF — please try again with shorter or simpler text.');
         }
       });
     })();

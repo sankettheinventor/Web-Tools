@@ -30,7 +30,20 @@ const howSteps = [
       <p class="drop-s">🔒 nothing leaves your device · <button id="screen" type="button" class="linklike" hidden>or pick from screen</button></p></div>
     <div id="editor" hidden>
       <div class="cp-grid">
-        <canvas id="canvas" aria-label="Click to pick a color"></canvas>
+        <div class="cp-canvas">
+          <div class="cp-stage" id="stage">
+            <canvas id="canvas" aria-label="Tap or drag to pick a color"></canvas>
+            <div class="cp-loupe" id="loupe" hidden><canvas id="loupeC" width="88" height="88"></canvas></div>
+          </div>
+          <div class="cp-zoom">
+            <button id="zOut" type="button" class="zbtn" aria-label="Zoom out">−</button>
+            <span id="zLbl" class="zlbl">100%</span>
+            <button id="zIn" type="button" class="zbtn" aria-label="Zoom in">+</button>
+            <span class="cp-spacer"></span>
+            <button id="zReset" type="button" class="zbtn zreset" aria-label="Reset zoom">Reset</button>
+          </div>
+          <p class="cp-tip">Tap or drag to pick · pinch to zoom · two fingers to pan</p>
+        </div>
         <div class="cp-side">
           <div class="cp-sw" id="sw"></div>
           <div class="cin"><input id="hex" type="text" readonly aria-label="HEX color value" /><button class="cpy" data-c="hex" aria-label="Copy HEX value">Copy</button></div>
@@ -45,18 +58,30 @@ const howSteps = [
   <div class="content">
     <h2>How to pick a colour from an image</h2>
     <p>Drop in any image and click on it — the picker reads the exact pixel colour under your cursor and shows it as HEX, RGB and HSL, ready to copy. Great for matching a brand colour from a logo or sampling a shade from a photo. On supported browsers you can also use <b>pick from screen</b> to grab a colour from anywhere on your display. Everything runs locally — your image is never uploaded.</p>
-    <div class="xlinks"><a href="/tools/palette-extractor">Palette Extractor →</a><a href="/tools/color-converter">Color Converter →</a></div>
+    <div class="xlinks"><a href="/tools/palette-extractor">Palette Extractor →</a><a href="/tools/gradient-generator">Gradient Generator →</a></div>
   </div>
   <style>
     .drop{border:2px dashed var(--line);border-radius:14px;background:var(--surface2);padding:40px 20px;text-align:center;cursor:pointer}
     .drop.drag{border-color:var(--brand)}.drop-ic{font-size:40px;margin-bottom:8px}.drop-t{font-size:16px;font-weight:600}.drop-s{font-size:13px;color:var(--dim);margin-top:6px}
     .linklike{background:none;border:0;color:var(--brand);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline}
     .cp-grid{display:grid;grid-template-columns:1fr 220px;gap:18px}@media(max-width:640px){.cp-grid{grid-template-columns:1fr}}
-    #canvas{width:100%;height:auto;max-height:60vh;object-fit:contain;border:1px solid var(--line);border-radius:12px;cursor:crosshair;background:var(--surface2)}
+    .cp-canvas{display:flex;flex-direction:column;gap:10px;min-width:0}
+    .cp-stage{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:12px;background:var(--surface2);touch-action:none;max-height:60vh}
+    #canvas{display:block;width:100%;height:auto;cursor:crosshair;transform-origin:0 0;will-change:transform}
+    .cp-loupe{position:absolute;left:0;top:0;width:92px;height:92px;border-radius:50%;border:3px solid #fff;box-shadow:0 6px 22px rgba(0,0,0,.4);overflow:hidden;pointer-events:none;z-index:6;background:#fff}
+    .cp-loupe canvas{width:100%;height:100%;display:block;image-rendering:pixelated}
+    .cp-zoom{display:flex;align-items:center;gap:8px}
+    .cp-spacer{flex:1}
+    .zbtn{width:42px;height:42px;border-radius:11px;border:1px solid var(--line);background:var(--surface2);color:var(--txt);font:inherit;font-weight:800;font-size:18px;cursor:pointer;display:grid;place-items:center;transition:transform .1s ease}
+    .zbtn:active{transform:scale(.94)}
+    .zreset{width:auto;padding:0 14px;font-size:13px;font-weight:700}
+    .zlbl{min-width:50px;text-align:center;font-size:13px;font-weight:700;color:var(--dim)}
+    .cp-tip{font-size:12px;color:var(--dim);margin:0}
     .cp-side{display:flex;flex-direction:column;gap:10px}
-    .cp-sw{height:80px;border-radius:12px;border:1px solid var(--line);background:var(--surface2)}
+    .cp-sw{height:80px;border-radius:12px;border:1px solid var(--line);background:var(--surface2);transition:background .15s ease}
     .cin{display:flex;gap:8px}.cin input{flex:1;min-width:0;background:var(--surface2);border:1px solid var(--line);border-radius:9px;color:var(--txt);font:inherit;font-weight:600;padding:9px 10px;outline:none;font-family:ui-monospace,monospace;font-size:13px}
-    .cpy{padding:0 12px;border-radius:9px;border:1px solid var(--line);background:var(--surface2);color:var(--dim);font:inherit;font-weight:700;font-size:12px;cursor:pointer}.cpy:hover{color:var(--brand);border-color:var(--brand)}
+    .cpy{padding:0 12px;border-radius:9px;border:1px solid var(--line);background:var(--surface2);color:var(--dim);font:inherit;font-weight:700;font-size:12px;cursor:pointer;transition:color .15s,border-color .15s,background .15s}.cpy:hover{color:var(--brand);border-color:var(--brand)}
+    .cpy.copied{color:#1aa34a;border-color:#1aa34a;background:rgba(26,163,74,.1)}
     .randbtn{margin-top:6px;padding:10px;border-radius:9px;border:1px solid var(--line);background:var(--surface2);color:var(--txt);font:inherit;font-weight:700;cursor:pointer}
   </style>
   <HowTo task="pick a color from an image" steps={howSteps} />
@@ -67,12 +92,78 @@ const howSteps = [
       function $(i){return document.getElementById(i);}
       function hsl(r,g,b){r/=255;g/=255;b/=255;var mx=Math.max(r,g,b),mn=Math.min(r,g,b),h,s,l=(mx+mn)/2;if(mx===mn){h=s=0;}else{var d=mx-mn;s=l>.5?d/(2-mx-mn):d/(mx+mn);if(mx===r)h=(g-b)/d+(g<b?6:0);else if(mx===g)h=(b-r)/d+2;else h=(r-g)/d+4;h/=6;}return[Math.round(h*360),Math.round(s*100),Math.round(l*100)];}
       function hex(r,g,b){return '#'+[r,g,b].map(function(x){return ('0'+x.toString(16)).slice(-2);}).join('').toUpperCase();}
-      function setColor(r,g,b){var hx=hex(r,g,b),hl=hsl(r,g,b);$('sw').style.background=hx;$('hex').value=hx;$('rgb').value='rgb('+r+', '+g+', '+b+')';$('hsl').value='hsl('+hl[0]+', '+hl[1]+'%, '+hl[2]+'%)';}
-      var ctx;
-      function load(f){var im=new Image();im.onload=function(){var c=$('canvas');var fit=window.SnapJarKit.fitDims(im.naturalWidth,im.naturalHeight);c.width=fit.w;c.height=fit.h;ctx=c.getContext('2d');ctx.drawImage(im,0,0,fit.w,fit.h);$('drop').hidden=true;$('editor').hidden=false;};im.onerror=function(){var d=$('drop');d.querySelector('.drop-t').textContent='Could not open this image — it may be corrupt or unsupported.';};im.src=window.SnapJarKit.track(f);}
-      function pick(e){var c=$('canvas'),rect=c.getBoundingClientRect();var x=Math.floor((e.clientX-rect.left)*c.width/rect.width),y=Math.floor((e.clientY-rect.top)*c.height/rect.height);if(x<0||y<0||x>=c.width||y>=c.height)return;var d=ctx.getImageData(x,y,1,1).data;setColor(d[0],d[1],d[2]);}
-      $('canvas').addEventListener('click',pick);
-      $('canvas').addEventListener('mousemove',function(e){if(e.buttons)pick(e);});
+      var lastRGB=[0,0,0];
+      function setColor(r,g,b){var hx=hex(r,g,b),hl=hsl(r,g,b);lastRGB=[r,g,b];$('sw').style.background=hx;$('hex').value=hx;$('rgb').value='rgb('+r+', '+g+', '+b+')';$('hsl').value='hsl('+hl[0]+', '+hl[1]+'%, '+hl[2]+'%)';}
+      var ctx, cv=$('canvas'), stage=$('stage'), loupe=$('loupe'), lctx=$('loupeC').getContext('2d');
+      var scale=1, tx=0, ty=0, pinch=null;
+
+      function applyT(){cv.style.transform='translate('+tx.toFixed(1)+'px,'+ty.toFixed(1)+'px) scale('+scale+')';var z=$('zLbl');if(z)z.textContent=Math.round(scale*100)+'%';}
+      function clampPan(){
+        var bw=cv.offsetWidth,bh=cv.offsetHeight,sw=stage.clientWidth,sh=stage.clientHeight;
+        var dw=bw*scale,dh=bh*scale;
+        if(dw<=sw)tx=(sw-dw)/2; else tx=Math.max(sw-dw,Math.min(0,tx));
+        if(dh<=sh)ty=Math.max(0,(sh-dh)/2); else ty=Math.max(sh-dh,Math.min(0,ty));
+      }
+      function zoomTo(ns,fcx,fcy){
+        ns=Math.max(1,Math.min(8,ns));
+        var rect=stage.getBoundingClientRect(),fx=fcx-rect.left,fy=fcy-rect.top;
+        var bx=(fx-tx)/scale,by=(fy-ty)/scale;
+        scale=ns;tx=fx-bx*scale;ty=fy-by*scale;clampPan();applyT();
+      }
+      function zoomCenter(ns){var r=stage.getBoundingClientRect();zoomTo(ns,r.left+r.width/2,r.top+r.height/2);}
+
+      function toPixel(clientX,clientY){
+        if(!ctx)return null;var rect=cv.getBoundingClientRect();if(!rect.width||!rect.height)return null;
+        var x=Math.floor((clientX-rect.left)*cv.width/rect.width),y=Math.floor((clientY-rect.top)*cv.height/rect.height);
+        if(x<0||y<0||x>=cv.width||y>=cv.height)return null;return{x:x,y:y};
+      }
+      function showLoupe(clientX,clientY,p){
+        var s=stage.getBoundingClientRect(),L=92,src=15;
+        var lx=clientX-s.left-L/2, ly=clientY-s.top-L-20;
+        if(ly<4)ly=clientY-s.top+22;
+        lx=Math.max(4,Math.min(s.width-L-4,lx));
+        loupe.style.left=lx+'px';loupe.style.top=ly+'px';loupe.hidden=false;
+        loupe.style.borderColor=hex(lastRGB[0],lastRGB[1],lastRGB[2]);
+        lctx.imageSmoothingEnabled=false;lctx.clearRect(0,0,88,88);
+        lctx.drawImage(cv,p.x-(src-1)/2,p.y-(src-1)/2,src,src,0,0,88,88);
+        var cell=88/src,c0=Math.round(44-cell/2)+0.5;
+        lctx.strokeStyle='rgba(0,0,0,.55)';lctx.lineWidth=2;lctx.strokeRect(c0,c0,Math.round(cell),Math.round(cell));
+        lctx.strokeStyle='rgba(255,255,255,.95)';lctx.lineWidth=1;lctx.strokeRect(c0,c0,Math.round(cell),Math.round(cell));
+      }
+      function hideLoupe(){loupe.hidden=true;}
+      function sample(clientX,clientY){var p=toPixel(clientX,clientY);if(!p)return;var d=ctx.getImageData(p.x,p.y,1,1).data;setColor(d[0],d[1],d[2]);showLoupe(clientX,clientY,p);}
+
+      function load(f){var im=new Image();im.onload=function(){var fit=window.SnapJarKit.fitDims(im.naturalWidth,im.naturalHeight);cv.width=fit.w;cv.height=fit.h;ctx=cv.getContext('2d');ctx.drawImage(im,0,0,fit.w,fit.h);$('drop').hidden=true;$('editor').hidden=false;scale=1;tx=0;ty=0;clampPan();applyT();};im.onerror=function(){$('drop').querySelector('.drop-t').textContent='Could not open this image — it may be corrupt or unsupported.';};im.src=window.SnapJarKit.track(f);}
+
+      /* mouse (desktop) */
+      cv.addEventListener('click',function(e){sample(e.clientX,e.clientY);});
+      cv.addEventListener('mousemove',function(e){if(e.buttons)sample(e.clientX,e.clientY);});
+      cv.addEventListener('mouseleave',hideLoupe);
+      stage.addEventListener('wheel',function(e){e.preventDefault();zoomTo(scale*(e.deltaY<0?1.15:0.87),e.clientX,e.clientY);},{passive:false});
+
+      /* touch: 1 finger = pick (with loupe), 2 fingers = pinch-zoom + pan */
+      function dist(a,b){return Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);}
+      function mid(a,b){return{x:(a.clientX+b.clientX)/2,y:(a.clientY+b.clientY)/2};}
+      stage.addEventListener('touchstart',function(e){
+        if(e.touches.length===1){e.preventDefault();pinch=null;sample(e.touches[0].clientX,e.touches[0].clientY);}
+        else if(e.touches.length===2){e.preventDefault();hideLoupe();pinch={d:dist(e.touches[0],e.touches[1]),m:mid(e.touches[0],e.touches[1]),s:scale,tx:tx,ty:ty};}
+      },{passive:false});
+      stage.addEventListener('touchmove',function(e){
+        if(e.touches.length===1&&!pinch){e.preventDefault();sample(e.touches[0].clientX,e.touches[0].clientY);}
+        else if(e.touches.length===2&&pinch){e.preventDefault();
+          var nd=dist(e.touches[0],e.touches[1]),nm=mid(e.touches[0],e.touches[1]);
+          var rect=stage.getBoundingClientRect(),fx=pinch.m.x-rect.left,fy=pinch.m.y-rect.top;
+          var bx=(fx-pinch.tx)/pinch.s,by=(fy-pinch.ty)/pinch.s;
+          scale=Math.max(1,Math.min(8,pinch.s*(nd/pinch.d)));
+          tx=fx-bx*scale+(nm.x-pinch.m.x);ty=fy-by*scale+(nm.y-pinch.m.y);clampPan();applyT();
+        }
+      },{passive:false});
+      stage.addEventListener('touchend',function(e){if(e.touches.length===0){hideLoupe();pinch=null;}},{passive:false});
+
+      $('zIn').onclick=function(){zoomCenter(scale*1.5);};
+      $('zOut').onclick=function(){zoomCenter(scale/1.5);};
+      $('zReset').onclick=function(){scale=1;tx=0;ty=0;clampPan();applyT();};
+
       $('browse').onclick=function(e){e.stopPropagation();$('file').click();};
       $('drop').onclick=function(e){if(e.target.id==='drop'||e.target.className.indexOf('drop-')===0)$('file').click();};
       $('file').onchange=function(e){if(e.target.files[0])load(e.target.files[0]);};
@@ -80,7 +171,7 @@ const howSteps = [
       ['dragleave','drop'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.remove('drag');});});
       $('drop').addEventListener('drop',function(e){if(e.dataTransfer.files[0])load(e.dataTransfer.files[0]);});
       $('reset').onclick=function(){window.SnapJarKit.clear();$('file').value='';$('editor').hidden=true;$('drop').hidden=false;};
-      document.querySelectorAll('.cpy').forEach(function(b){b.onclick=function(){navigator.clipboard&&navigator.clipboard.writeText($(b.dataset.c).value);b.textContent='✓';setTimeout(function(){b.textContent='Copy';},900);};});
+      document.querySelectorAll('.cpy').forEach(function(b){b.onclick=function(){var v=$(b.dataset.c).value;if(!v)return;if(window.SnapJarKit)window.SnapJarKit.copy(v,'Copied '+v);else navigator.clipboard&&navigator.clipboard.writeText(v);b.classList.add('copied');b.textContent='✓ Copied';clearTimeout(b._t);b._t=setTimeout(function(){b.textContent='Copy';b.classList.remove('copied');},1100);};});
       if(window.EyeDropper){var sb=$('screen');sb.hidden=false;sb.onclick=async function(e){e.stopPropagation();try{var r=await new EyeDropper().open();var n=parseInt(r.sRGBHex.slice(1),16);setColor((n>>16)&255,(n>>8)&255,n&255);$('drop').hidden=true;$('editor').hidden=false;}catch(_){}}; }
     })();
   </script>

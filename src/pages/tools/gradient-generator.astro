@@ -34,7 +34,7 @@ const faqItems = [
   <div class="content">
     <h2>About CSS gradients</h2>
     <p>A gradient blends two or more colours. <b>Linear</b> gradients run along an angle (0° points up, 90° points right); <b>radial</b> gradients spread out from the centre. Use the angle slider to aim a linear gradient, then copy the <code>background</code> CSS straight into your stylesheet.</p>
-    <div class="xlinks"><a href="/tools/color-converter">Color Converter →</a><a href="/tools/palette-extractor">Palette Extractor →</a></div>
+    <div class="xlinks"><a href="/tools/color-picker">Color Picker →</a><a href="/tools/palette-extractor">Palette Extractor →</a></div>
   </div>
   <style>
     .grad-prev{height:200px;border-radius:14px;border:1px solid var(--line)}
@@ -58,8 +58,16 @@ const faqItems = [
       }
       function render(){var g=css();$('prev').style.background=g;$('css').value='background: '+g+';';$('angV').textContent=$('ang').value+'°';}
       ['c1','c2','type','ang'].forEach(function(id){$(id).addEventListener('input',render);});
-      $('copy').onclick=function(){navigator.clipboard&&navigator.clipboard.writeText($('css').value);$('copy').textContent='Copied!';setTimeout(function(){$('copy').textContent='Copy CSS';},1000);};
-      $('rand').onclick=function(){function rc(){return '#'+Math.floor(Math.random()*16777215).toString(16).padStart(6,'0');}$('c1').value=rc();$('c2').value=rc();$('ang').value=Math.floor(Math.random()*72)*5;render();};
+      $('copy').onclick=function(){var t=$('css').value;if(window.SnapJarKit){window.SnapJarKit.copy(t);}else{try{navigator.clipboard&&navigator.clipboard.writeText(t).catch(function(){});}catch(e){}}$('copy').textContent='Copied!';setTimeout(function(){$('copy').textContent='Copy CSS';},1000);};
+      $('rand').onclick=function(){function rc(){return '#'+Math.floor(Math.random()*16777215).toString(16).padStart(6,'0');}
+        $('c1').value=rc();$('c2').value=rc();$('ang').value=Math.floor(Math.random()*72)*5;
+        /* dispatch input so the premium colour swatches refresh too, then render */
+        $('c1').dispatchEvent(new Event('input',{bubbles:true}));$('c2').dispatchEvent(new Event('input',{bubbles:true}));$('ang').dispatchEvent(new Event('input',{bubbles:true}));
+        render();
+        /* the live preview sits at the top of the form — bring it into view so the user
+           sees the new gradient after rolling the dice */
+        try{$('prev').scrollIntoView({behavior:'smooth',block:'center'});}catch(e){$('prev').scrollIntoView();}
+      };
       render();
     })();
   </script>

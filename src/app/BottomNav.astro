@@ -7,10 +7,10 @@
 ---
 <nav class="appbar" aria-label="App navigation">
   <a class="appbar-i" data-nav="home" href="/">
-    <span class="abi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9v12h14V9"/></svg></span><span class="abl">Home</span>
+    <span class="abi"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.47 3.84a.75.75 0 0 1 1.06 0l8.69 8.69a.75.75 0 1 0 1.06-1.06l-8.69-8.69a2.25 2.25 0 0 0-3.18 0l-8.69 8.69a.75.75 0 1 0 1.06 1.06l8.69-8.69Z"/><path d="m12 5.43 8.16 8.16c.03.03.06.06.09.09v6.2c0 1.03-.84 1.87-1.88 1.87H15a.75.75 0 0 1-.75-.75v-4.5a.75.75 0 0 0-.75-.75h-3a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 1-.75.75H5.63a1.88 1.88 0 0 1-1.88-1.88v-6.19l.09-.09L12 5.43Z"/></svg></span><span class="abl">Home</span>
   </a>
-  <a class="appbar-i" data-nav="pdf" href="/#pdf-tools">
-    <span class="abi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v4h4"/></svg></span><span class="abl">PDF</span>
+  <a class="appbar-i" data-nav="pdf" href="/tools/pdf-studio">
+    <span class="abi"><svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M6 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8.5L13.5 2H6Zm7.25 1.75V8c0 .41.34.75.75.75h4.25L13.25 3.75ZM7.75 13a.75.75 0 0 0 0 1.5h8.5a.75.75 0 0 0 0-1.5h-8.5Zm0 3.5a.75.75 0 0 0 0 1.5h5.5a.75.75 0 0 0 0-1.5h-5.5Z" clip-rule="evenodd"/></svg></span><span class="abl">PDF</span>
   </a>
   <div class="appbar-c">
     <button id="navScan" type="button" aria-label="Scan a document">
@@ -18,13 +18,32 @@
     </button>
     <span class="abl">Scan</span>
   </div>
-  <a class="appbar-i" data-nav="reader" href="/tools/pdf-reader">
-    <span class="abi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5.5A2.5 2.5 0 0 1 5.5 3H11v16H5.5A2.5 2.5 0 0 0 3 21.5V5.5Z"/><path d="M21 5.5A2.5 2.5 0 0 0 18.5 3H13v16h5.5a2.5 2.5 0 0 1 2.5 2.5V5.5Z"/></svg></span><span class="abl">Reader</span>
+  <a class="appbar-i" data-nav="recent" href="/recent">
+    <span class="abi"><svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 2.25c-5.39 0-9.75 4.36-9.75 9.75s4.36 9.75 9.75 9.75 9.75-4.36 9.75-9.75S17.39 2.25 12 2.25Zm.75 3.75a.75.75 0 0 0-1.5 0v6c0 .41.34.75.75.75h4.5a.75.75 0 0 0 0-1.5h-3.75V6Z" clip-rule="evenodd"/></svg></span><span class="abl">Recent</span>
   </a>
   <a class="appbar-i" data-nav="image" href="/#image-tools">
-    <span class="abi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="m21 16-4.5-4.5L7 21"/></svg></span><span class="abl">Image</span>
+    <span class="abi"><svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M1.5 6A2.25 2.25 0 0 1 3.75 3.75h16.5A2.25 2.25 0 0 1 22.5 6v12a2.25 2.25 0 0 1-2.25 2.25H3.75A2.25 2.25 0 0 1 1.5 18V6Zm1.5 10.06V18c0 .41.34.75.75.75h16.5a.75.75 0 0 0 .75-.75v-1.94l-2.69-2.69a1.5 1.5 0 0 0-2.12 0l-.88.88.97.97a.75.75 0 1 1-1.06 1.06l-5.16-5.16a1.5 1.5 0 0 0-2.12 0L3 16.06Zm10.13-7.81a1.13 1.13 0 1 1 2.25 0 1.13 1.13 0 0 1-2.25 0Z" clip-rule="evenodd"/></svg></span><span class="abl">Image</span>
   </a>
 </nav>
+
+<!-- Premium "Scan anything" sheet (opens from the center Scan button) -->
+<div class="scan-sheet" id="scanSheet" hidden>
+  <div class="scan-card" role="dialog" aria-modal="true" aria-label="Scan anything">
+    <div class="scan-grab"></div>
+    <div class="scan-title">Scan anything</div>
+    <div class="scan-sub">Crisp, auto-cropped, 100% on your device</div>
+    <div class="scan-grid">
+      <button class="scan-opt" data-scan="document" type="button"><span class="so-ic">📄</span><span class="so-l">Document</span></button>
+      <button class="scan-opt" data-scan="id" type="button"><span class="so-ic">🪪</span><span class="so-l">ID card</span></button>
+      <button class="scan-opt" data-scan="book" type="button"><span class="so-ic">📖</span><span class="so-l">Book</span></button>
+      <button class="scan-opt" data-scan="signature" type="button"><span class="so-ic">✍️</span><span class="so-l">Signature</span></button>
+      <button class="scan-opt" data-scan="photo" type="button"><span class="so-ic">🖼️</span><span class="so-l">Photo</span></button>
+      <button class="scan-opt" data-scan="qr" type="button"><span class="so-ic">🔳</span><span class="so-l">QR scanner</span></button>
+      <button class="scan-opt" data-scan="text" type="button"><span class="so-ic">🔤</span><span class="so-l">Scan text</span></button>
+    </div>
+    <button class="scan-cancel" id="scanCancel" type="button">Cancel</button>
+  </div>
+</div>
 
 <!-- Leaving message: ask for a rating when the user tries to exit the app -->
 <div class="app-modal" id="appRate" hidden>
@@ -40,43 +59,65 @@
 <script is:inline>
   (function () {
     /* highlight the active tab from the current path */
-    var p = (location.pathname.replace(/\/$/, '') || '/');
+    var p = (location.pathname.replace(/\/$/, '').replace(/\.html$/, '') || '/');
     var cat = p === '/' ? 'home'
-      : p.indexOf('/tools/pdf-reader') === 0 ? 'reader'
+      : p === '/recent' ? 'recent'
+      : p.indexOf('/tools/pdf-studio') === 0 ? 'pdf'
       : /(pdf-tools|compress-pdf|split-pdf|organize-pdf|rotate-pdf|add-page-numbers|watermark-pdf|extract-pages|remove-pages|jpg-to-pdf|pdf-to-jpg|text-to-pdf)/.test(p) ? 'pdf'
       : /(\/compress|\/convert|\/watermark|favicon|heic-to-jpg|color-picker|color-converter|gradient-generator|palette-extractor|qr-code|svg-optimizer|jpg-to-|png-to-|webp-to-)/.test(p) ? 'image'
       : 'home';
     var on = document.querySelector('.appbar-i[data-nav="' + cat + '"]');
     if (on) on.classList.add('on');
 
-    /* "Scan" → native ML Kit document scanner → PDF → system share/save sheet */
+    /* Center "Scan" → premium SnapJar scan sheet → route each mode. */
     var scanBtn = document.getElementById('navScan');
     var Cap = window.Capacitor;
-    if (scanBtn && Cap && Cap.registerPlugin) {
-      var DocumentScanner = Cap.registerPlugin('DocumentScanner');
-      var Share = Cap.registerPlugin('Share');
-      scanBtn.addEventListener('click', async function () {
-        if (scanBtn.disabled) return; scanBtn.disabled = true;
-        try {
-          var res = await DocumentScanner.scanDocument({ resultFormats: 'PDF', pageLimit: 20 });
-          var uri = res && res.pdf && res.pdf.uri;
-          if (uri) { try { await Share.share({ title: 'Scanned document', url: uri }); } catch (e) {} }
-        } catch (e) {
-          /* user cancelled, or the scanner module is still installing — fail quietly */
-          console.error('scan', e);
-        } finally { scanBtn.disabled = false; }
-      });
-    } else if (scanBtn) {
-      /* not in a Capacitor context (shouldn't happen in the app) */
-      scanBtn.addEventListener('click', function () { location.href = '/tools/pdf-to-jpg'; });
+    var Plug = function (n) { return window.SnapJarKit ? window.SnapJarKit.plugin(n) : null; };
+    var DocumentScanner = Plug('DocumentScanner');
+    var sheet = document.getElementById('scanSheet');
+    function toast(m, t){ if (window.SnapJarKit && window.SnapJarKit.toast) window.SnapJarKit.toast(m, t || 'info'); }
+    function adPause(){ if (window.SnapJarKit && window.SnapJarKit.adPause) window.SnapJarKit.adPause(); }
+    function adResume(){ if (window.SnapJarKit && window.SnapJarKit.adResume) window.SnapJarKit.adResume(); }
+    function openScan(){ if (sheet) sheet.hidden = false; adPause(); }
+    function closeScan(){ if (sheet) sheet.hidden = true; adResume(); }
+    if (scanBtn) scanBtn.addEventListener('click', openScan);
+    var scanCancel = document.getElementById('scanCancel'); if (scanCancel) scanCancel.addEventListener('click', closeScan);
+    if (sheet) sheet.addEventListener('click', function (e){ if (e.target === sheet) closeScan(); });
+
+    var NAMES = { document: 'Scan', id: 'ID card', book: 'Book scan', signature: 'Signature' };
+    async function doScan(mode){
+      closeScan();
+      if (!DocumentScanner) { toast('Scanning is available in the SnapJar app'); return; }
+      try {
+        toast('Opening scanner…', 'work');
+        var res = await DocumentScanner.scanDocument({ resultFormats: 'PDF', pageLimit: mode === 'id' ? 2 : 30 });
+        var uri = res && res.pdf && res.pdf.uri;
+        if (!uri) return;
+        var src = Cap && Cap.convertFileSrc ? Cap.convertFileSrc(uri) : uri;
+        var blob = await (await fetch(src)).blob();
+        if (window.SJRecents) {
+          var id = await window.SJRecents.add({ name: (NAMES[mode] || 'Scan') + '.pdf', kind: 'pdf', blob: blob });
+          if (id) { location.href = '/tools/pdf-studio.html?recent=' + id; return; }
+        }
+        location.href = '/tools/pdf-studio.html';
+      } catch (e) { toast('Scan cancelled'); }
     }
+    if (sheet) sheet.addEventListener('click', function (e){
+      var b = e.target && e.target.closest && e.target.closest('.scan-opt'); if (!b) return;
+      var mode = b.getAttribute('data-scan');
+      closeScan();
+      if (mode === 'qr') { location.href = '/tools/pdf-studio.html?scanqr=1'; return; }
+      if (mode === 'text') { location.href = '/tools/pdf-studio.html?ocr=1'; return; }
+      /* everything else (Document / ID / Book / Signature / Photo) → our premium capture+review flow */
+      location.href = '/tools/pdf-studio.html?filterscan=1';
+    });
 
     /* Leaving message — intercept hardware Back: navigate back in-page if possible,
        otherwise (about to exit) show the rate prompt before quitting. */
     var rate = document.getElementById('appRate');
-    function showRate(){ if (rate) rate.hidden = false; }
-    if (Cap && Cap.registerPlugin) {
-      var App = Cap.registerPlugin('App');
+    function showRate(){ if (rate) rate.hidden = false; adPause(); }
+    var App = Plug('App');
+    if (App) {
       try {
         App.addListener('backButton', function (info) {
           if (rate && !rate.hidden) { rate.hidden = true; try { App.exitApp(); } catch (e) {} return; }
@@ -91,7 +132,7 @@
         if (rate) rate.hidden = true;
       });
       if (ex) ex.addEventListener('click', function () { try { App.exitApp(); } catch (e) { if (rate) rate.hidden = true; } });
-      if (rate) rate.addEventListener('click', function (e) { if (e.target === rate) rate.hidden = true; });
+      if (rate) rate.addEventListener('click', function (e) { if (e.target === rate) { rate.hidden = true; adResume(); } });
     }
   })();
 </script>

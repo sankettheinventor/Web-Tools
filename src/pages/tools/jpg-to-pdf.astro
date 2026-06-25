@@ -62,7 +62,7 @@ const howSteps = [
         if(files.length){$('drop').hidden=true;$('editor').hidden=false;thumbs();}
       }
       function thumbs(){$('thumbs').innerHTML='';window.SnapJarKit.clear();files.forEach(function(f){var im=document.createElement('img');im.src=window.SnapJarKit.track(f);$('thumbs').appendChild(im);});}
-      function toJpeg(f){return new Promise(function(res){var im=new Image();im.onload=function(){var c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;var x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0);c.toBlob(function(b){b.arrayBuffer().then(function(buf){res({buf:buf,w:c.width,h:c.height});});},'image/jpeg',0.92);};im.src=URL.createObjectURL(f);});}
+      function toJpeg(f){return new Promise(function(res,rej){var im=new Image();im.onload=function(){var fit=window.SnapJarKit?window.SnapJarKit.fitDims(im.naturalWidth,im.naturalHeight):{w:im.naturalWidth,h:im.naturalHeight};var c=document.createElement('canvas');c.width=fit.w;c.height=fit.h;var x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,fit.w,fit.h);c.toBlob(function(b){if(!b){rej(new Error('encode'));return;}b.arrayBuffer().then(function(buf){res({buf:buf,w:c.width,h:c.height});});},'image/jpeg',0.92);};im.onerror=function(){rej(new Error('load'));};im.src=URL.createObjectURL(f);});}
       async function make(){
         if(!files.length||typeof PDFLib==='undefined')return;
         $('status').textContent='Building PDF…';

@@ -66,12 +66,13 @@ const howSteps = [
         }
       }
       async function go(){
-        if(!bytes)return;$('status').textContent='Working…';var deg=parseInt($('deg').value,10);
+        if(!bytes)return;$('status').textContent='Rotating…';var deg=parseInt($('deg').value,10);
         try{
           var doc=await PDFLib.PDFDocument.load(bytes,{ignoreEncryption:true});
+          var np=doc.getPages().length;
           doc.getPages().forEach(function(p){var cur=p.getRotation().angle||0;p.setRotation(PDFLib.degrees((cur+deg)%360));});
           var out=await doc.save();var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([out],{type:'application/pdf'}));a.download=srcName+'-rotated.pdf';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);
-          $('status').textContent='Done.';
+          $('status').textContent='Done — rotated '+np+' page'+(np===1?'':'s')+' by '+deg+'°.';
         }catch(err){
           $('status').textContent='Could not process this file — it may be corrupt or password-protected.';
         }

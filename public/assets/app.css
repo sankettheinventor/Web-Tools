@@ -16,6 +16,17 @@ body.is-app {
   --app-dim: #8b85a0;
   --app-nav: #141026;
   --app-accent: #6b4dff;
+  /* ===== Unified bottom-sheet tokens (theme-aware: auto-adapt via the vars they reference) =====
+     Used by EVERY bottom sheet (.pr-sheet, .scan-sheet, .lib-sheet) so they look identical. */
+  --sheet-card: var(--app-bg);                                              /* card surface */
+  --sheet-line: var(--app-line);                                            /* card + row hairline */
+  --sheet-row: color-mix(in srgb, var(--app-accent) 6%, var(--app-bg));     /* option row fill */
+  --sheet-row-active: color-mix(in srgb, var(--app-accent) 13%, var(--app-bg)); /* pressed row */
+  --sheet-grab: color-mix(in srgb, var(--app-dim) 45%, transparent);        /* drag handle */
+  --sheet-shadow: 0 -16px 50px -12px rgba(0,0,0,.45);
+  /* premium layered drop shadow (soft + low-opacity, two layers) */
+  --app-shadow: 0 1px 2px rgba(22,16,44,.05), 0 14px 34px -18px rgba(22,16,44,.22);
+  --app-pad: 22px;        /* consistent left/right breathing room */
   background: var(--app-bg);
   color: var(--app-ink);
   padding-bottom: calc(86px + env(safe-area-inset-bottom));
@@ -29,6 +40,7 @@ body.is-app {
   --app-dim: #9a93b5;
   --app-nav: #16121f;
   --app-accent: #8b7bff;
+  --app-shadow: 0 1px 2px rgba(0,0,0,.28), 0 16px 38px -18px rgba(0,0,0,.6);
 }
 
 /* strip the web chrome the app doesn't use */
@@ -46,7 +58,10 @@ body.is-app nav:not(.appbar) { background: var(--app-bg); border-bottom: 1px sol
 body.is-app .brand { color: var(--app-ink); }
 
 /* ===================== APP HOME ===================== */
-.apphome { max-width: 640px; margin: 0 auto; padding: 0 var(--s4) var(--s5); }
+.apphome { max-width: 640px; margin: 0 auto; padding: 0 var(--app-pad) var(--s6); }
+/* consistent left/right padding + premium card shadow for tool pages in the app */
+body.is-app .wrap { padding-left: var(--app-pad); padding-right: var(--app-pad); }
+body.is-app .tool { box-shadow: var(--app-shadow); }
 
 /* hero — centered */
 .apphero { padding: var(--s5) 0 var(--s2); text-align: center; }
@@ -77,7 +92,7 @@ body.is-app .brand { color: var(--app-ink); }
 .atile-ic {
   width: 56px; height: 56px; border-radius: 16px;
   background: var(--app-tile); border: 1px solid var(--app-line);
-  box-shadow: 0 6px 16px -12px rgba(30,20,70,.22); display: grid; place-items: center;
+  box-shadow: var(--app-shadow); display: grid; place-items: center;
   transition: transform var(--d-micro) var(--ease-out), box-shadow var(--d-micro) var(--ease-out);
 }
 .atile-ic img { width: 60%; height: 60%; object-fit: contain; }
@@ -96,34 +111,52 @@ body.is-app .brand { color: var(--app-ink); }
 
 /* ===================== BOTTOM NAVIGATION (grounded dark bar) ===================== */
 .appbar {
+  /* full-size nav. With an ad, it's lifted ABOVE the ad strip (see body.ads-on rule) so
+     the ad NEVER overlaps it; with no ad it sits at the very bottom. */
   position: fixed; left: 0; right: 0; bottom: 0; top: auto; height: auto; z-index: 90; display: grid;
   grid-template-columns: repeat(5, 1fr); align-items: end;
-  background: var(--app-nav); border-top: 0; border-bottom: 0;
-  box-shadow: 0 -8px 30px -12px rgba(0,0,0,.35); padding-bottom: env(safe-area-inset-bottom);
+  background: var(--app-nav);
+  border-top: 1px solid rgba(255,255,255,.07);
+  box-shadow: 0 -12px 40px -16px rgba(0,0,0,.6); padding: 4px 0 env(safe-area-inset-bottom);
 }
+:root[data-theme="dark"] body.is-app .appbar { background: #100c1c; }
 .appbar-i {
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
-  padding: 11px 0 10px; color: rgba(255,255,255,.55); font-size: 10px; font-weight: 700; letter-spacing: .3px;
+  position: relative;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 5px;
+  padding: 10px 0 7px; color: rgba(255,255,255,.5);
   background: none; border: 0; font-family: inherit; cursor: pointer;
-  transition: color var(--d-micro) var(--ease-out), transform var(--d-micro) var(--ease-out);
+  transition: color var(--d-base) var(--ease-out), transform var(--d-micro) var(--ease-out);
 }
 .appbar-i:hover { text-decoration: none; }
-.appbar-i .abi svg { width: 24px; height: 24px; display: block; }
-.appbar-i .abl { text-transform: uppercase; letter-spacing: .6px; font-size: 9px; font-weight: 800; }
+.appbar-i .abi { display: grid; place-items: center; height: 26px; transition: transform var(--d-base) var(--ease-out); }
+.appbar-i .abi svg { width: 24px; height: 24px; display: block; transition: filter var(--d-base) var(--ease-out); }
+.appbar-i .abl { font-size: 9px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; }
+/* active tab: crisp brand accent bar at the top + lit icon (no pill) */
 .appbar-i.on { color: #fff; }
-.appbar-i:active { transform: scale(.88); }
+.appbar-i.on .abi { transform: translateY(-1px); }
+.appbar-i.on .abi svg { filter: drop-shadow(0 2px 7px rgba(139,123,255,.65)); }
+.appbar-i.on::before {
+  content: ""; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 26px; height: 3px; border-radius: 0 0 4px 4px;
+  background: linear-gradient(90deg, var(--brand2), var(--brand));
+  box-shadow: 0 0 10px rgba(124,92,255,.7);
+}
+.appbar-i:active { transform: scale(.92); }
+@media (prefers-reduced-motion: reduce) { .appbar-i .abi { transition: none; } }
 
 /* prominent elevated center button — the flagship (Scan) */
 .appbar-c { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
 .appbar-c button {
-  width: 62px; height: 62px; border-radius: 50%; border: 4px solid var(--app-bg); cursor: pointer;
-  background: linear-gradient(150deg, var(--brand2), var(--brand)); color: #fff; display: grid; place-items: center;
-  margin-top: -26px; box-shadow: 0 0 0 6px rgba(124,92,255,.16), 0 14px 30px -8px rgba(124,92,255,.85);
-  transition: transform var(--d-micro) var(--ease-out);
+  width: 60px; height: 60px; border-radius: 50%; cursor: pointer;   /* full premium raised FAB — the ad sits BELOW the nav, so nothing clips it */
+  border: 1.5px solid rgba(139,123,255,.55);
+  background: radial-gradient(125% 125% at 50% 16%, #2c2348, #14101f); color: #fff; display: grid; place-items: center;
+  margin-top: -24px;
+  box-shadow: 0 12px 28px -10px rgba(0,0,0,.7), 0 0 0 5px rgba(124,92,255,.10), inset 0 1px 0 rgba(255,255,255,.10);
+  transition: transform var(--d-micro) var(--ease-out), box-shadow var(--d-base) var(--ease-out);
 }
-.appbar-c button svg { width: 26px; height: 26px; }
-.appbar-c button:active { transform: scale(.9); }
-.appbar-c .abl { text-transform: uppercase; letter-spacing: .6px; font-size: 9px; font-weight: 800; color: rgba(255,255,255,.85); margin: 3px 0 10px; }
+.appbar-c button svg { width: 25px; height: 25px; color: #cdbcff; }
+.appbar-c button:active { transform: scale(.9); box-shadow: 0 6px 16px -8px rgba(0,0,0,.7), 0 0 0 4px rgba(124,92,255,.18); }
+.appbar-c .abl { text-transform: uppercase; letter-spacing: .6px; font-size: 9px; font-weight: 800; color: rgba(255,255,255,.55); margin: 4px 0 9px; }
 
 @keyframes app-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 
@@ -139,9 +172,10 @@ body.is-app .brand { color: var(--app-ink); }
 .app-grid .atile:nth-child(n+8){ animation-delay:.2s }
 
 /* "why free?" info sheet */
-.app-modal { position: fixed; inset: 0; z-index: 200; background: rgba(8,6,16,.55); display: flex; align-items: flex-end; justify-content: center; padding: 14px; animation: app-fade .2s ease both; }
+.app-modal { position: fixed; inset: 0; z-index: 200; background: rgba(8,6,16,.5); display: flex; align-items: flex-end; justify-content: center; animation: app-fade .2s ease both; }
 .app-modal[hidden] { display: none; }
-.app-modal-card { background: var(--app-bg); color: var(--app-ink); border: 1px solid var(--app-line); border-radius: 22px; padding: 26px 22px 20px; max-width: 430px; width: 100%; text-align: center; box-shadow: 0 -12px 44px -10px rgba(0,0,0,.45); animation: app-rise .3s var(--ease-out) both; }
+.app-modal-card { position: relative; background: var(--sheet-card, var(--app-bg)); color: var(--app-ink); border: 1px solid var(--sheet-line, var(--app-line)); border-bottom: 0; border-radius: 24px 24px 0 0; padding: 8px 22px calc(22px + env(safe-area-inset-bottom)); max-width: 520px; width: 100%; text-align: center; box-shadow: var(--sheet-shadow, 0 -16px 50px -12px rgba(0,0,0,.45)); animation: app-rise .28s cubic-bezier(.22,1,.36,1) both; }
+.app-modal-card::before { content: ""; display: block; width: 40px; height: 4px; border-radius: 4px; background: var(--sheet-grab, rgba(140,130,160,.4)); margin: 0 auto 16px; }
 .amc-ic { font-size: 34px; }
 .app-modal-card h3 { font-size: var(--t-md); font-weight: 800; margin: 8px 0 10px; color: var(--app-ink); }
 .app-modal-card p { font-size: var(--t-sm); color: var(--app-dim); line-height: 1.6; margin: 0 0 10px; }
@@ -150,4 +184,223 @@ body.is-app .brand { color: var(--app-ink); }
 .amc-close:active { transform: scale(.98); }
 .amc-later { margin-top: 4px; width: 100%; padding: 11px; border-radius: 13px; border: 0; background: none; color: var(--app-dim); font: inherit; font-weight: 700; cursor: pointer; }
 .amc-later:active { color: var(--app-ink); }
+
+/* sj-ask (confirm/prompt dialog) lives in the shared style.css; in-app, make it match the
+   unified bottom-sheet shell. Scoped to body.is-app so the website keeps its own look. */
+body.is-app .sj-ask { padding: 0; background: rgba(8,6,16,.5); align-items: flex-end; }
+body.is-app .sj-ask-card { background: var(--sheet-card); border: 1px solid var(--sheet-line); border-bottom: 0; border-radius: 24px 24px 0 0; max-width: 520px; padding: 8px 18px calc(20px + env(safe-area-inset-bottom)); box-shadow: var(--sheet-shadow); }
+body.is-app .sj-ask-card::before { content: ""; display: block; width: 40px; height: 4px; border-radius: 4px; background: var(--sheet-grab); margin: 0 auto 16px; }
+body.is-app .sj-ask-t { color: var(--app-ink); }
+body.is-app .sj-ask-in { border: 1px solid var(--sheet-line); background: var(--sheet-row); color: var(--app-ink); }
+body.is-app .sj-ask-cancel { background: var(--sheet-row); color: var(--app-dim); }
+
 @keyframes app-fade { from { opacity: 0 } to { opacity: 1 } }
+
+/* ==========================================================================
+   IN-APP TOOL PAGES — premium polish + micro-animations (root level).
+   Every tool reuses the web .head/.tool/.drop primitives. In the app we strip
+   the SEO prose so the experience is self-explanatory and premium, and add
+   tasteful motion — so all 44 tools feel first-class without editing each file.
+   ========================================================================== */
+
+/* self-explanatory & premium: no web SEO prose, how-to steps or FAQ inside the app */
+body.is-app .content,
+body.is-app .howto,
+body.is-app .faq { display: none !important; }
+
+/* tighten the tool header for the app: smaller kicker, calmer color, fade-up in */
+body.is-app .head { padding: var(--s5) 0 var(--s4); animation: app-rise .42s var(--ease-out) both; }
+body.is-app .head .kicker { color: var(--app-dim); font-size: 10.5px; letter-spacing: 1.6px; }
+body.is-app .head h1 { letter-spacing: -.4px; }
+body.is-app .head p { font-size: var(--t-sm); }
+
+/* the tool card rises in just after the header — a single, calm entrance */
+body.is-app .tool { animation: app-rise .5s var(--ease-out) both; animation-delay: .06s; }
+
+/* premium drop zone everywhere (matches the PDF Editor box) */
+body.is-app .drop {
+  border: 1.5px solid var(--app-line);
+  background: linear-gradient(160deg, rgba(107,77,255,.08), var(--app-tile));
+  border-radius: 18px;
+  transition: border-color var(--d-micro) var(--ease-out), box-shadow var(--d-micro) var(--ease-out), transform var(--d-micro) var(--ease-out);
+}
+body.is-app .drop.drag,
+body.is-app .drop:active { border-color: var(--app-accent); box-shadow: 0 14px 34px -18px var(--app-accent); }
+body.is-app .drop:active { transform: scale(.99); }
+
+/* number / stat reveals get a soft pop (results already rise-in via style.css) */
+body.is-app .stat,
+body.is-app .hl { animation: app-pop .4s var(--ease-out) both; }
+
+/* primary action buttons feel tactile in-app */
+body.is-app .wm-btn:not(.ghost),
+body.is-app .ctl[type="submit"],
+body.is-app button.primary { transition: transform var(--d-micro) var(--ease-out), box-shadow var(--d-micro) var(--ease-out), filter var(--d-micro) var(--ease-out); }
+body.is-app .wm-btn:not(.ghost):active,
+body.is-app button.primary:active { transform: translateY(1px) scale(.98); }
+
+/* reserve room so the last controls clear the floating bottom nav on every tool */
+body.is-app .pr-open,
+body.is-app main > .wrap:last-of-type { padding-bottom: var(--s4); }
+
+/* respect reduced motion: kill the entrance animations */
+@media (prefers-reduced-motion: reduce) {
+  body.is-app .head,
+  body.is-app .tool,
+  body.is-app .stat,
+  body.is-app .hl,
+  .app-grid .atile { animation: none !important; }
+}
+
+/* ==========================================================================
+   ROOT-LEVEL OVERFLOW GUARD — every in-app tool & calculator page.
+   Goal: nothing exceeds the viewport on regular phones OR unfolded foldables.
+   - form controls fill their box and may shrink (no fixed-width rows like the QR bug)
+   - grid/flex rows shrink on narrow screens (min-width:0)
+   - huge results (e.g. trillion-digit numbers) & long URLs WRAP instead of widening
+   - media caps to the container; wide data tables scroll inside their own box
+   ========================================================================== */
+body.is-app .tool input,
+body.is-app .tool select,
+body.is-app .tool textarea { max-width: 100%; min-width: 0; box-sizing: border-box; }
+body.is-app .tool img,
+body.is-app .tool canvas,
+body.is-app .tool svg { max-width: 100%; }
+/* Let EVERY flex/grid descendant shrink below its content's intrinsic width, so long
+   values never widen a row (covers .row2, .save-row/.save-box, .bd, .qr-grid, etc.).
+   Data tables keep their width via their own higher-specificity rule + nowrap cells,
+   and scroll inside .sched-wrap. */
+body.is-app .tool * { min-width: 0; }
+/* huge numbers / long URLs wrap rather than pushing the layout wider than the screen
+   or getting clipped inside a result card (.v / .k are the calculator stat values/labels) */
+body.is-app .tool .rbig,
+body.is-app .tool .result,
+body.is-app .tool .big,
+body.is-app .tool .v,
+body.is-app .tool .k,
+body.is-app .tool output,
+body.is-app .tool .val { overflow-wrap: anywhere; word-break: break-word; white-space: normal; }
+/* amortization / schedule tables scroll within their own container */
+body.is-app .tool .sched-wrap,
+body.is-app .tool .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; min-width: 0; }
+
+/* ===================== "Scan anything" sheet ===================== */
+.scan-sheet{ position:fixed; inset:0; z-index:300; display:flex; align-items:flex-end; justify-content:center; background:rgba(8,6,16,.5); animation:app-fade .2s ease both; }
+.scan-sheet[hidden]{ display:none; }
+.scan-card{ width:100%; max-width:520px; background:var(--sheet-card); border:1px solid var(--sheet-line); border-bottom:0; border-radius:24px 24px 0 0; padding:8px 18px calc(20px + env(safe-area-inset-bottom)); box-shadow:var(--sheet-shadow); animation:app-rise .28s cubic-bezier(.22,1,.36,1) both; }
+.scan-grab{ width:40px; height:4px; border-radius:4px; background:var(--sheet-grab); margin:0 auto 14px; }
+.scan-title{ font-size:18px; font-weight:800; color:var(--app-ink); text-align:center; letter-spacing:-.2px; }
+.scan-sub{ font-size:12px; color:var(--app-dim); text-align:center; margin:3px 0 16px; }
+.scan-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.scan-opt{ position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:9px; padding:16px 6px; border:1px solid var(--sheet-line); border-radius:16px; background:var(--sheet-row); color:var(--app-ink); font:inherit; cursor:pointer; transition:transform var(--d-micro) var(--ease-out), background var(--d-micro) var(--ease-out), border-color var(--d-micro) var(--ease-out); }
+.scan-opt:active{ transform:scale(.95); background:var(--sheet-row-active); border-color:var(--app-accent); }
+.scan-opt .so-ic{ font-size:26px; line-height:1; filter:drop-shadow(0 4px 8px rgba(0,0,0,.18)); }
+.scan-opt .so-l{ font-size:12px; font-weight:700; letter-spacing:.1px; }
+.scan-opt .so-soon{ position:absolute; top:7px; right:7px; font-size:8.5px; font-weight:800; text-transform:uppercase; letter-spacing:.5px; color:#fff; background:linear-gradient(135deg,var(--brand2),var(--brand)); padding:2px 6px; border-radius:7px; }
+.scan-cancel{ width:100%; margin-top:14px; padding:14px; border:0; border-radius:14px; background:var(--sheet-row); color:var(--app-dim); font:inherit; font-weight:700; cursor:pointer; }
+.scan-cancel:active{ background:var(--sheet-row-active); }
+
+/* ===================== Premium colour picker =====================
+   Replaces the native Android WebView colour dialog everywhere. A bottom sheet
+   (same shell as the others) with an HSV square, hue slider, hex field and presets.
+   Auto-applied to every <input type=color> by the script in Base.astro. */
+.sjcp{ position:fixed; inset:0; z-index:360; display:flex; align-items:flex-end; justify-content:center; background:rgba(8,6,16,.5); animation:app-fade .2s ease both; }
+.sjcp[hidden]{ display:none; }
+.sjcp-card{ position:relative; width:100%; max-width:520px; background:var(--sheet-card); border:1px solid var(--sheet-line); border-bottom:0; border-radius:24px 24px 0 0; padding:8px 18px calc(20px + env(safe-area-inset-bottom)); box-shadow:var(--sheet-shadow); animation:app-rise .28s cubic-bezier(.22,1,.36,1) both; display:flex; flex-direction:column; gap:14px; }
+.sjcp-card::before{ content:""; display:block; width:40px; height:4px; border-radius:4px; background:var(--sheet-grab); margin:0 auto 2px; }
+.sjcp-h{ font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:.8px; color:var(--app-dim); }
+.sjcp-sv{ position:relative; width:100%; height:172px; border-radius:14px; cursor:crosshair; touch-action:none; border:1px solid var(--sheet-line); }
+.sjcp-sv-th{ position:absolute; width:20px; height:20px; border-radius:50%; border:3px solid #fff; box-shadow:0 0 0 1px rgba(0,0,0,.25), 0 2px 7px rgba(0,0,0,.35); transform:translate(-50%,-50%); pointer-events:none; }
+.sjcp-hue{ position:relative; width:100%; height:18px; border-radius:9px; cursor:pointer; touch-action:none; background:linear-gradient(to right,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00); }
+.sjcp-hue-th{ position:absolute; top:50%; width:22px; height:22px; border-radius:50%; background:#fff; box-shadow:0 0 0 1px rgba(0,0,0,.2), 0 2px 7px rgba(0,0,0,.35); transform:translate(-50%,-50%); pointer-events:none; }
+.sjcp-row{ display:flex; align-items:center; gap:10px; }
+.sjcp-prev{ width:44px; height:44px; border-radius:12px; border:1px solid var(--sheet-line); flex:0 0 auto; }
+.sjcp-hash{ font-family:ui-monospace,monospace; font-weight:800; color:var(--app-dim); }
+.sjcp-hex{ flex:1; min-width:0; background:var(--sheet-row); border:1px solid var(--sheet-line); border-radius:11px; color:var(--app-ink); font:inherit; font-weight:700; font-family:ui-monospace,monospace; letter-spacing:1.5px; text-transform:uppercase; padding:12px; outline:none; }
+.sjcp-hex:focus{ border-color:var(--app-accent); }
+.sjcp-presets{ display:grid; grid-template-columns:repeat(7,1fr); gap:8px; }
+.sjcp-ps{ aspect-ratio:1; border-radius:9px; border:1px solid rgba(0,0,0,.12); cursor:pointer; transition:transform .1s ease; padding:0; }
+.sjcp-ps:active{ transform:scale(.88); }
+.sjcp-actions{ display:flex; gap:10px; margin-top:2px; }
+.sjcp-btn{ flex:1; padding:13px; border-radius:13px; border:1px solid var(--sheet-line); background:var(--sheet-row); color:var(--app-ink); font:inherit; font-weight:700; cursor:pointer; transition:transform .1s ease; }
+.sjcp-btn.primary{ border-color:transparent; background:linear-gradient(135deg,var(--brand2),var(--brand)); color:#fff; }
+.sjcp-btn:active{ transform:scale(.98); }
+/* the swatch button that replaces each native colour input in the forms */
+.sjcp-swatch{ display:flex; align-items:center; gap:10px; width:100%; height:44px; padding:0 10px; border:1px solid var(--line,var(--sheet-line)); border-radius:10px; background:var(--surface2,var(--sheet-row)); cursor:pointer; font:inherit; }
+.sjcp-swatch:active{ transform:scale(.99); }
+.sjcp-chip{ width:26px; height:26px; border-radius:7px; border:1px solid rgba(0,0,0,.15); flex:0 0 auto; }
+.sjcp-val{ flex:1; text-align:left; font-family:ui-monospace,monospace; font-weight:700; font-size:13px; color:var(--app-ink,var(--txt)); }
+.sjcp-ic{ color:var(--app-dim,var(--dim)); flex:0 0 auto; }
+
+/* ===================== Premium dropdown (APP) =====================
+   Replaces the native <select> with a themed BOTTOM SHEET (the csel popover is web-only).
+   Consistent with every other sheet in the app. Wired by the script in Base.astro. */
+.sjsel-trigger{ display:flex; align-items:center; gap:10px; width:100%; min-height:46px; padding:9px 12px; border:1px solid var(--line,var(--sheet-line)); border-radius:10px; background:var(--surface2,var(--sheet-row)); color:var(--app-ink,var(--txt)); font:inherit; cursor:pointer; text-align:left; }
+.sjsel-trigger:active{ transform:scale(.99); }
+.sjsel-trigger .sjsel-tx{ flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; line-height:1.25; }
+.sjsel-trigger .sjsel-tx b{ font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sjsel-trigger .sjsel-tx small{ font-size:11.5px; color:var(--app-dim,var(--dim)); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sjsel-trigger .sjsel-ic{ flex:0 0 auto; color:var(--app-dim,var(--dim)); }
+.sjsel{ position:fixed; inset:0; z-index:360; display:flex; align-items:flex-end; justify-content:center; background:rgba(8,6,16,.5); animation:app-fade .2s ease both; }
+.sjsel[hidden]{ display:none; }
+.sjsel-card{ position:relative; width:100%; max-width:520px; background:var(--sheet-card); border:1px solid var(--sheet-line); border-bottom:0; border-radius:24px 24px 0 0; padding:8px 14px calc(14px + env(safe-area-inset-bottom)); box-shadow:var(--sheet-shadow); animation:app-rise .28s cubic-bezier(.22,1,.36,1) both; display:flex; flex-direction:column; max-height:74vh; }
+.sjsel-card::before{ content:""; display:block; width:40px; height:4px; border-radius:4px; background:var(--sheet-grab); margin:0 auto 8px; }
+.sjsel-h{ font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:.8px; color:var(--app-dim); padding:0 6px 8px; }
+.sjsel-list{ overflow:auto; -webkit-overflow-scrolling:touch; display:flex; flex-direction:column; gap:2px; }
+.sjsel-opt{ display:flex; align-items:center; gap:12px; width:100%; text-align:left; padding:14px 12px; border:0; background:none; color:var(--app-ink); font:inherit; cursor:pointer; border-radius:12px; }
+.sjsel-opt .sjsel-opt-tx{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+.sjsel-opt .sjsel-opt-tx b{ font-weight:600; font-size:15px; }
+.sjsel-opt .sjsel-opt-tx small{ font-size:12px; color:var(--app-dim); }
+.sjsel-opt.on{ background:var(--sheet-row); }
+.sjsel-opt.on .sjsel-opt-tx b{ color:var(--app-accent); }
+.sjsel-opt:active{ background:var(--sheet-row-active); }
+.sjsel-opt .sjsel-ck{ flex:0 0 auto; color:var(--app-accent); }
+
+
+/* ===================== offline banner (ads need internet) ===================== */
+.sj-offline{ position:fixed; left:0; right:0; bottom:calc(86px + env(safe-area-inset-bottom)); z-index:250; display:flex; align-items:center; gap:10px; margin:0 12px; padding:11px 14px; background:var(--app-nav); border:1px solid rgba(255,255,255,.10); border-radius:14px; box-shadow:0 12px 34px -14px rgba(0,0,0,.6); animation:app-rise .3s var(--ease-out) both; }
+.sj-offline[hidden]{ display:none; }
+.sjo-ic{ font-size:18px; flex:0 0 auto; }
+.sjo-tx{ flex:1; font-size:12.5px; font-weight:600; color:#fff; line-height:1.4; }
+.sjo-x{ flex:0 0 auto; width:26px; height:26px; border:0; border-radius:50%; background:rgba(255,255,255,.10); color:rgba(255,255,255,.8); font-size:13px; cursor:pointer; }
+.sjo-x:active{ background:rgba(255,255,255,.2); }
+
+/* ===================== larger phones · foldables · tablets ===================== */
+@media (min-width: 600px) {
+  .apphome { max-width: 780px; }
+  .app-grid { grid-template-columns: repeat(6, 1fr); }
+  /* center + cap the bottom nav so items don't spread across a wide screen */
+  .appbar { left: 50%; right: auto; transform: translateX(-50%); width: min(100%, 600px); border-radius: 20px 20px 0 0; }
+  .sj-offline { max-width: 560px; margin-left: auto; margin-right: auto; }
+}
+@media (min-width: 900px) {
+  .apphome { max-width: 940px; }
+  .app-grid { grid-template-columns: repeat(8, 1fr); }
+}
+
+/* extra bottom room when the AdMob banner is showing (it floats above the nav) */
+/* nav stays at the bottom; banner floats above it (margin 112). content clears both. */
+/* nav stays at bottom; ad floats above it. Reserve room for BOTH so content clears them. */
+/* AD AT THE TOP: the native ad banner sits pinned at the very top (below the status bar).
+   The whole app — INCLUDING the SnapJar header — scrolls normally beneath it (the header is
+   NOT sticky in the app, so nothing floats). Content starts below the ad via padding-top. */
+/* AD AT TOP, fixed layout: native ad pinned top → SnapJar header sticks just below it →
+   bottom nav fixed → ONLY the middle content scrolls. Three things stay put, middle moves. */
+/* TOP AD ZONE SPEC: reserve the banner's height (--ad-h, floored at 90px for the biggest
+   anchored adaptive banner) + the status-bar inset + the native top offset (~46px) + a
+   small clearance. Sized so NO ad creative — even a large one — can overlap the header. */
+:root { --ad-zone: calc(var(--ad-h, 90px) + env(safe-area-inset-top) + 56px); }
+body.is-app.ads-on { padding-top: var(--ad-zone); }
+/* header (logo + theme) stays fixed just under the ad */
+body.is-app.ads-on nav:not(.appbar) { top: var(--ad-zone); z-index: 41; }
+/* solid fixed backdrop behind the ad zone so content scrolls BEHIND it (never peeks into
+   the gap above/around the fixed native banner). The native ad renders on top of this. */
+body.is-app.ads-on::before {
+  content: ""; position: fixed; top: 0; left: 0; right: 0; z-index: 40; pointer-events: none;
+  height: var(--ad-zone); background: var(--app-bg);
+}
+/* in-content MREC mode (empty My Files): no top banner → no top reservation; lift the
+   empty-state text up so the centered 300x250 ad fills the empty area below it. */
+body.is-app.mrec-on { padding-top: 0; }
+body.is-app.mrec-on .lib-empty { justify-content: flex-start; padding-top: 8px; }
+body.is-app.mrec-on .lib-empty-ic { display: none; }

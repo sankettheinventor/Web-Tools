@@ -140,9 +140,9 @@ const howSteps = [
         var p=$('preview');p.innerHTML='';
         if(!ready()){p.innerHTML='<p class="drop-s" style="color:var(--dim)">Add an image or type a character to see your icons.</p>';return;}
         PREVIEW.forEach(function(s){
-          var cell=document.createElement('div');cell.className='fav-cell';
-          var c=document.createElement('canvas');var disp=Math.min(s,64);c.style.width=disp+'px';c.style.height=disp+'px';paint(c,s);
-          var l=document.createElement('div');l.className='fl';l.textContent=s+'×'+s;
+          var cell=document.createElement('div');cell.className='fav-cell';cell.style.textAlign='center';
+          var c=document.createElement('canvas');var disp=Math.min(s,64);c.style.cssText='width:'+disp+'px;height:'+disp+'px;border:1px solid var(--line);border-radius:7px;background:#fff;display:block;margin:0 auto';paint(c,s);
+          var l=document.createElement('div');l.className='fl';l.textContent=s+'×'+s;l.style.cssText='font-size:11px;color:var(--dim);margin-top:5px';
           cell.appendChild(c);cell.appendChild(l);p.appendChild(cell);
         });
       }

@@ -60,7 +60,11 @@ const howSteps = [
         <button id="go" class="vbtn" type="button" hidden>Convert all to MP3</button>
         <button id="zip" class="vbtn ghost" type="button" hidden>⬇ Download all (.zip)</button>
       </div>
-      <p class="status" id="status" role="status" aria-live="polite">The first conversion downloads a ~30&nbsp;MB converter once (then it's cached). Your files are processed on your device and never uploaded.</p>
+      <p class="status" id="status" role="status" aria-live="polite" hidden></p>
+      <div class="vnote">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 7.5h.01"/></svg>
+        <span>The first conversion downloads a ~30&nbsp;MB converter once (then it's cached). Your files are processed on your device and <b>never uploaded</b>.</span>
+      </div>
     </div>
   </div>
 
@@ -94,7 +98,9 @@ const howSteps = [
     .vitem{display:flex;align-items:center;gap:var(--s3);background:var(--surface2);border:1px solid var(--line);
       border-radius:var(--r);padding:var(--s3) var(--s4)}
     .vitem-main{min-width:0;flex:1}
-    .vitem-name{display:block;font-weight:600;font-size:var(--t-sm);color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .vitem-name{display:flex;align-items:baseline;font-weight:600;font-size:var(--t-sm);color:var(--txt);min-width:0}
+    .vitem-base{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .vitem-ext{flex:0 0 auto;color:var(--dim);font-weight:500}
     .vitem-meta{font-size:var(--t-xs);color:var(--dim)}
     .vitem-meta.ok{color:var(--ok)}.vitem-meta.err{color:var(--err)}
     .vbar{height:8px;background:var(--surface);border:1px solid var(--line);border-radius:999px;overflow:hidden;margin:var(--s4) 0 6px}
@@ -114,7 +120,13 @@ const howSteps = [
     .vbtn.ghost:hover{border-color:var(--brand);filter:none}
     .vbtn:disabled{opacity:.5;cursor:not-allowed;filter:none}
     .status{font-size:var(--t-sm);color:var(--dim);line-height:1.5;margin-top:10px}
+    .status[hidden]{display:none}
     .status.err{color:var(--err)}
+    .vnote{display:flex;gap:10px;align-items:flex-start;margin-top:var(--s4);padding:12px 14px;
+      background:var(--surface2);border:1px solid var(--line);border-radius:var(--r);
+      font-size:var(--t-sm);color:var(--dim);line-height:1.5}
+    .vnote svg{flex:0 0 auto;width:18px;height:18px;color:var(--brand);margin-top:1px}
+    .vnote b{color:var(--txt);font-weight:700}
     .content .attrib{font-size:var(--t-xs);color:var(--dim);margin-top:var(--s4)}
   </style>
 
@@ -122,7 +134,8 @@ const howSteps = [
     (function () {
       var ffmpeg = null, loaded = false, busy = false, items = [], seq = 0, curId = null;
       function el(id){ return document.getElementById(id); }
-      function show(msg, err){ var s = el('status'); s.textContent = msg; s.className = 'status' + (err ? ' err' : ''); }
+      function show(msg, err){ var s = el('status'); s.textContent = msg; s.className = 'status' + (err ? ' err' : ''); s.hidden = !msg; }
+      function splitName(nm){ var d = nm.lastIndexOf('.'); return d > 0 ? { base: nm.slice(0, d), ext: nm.slice(d) } : { base: nm, ext: '' }; }
       function fmtSize(b){ var kb = b/1024; return kb > 1024 ? (kb/1024).toFixed(1) + ' MB' : Math.round(kb) + ' KB'; }
 
       // ---- queue model + render ----
@@ -150,11 +163,13 @@ const howSteps = [
             : it.status === 'done' ? fmtSize(it.blob.size) + ' MP3 · done'
             : 'failed';
           li.innerHTML =
-            '<div class="vitem-main"><span class="vitem-name"></span>' +
+            '<div class="vitem-main"><span class="vitem-name"><span class="vitem-base"></span><span class="vitem-ext"></span></span>' +
             '<span class="vitem-meta ' + metaCls + '"></span>' +
             (it.status === 'converting' ? '<div class="vbar mini"><div class="vbar-fill" style="width:' + (it.pct*100).toFixed(1) + '%"></div></div>' : '') +
             '</div><div class="vitem-act"></div>';
-          li.querySelector('.vitem-name').textContent = it.name;
+          var nmp = splitName(it.name);
+          li.querySelector('.vitem-base').textContent = nmp.base;
+          li.querySelector('.vitem-ext').textContent = nmp.ext;
           li.querySelector('.vitem-meta').textContent = metaTxt;
           var act = li.querySelector('.vitem-act');
           if (it.status === 'done' && it.url){

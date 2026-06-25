@@ -4,3 +4,6 @@ dist/
 .DS_Store
 *.log
 .env
+
+# Local dev/test screenshots at repo root
+/*.png

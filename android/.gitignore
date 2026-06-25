@@ -99,3 +99,13 @@ app/src/main/assets/public
 app/src/main/assets/capacitor.config.json
 app/src/main/assets/capacitor.plugins.json
 app/src/main/res/xml/config.xml
+
+snapjar-upload.jks
+keystore.properties
+
+# Local dev test artifacts (CDP screenshots, QA harness, generated test files) — not app source
+/*.png
+/*.cjs
+/*.txt
+/*.json
+/qa/

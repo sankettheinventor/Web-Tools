@@ -79,9 +79,9 @@ const howSteps = [
             var blob=await new Promise(function(res){c.toBlob(res,'image/jpeg',0.9);});
             if(!blob){ throw new Error('Could not encode this page'); }
             var name='page-'+n+'.jpg';imgs.push({blob:blob,name:name});
-            var cell=document.createElement('div');cell.className='pcell';
-            var im=document.createElement('img');im.src=window.SnapJarKit.track(blob);
-            var b=document.createElement('button');b.textContent='Download';(function(bl,nm){b.onclick=function(){dl(bl,nm);};})(blob,name);
+            var cell=document.createElement('div');cell.className='pcell';cell.style.textAlign='center';
+            var im=document.createElement('img');im.src=window.SnapJarKit.track(blob);im.style.cssText='width:120px;border:1px solid var(--line);border-radius:8px;background:#fff;display:block;margin:0 auto';
+            var b=document.createElement('button');b.textContent='Download';b.style.cssText='margin-top:5px;font-size:11px;font-weight:700;color:var(--brand);background:none;border:0;cursor:pointer';(function(bl,nm){b.onclick=function(){dl(bl,nm);};})(blob,name);
             cell.appendChild(im);cell.appendChild(b);$('thumbs').appendChild(cell);
             await window.SnapJarKit.breathe();
           }

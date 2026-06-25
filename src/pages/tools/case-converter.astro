@@ -71,7 +71,7 @@ const faqItems = [
         constant:function(t){return words(t).map(function(w){return w.toUpperCase();}).join('_');}
       };
       document.querySelectorAll('.cbtn').forEach(function(b){b.onclick=function(){$('t').value=T[b.dataset.c]($('t').value);};});
-      $('copy').onclick=function(){navigator.clipboard&&navigator.clipboard.writeText($('t').value);$('copy').textContent='Copied!';setTimeout(function(){$('copy').textContent='Copy result';},1000);};
+      $('copy').onclick=function(){var v=$('t').value;if(window.SnapJarKit)window.SnapJarKit.copy(v,'Text copied');else navigator.clipboard&&navigator.clipboard.writeText(v);$('copy').textContent='Copied!';setTimeout(function(){$('copy').textContent='Copy result';},1000);};
     })();
   </script>
 </Base>

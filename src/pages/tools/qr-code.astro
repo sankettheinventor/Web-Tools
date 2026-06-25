@@ -116,15 +116,15 @@ const howSteps = [
     .qt .qi{font-size:19px;line-height:1}
     .qt:hover{color:var(--txt);border-color:var(--brand)}
     .qt.on{color:#fff;background:linear-gradient(135deg,var(--brand2),var(--brand));border-color:transparent}
-    .qr-grid{display:grid;grid-template-columns:1fr 320px;gap:24px}@media(max-width:760px){.qr-grid{grid-template-columns:1fr}}
+    .qr-grid{display:grid;grid-template-columns:1fr 320px;gap:24px;min-width:0}.qr-grid>*{min-width:0}@media(max-width:760px){.qr-grid{grid-template-columns:1fr}}
     .qhint{font-size:14px;font-weight:600;color:var(--txt);margin-bottom:12px}
-    .qp{display:flex;flex-direction:column;gap:12px}
+    .qp{display:flex;flex-direction:column;gap:12px;min-width:0}
     .qp[hidden]{display:none}
-    .ctl{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:var(--dim)}
-    .ctl input,.ctl select,.ctl textarea{background:var(--surface2);border:1px solid var(--line);border-radius:9px;color:var(--txt);font:inherit;font-weight:600;padding:10px 11px;outline:none;resize:vertical}
+    .ctl{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:var(--dim);min-width:0}
+    .ctl input,.ctl select,.ctl textarea{width:100%;min-width:0;max-width:100%;background:var(--surface2);border:1px solid var(--line);border-radius:9px;color:var(--txt);font:inherit;font-weight:600;padding:10px 11px;outline:none;resize:vertical}
     .ctl input:focus,.ctl select:focus,.ctl textarea:focus{border-color:var(--brand)}
     .ctl input[type=color]{height:38px;padding:3px;cursor:pointer}.ctl input[type=file]{font-size:12px;font-weight:500}
-    .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.chkrow{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--txt)}.chkrow input{width:16px;height:16px;accent-color:var(--brand)}
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;min-width:0}.row2>*{min-width:0}.chkrow{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--txt)}.chkrow input{width:16px;height:16px;accent-color:var(--brand)}
     .qr-style{margin-top:16px;padding-top:16px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:12px}
     .presets{display:flex;flex-wrap:wrap;gap:8px}
     .preset{width:34px;height:34px;border-radius:9px;border:2px solid var(--line);cursor:pointer;display:grid;place-items:center;font-size:0}
@@ -198,8 +198,10 @@ const howSteps = [
       ];
       function buildPresets(){
         PRESETS.forEach(function(p){
-          var b=document.createElement('button'); b.type='button'; b.className='preset'; b.style.background=p.bg;
-          var d=document.createElement('span'); d.className='pd'; d.style.background=p.fg; b.appendChild(d);
+          var b=document.createElement('button'); b.type='button'; b.className='preset';
+          b.style.cssText='width:34px;height:34px;border-radius:9px;border:2px solid var(--line);cursor:pointer;display:grid;place-items:center;padding:0;background:'+p.bg;
+          var d=document.createElement('span'); d.className='pd';
+          d.style.cssText='width:16px;height:16px;border-radius:4px;display:block;background:'+p.fg; b.appendChild(d);
           b.onclick=function(){ $('fg').value=p.fg; $('bg').value=p.bg; $('dot').value=p.dot; $('corner').value=p.corner; render(); };
           $('presets').appendChild(b);
         });
@@ -228,7 +230,7 @@ const howSteps = [
       $('copy').onclick=function(){
         if(!qr||!qr.getRawData)return;
         qr.getRawData('png').then(function(blob){
-          if(navigator.clipboard&&window.ClipboardItem){navigator.clipboard.write([new ClipboardItem({'image/png':blob})]).then(function(){$('copy').textContent='Copied!';setTimeout(function(){$('copy').textContent='Copy';},1200);});}
+          if(navigator.clipboard&&window.ClipboardItem){navigator.clipboard.write([new ClipboardItem({'image/png':blob})]).then(function(){$('copy').textContent='Copied!';if(window.SnapJarKit)window.SnapJarKit.toast('QR image copied to clipboard','ok');setTimeout(function(){$('copy').textContent='Copy';},1200);}).catch(function(){if(window.SnapJarKit)window.SnapJarKit.toast('Couldn’t copy the image — try the PNG download','err');});}
         });
       };
       buildPresets(); start();

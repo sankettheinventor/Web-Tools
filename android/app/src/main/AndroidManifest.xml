@@ -9,6 +9,11 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
+        <!-- AdMob app ID (real, SnapJar) -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-4351869860119610~1913364388" />
+
         <activity
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
             android:name=".MainActivity"
@@ -40,6 +45,23 @@
                 <data android:mimeType="application/pdf" />
             </intent-filter>
 
+            <!-- OPEN-WITH: make SnapJar appear in the chooser when a user taps a PDF.
+                 TODO(runtime): read the incoming VIEW intent's uri and load it in PDF Studio. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="content" android:mimeType="application/pdf" />
+                <data android:scheme="file" android:mimeType="application/pdf" />
+            </intent-filter>
+            <!-- OPEN-WITH: images (for the image tools). -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="content" android:mimeType="image/*" />
+                <data android:scheme="file" android:mimeType="image/*" />
+            </intent-filter>
+
         </activity>
 
         <provider
@@ -56,4 +78,13 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- AdMob: advertising ID (required for AdMob on Android 13+). The play-services-ads SDK
+         also declares this, but we keep it explicit. Remove ONLY if you target children. -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
+    <!-- Post a notification when a file is saved (tap → open it in SnapJar). Runtime-requested on Android 13+. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Camera for the document Scanner (ML Kit). Camera is optional hardware so the
+         app still installs on camera-less devices. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
 </manifest>

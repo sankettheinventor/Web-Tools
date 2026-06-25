@@ -37,6 +37,10 @@ const ADSENSE_CLIENT = '';
 // leaves your device" is literally true — or (b) would risk a Play/App Store rejection
 // (the external video-downloader link, file 16 Rule #2). The plain web build is unchanged.
 const IS_APP = import.meta.env.PUBLIC_APP_BUILD === '1';
+// In the app, internal /tools/x and /calculators/x links must hit the real .html file —
+// Capacitor's WebView serves exact files, and extensionless/dir paths fall back to the
+// home. Intercept link clicks and append .html. The web build (pretty URLs) is untouched.
+const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){var a=e.target&&e.target.closest&&e.target.closest('a[href]');if(!a)return;var h=a.getAttribute('href')||'';var m=h.match(/^(\\/(?:tools|calculators)\\/[a-z0-9-]+|\\/recent)([?#].*)?$/);if(m){e.preventDefault();location.href=m[1]+'.html'+(m[2]||'');}},true);})();`;
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -125,15 +129,374 @@ const IS_APP = import.meta.env.PUBLIC_APP_BUILD === '1';
         /* Yield to the UI thread inside long loops so the page never looks frozen
            (and the GC can run between heavy pages). await SnapJarKit.breathe(). */
         breathe: function () { return new Promise(function (r) { setTimeout(r, 0); }); },
+        /* Copy text that NEVER throws: tries the async clipboard, falls back to a
+           hidden textarea + execCommand (older/locked-down WebViews). Resolves bool. */
+        copy: function (text, label) {
+          return new Promise(function (res) {
+            function done(ok) { K.toast(ok ? (label || 'Copied to clipboard') : 'Couldn’t copy — try long-pressing to copy', ok ? 'ok' : 'err'); res(ok); }
+            function fallback() { try { var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0'; document.body.appendChild(ta); ta.focus(); ta.select(); var ok = false; try { ok = document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta); done(ok); } catch (e) { done(false); } }
+            try {
+              if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(function () { done(true); }, fallback); }
+              else fallback();
+            } catch (e) { fallback(); }
+          });
+        },
+        /* Resolve a Capacitor plugin across runtime variants: the native bridge exposes
+           Capacitor.Plugins.X, while @capacitor/core exposes registerPlugin(). Returns
+           the plugin object or null (web). One source of truth so tools stop guessing. */
+        plugin: function (name) {
+          var C = window.Capacitor; if (!C) return null;
+          if (C.Plugins && C.Plugins[name]) return C.Plugins[name];
+          if (typeof C.registerPlugin === 'function') { try { return C.registerPlugin(name); } catch (e) {} }
+          return null;
+        },
         /* Object-URL helpers: track() URLs for thumbnails and clear() them on reset
            so batch tools stop leaking decoded bitmaps for the whole session. */
         _urls: [],
         track: function (blob) { var u = URL.createObjectURL(blob); K._urls.push(u); return u; },
-        clear: function () { K._urls.forEach(function (u) { try { URL.revokeObjectURL(u); } catch (e) {} }); K._urls = []; }
+        clear: function () { K._urls.forEach(function (u) { try { URL.revokeObjectURL(u); } catch (e) {} }); K._urls = []; },
+
+        /* ===== Messaging — ONE premium voice for every tool =====
+           Consistent toasts, classified status states (working/done/error) and a
+           styled prompt, so no tool re-invents (or ships an ugly system dialog). */
+        _toastHost: null,
+        _icon: function (type) {
+          if (type === 'ok') return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+          if (type === 'err') return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 7v7"/><circle cx="12" cy="17.5" r="1.2" fill="currentColor" stroke="none"/></svg>';
+          if (type === 'work') return '<span class="sj-spin"></span>';
+          return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 11v6"/><circle cx="12" cy="7" r="1.2" fill="currentColor" stroke="none"/></svg>';
+        },
+        /* Transient floating confirmation. type: ok|err|work|info. Returns the node. */
+        toast: function (msg, type, ms) {
+          type = type || 'info';
+          var host = K._toastHost;
+          if (!host || !host.isConnected) { host = document.createElement('div'); host.className = 'sj-toasts'; host.setAttribute('role', 'status'); host.setAttribute('aria-live', 'polite'); (document.body || document.documentElement).appendChild(host); K._toastHost = host; }
+          var t = document.createElement('div'); t.className = 'sj-toast sj-' + type;
+          t.innerHTML = '<span class="sj-tic">' + K._icon(type) + '</span><span class="sj-tmsg"></span>';
+          t.lastChild.textContent = msg;
+          host.appendChild(t);
+          requestAnimationFrame(function () { t.classList.add('in'); });
+          var dur = ms || (type === 'err' ? 4200 : 2600);
+          setTimeout(function () { t.classList.add('out'); setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 280); }, dur);
+          return t;
+        },
+        /* Classify a status string into a state so colour/icon/motion match the message. */
+        classify: function (s) {
+          s = (s || '').toLowerCase();
+          if (/cannot|can.?t |could ?n.?t|could not|fail|error|unable|unsupported|corrupt|invalid|too (large|big|many)|not supported|did ?n.?t|did not|denied|problem|wrong|no matches|nothing to/.test(s)) return 'err';
+          if (/done|ready|copied|saved|success|complete|finished|downloaded|✓|✅|added|generated\b/.test(s)) return 'ok';
+          if (/…|\.\.\.|please wait|loading|working|opening|building|rendering|processing|scanning|compress|preparing|generating|optimi|converting|reading|searching|merging|splitting|extracting/.test(s)) return 'work';
+          return 'info';
+        },
+        /* Premium replacement for window.prompt(). Resolves the value or null on cancel. */
+        ask: function (opts) {
+          opts = opts || {};
+          return new Promise(function (resolve) {
+            var ov = document.createElement('div'); ov.className = 'sj-ask';
+            ov.innerHTML = '<div class="sj-ask-card" role="dialog" aria-modal="true"><div class="sj-ask-t"></div>' +
+              '<input class="sj-ask-in" type="' + (opts.type || 'text') + '"' + (opts.min != null ? ' min="' + opts.min + '"' : '') + (opts.max != null ? ' max="' + opts.max + '"' : '') + ' />' +
+              '<div class="sj-ask-row"><button class="sj-ask-cancel" type="button">Cancel</button><button class="sj-ask-ok" type="button">' + (opts.ok || 'OK') + '</button></div></div>';
+            ov.querySelector('.sj-ask-t').textContent = opts.title || '';
+            var inp = ov.querySelector('.sj-ask-in'); inp.value = opts.value != null ? opts.value : '';
+            if (opts.placeholder) inp.placeholder = opts.placeholder;
+            function close(v) { ov.classList.add('out'); setTimeout(function () { if (ov.parentNode) ov.parentNode.removeChild(ov); }, 220); resolve(v); }
+            ov.querySelector('.sj-ask-ok').onclick = function () { close(inp.value); };
+            ov.querySelector('.sj-ask-cancel').onclick = function () { close(null); };
+            ov.addEventListener('click', function (e) { if (e.target === ov) close(null); });
+            inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') close(inp.value); if (e.key === 'Escape') close(null); });
+            (document.body || document.documentElement).appendChild(ov);
+            requestAnimationFrame(function () { ov.classList.add('in'); inp.focus(); inp.select && inp.select(); });
+          });
+        },
+        /* Auto-upgrade EVERY tool's status line: watch known status elements and, when
+           their text changes, tag a state + replay the reveal — no per-tool code. */
+        _initStatus: function () {
+          var sel = '.status,.tmsg,[data-sj-status],[role=status]';
+          function tag(el) {
+            var txt = (el.textContent || '').trim();
+            if (!txt) { el.removeAttribute('data-state'); el.classList.remove('sj-flash', 'sj-prog'); el.style.removeProperty('--sj-prog'); return; }
+            el.setAttribute('data-state', K.classify(txt));
+            if (/^[▼▲⚠✓✅❌•→➜]/.test(txt)) el.setAttribute('data-glyph', ''); else el.removeAttribute('data-glyph');
+            // §7 auto progress bar: any "X of Y" / "X%" status grows a bar — no per-tool code
+            var m = txt.match(/(\d+)\s*(?:of|\/)\s*(\d+)/) , pct = null;
+            if (m && +m[2] > 0) pct = Math.min(100, Math.round(+m[1] / +m[2] * 100));
+            else { var p = txt.match(/(\d{1,3})\s*%/); if (p) pct = Math.min(100, +p[1]); }
+            if (pct != null && K.classify(txt) === 'work') { el.style.setProperty('--sj-prog', pct + '%'); el.classList.add('sj-prog'); }
+            else { el.classList.remove('sj-prog'); el.style.removeProperty('--sj-prog'); }
+            el.classList.remove('sj-flash'); void el.offsetWidth; el.classList.add('sj-flash');
+          }
+          function watch(el) {
+            if (el._sjW) return; el._sjW = 1; tag(el);
+            new MutationObserver(function () { tag(el); }).observe(el, { childList: true, characterData: true, subtree: true });
+          }
+          function scan() { try { document.querySelectorAll(sel).forEach(watch); } catch (e) {} }
+          scan();
+          // catch status elements added later (e.g. tool builds its own)
+          try { new MutationObserver(scan).observe(document.body, { childList: true, subtree: true }); } catch (e) {}
+        },
+        /* Automatic success + heavy-file feedback for EVERY tool, no per-tool code:
+           - any download (incl. programmatic a.click()) confirms "Saved to your device"
+           - selecting a very large file warns it may take a few seconds (no UI freeze). */
+        _saveToast: function () {
+          var now = +new Date();
+          if (K._lastSave && now - K._lastSave < 1200) return;   // dedupe (delegation + click patch)
+          K._lastSave = now;
+          K.toast('Saved to your device', 'ok');
+        },
+        _isNative: function () { try { return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()); } catch (e) { return false; } },
+        /* APP: take over a download → save to Documents/SnapJar (a known place) AND add
+           it to My Files (Recent), so files are never "lost" and EVERY tool's output
+           shows up in Recent. Returns the blob to the recents store with the right kind. */
+        saveDownload: function (blob, name, opts) {
+          opts = opts || {};
+          name = (name || 'file').replace(/[\\/]/g, '_');
+          var ext = (name.split('.').pop() || '').toLowerCase();
+          var kind = ext === 'pdf' ? 'pdf' : (['png','jpg','jpeg','webp','gif','heic','heif','svg','ico','bmp'].indexOf(ext) >= 0 ? 'image' : 'file');
+          // 1) add to My Files (Recent), capturing its id for the notification's tap-to-open
+          function addRecent() {
+            if (opts.skipRecent || !window.SJRecents) return Promise.resolve(null);
+            if (kind === 'image') return K._imgThumb(blob).then(function (thumb) { return window.SJRecents.add({ name: name, kind: kind, blob: blob, thumb: thumb }); });
+            return window.SJRecents.add({ name: name, kind: kind, blob: blob });
+          }
+          // 2) write to Documents/SnapJar and resolve its file uri
+          function saveFile() {
+            var Fs = K.plugin('Filesystem');
+            if (!Fs || !Fs.writeFile) return Promise.resolve(null);
+            return new Promise(function (resolve) {
+              var r = new FileReader();
+              r.onload = function () {
+                var b64 = String(r.result).split(',')[1] || '';
+                Fs.writeFile({ path: 'SnapJar/' + name, data: b64, directory: 'DOCUMENTS', recursive: true })
+                  .then(function () { return (Fs.getUri ? Fs.getUri({ path: 'SnapJar/' + name, directory: 'DOCUMENTS' }).then(function (u) { return u && u.uri; }).catch(function () { return null; }) : null); })
+                  .then(resolve).catch(function () { resolve(null); });
+              };
+              r.onerror = function () { resolve(null); };
+              r.readAsDataURL(blob);
+            });
+          }
+          return Promise.all([addRecent().catch(function () { return null; }), saveFile()]).then(function (out) {
+            var recentId = out[0], uri = out[1];
+            K.toast(uri ? 'Saved to Files › Documents › SnapJar — also in Recent' : 'Saved — find it in Recent', 'ok', 3800);
+            if (!opts.skipRecent) {
+              K._notifySaved(name, kind, recentId, uri);
+              // show MORE ads at a natural success moment (throttled inside maybeInterstitial)
+              if (K.maybeInterstitial) setTimeout(K.maybeInterstitial, 1400);
+            }
+            return { recentId: recentId, uri: uri };
+          });
+        },
+        /* Fire a real OS notification for a saved file; tapping it opens the file in SnapJar. */
+        _notifySaved: function (name, kind, recentId, uri) {
+          var LN = K.plugin('LocalNotifications');
+          if (!LN || !LN.schedule) return;
+          K._ensureNotifPerm(LN).then(function (ok) {
+            if (!ok) return;
+            var id = (+new Date()) % 2000000000;
+            LN.schedule({ notifications: [{
+              id: id,
+              title: 'Saved to SnapJar',
+              body: name + ' — tap to open',
+              smallIcon: 'ic_stat_snapjar',
+              iconColor: '#5B5BD6',
+              extra: { recentId: recentId || null, kind: kind, uri: uri || null, name: name }
+            }] }).catch(function () {});
+          });
+        },
+        _ensureNotifPerm: function (LN) {
+          if (!LN.checkPermissions) return Promise.resolve(true);
+          return LN.checkPermissions().then(function (p) {
+            if (p && p.display === 'granted') return true;
+            if (!LN.requestPermissions) return false;
+            return LN.requestPermissions().then(function (r) { return !!(r && r.display === 'granted'); });
+          }).catch(function () { return false; });
+        },
+        _initNotifTap: function () {
+          var LN = K.plugin('LocalNotifications');
+          if (!LN || !LN.addListener) return;
+          try {
+            LN.addListener('localNotificationActionPerformed', function (ev) {
+              var ex = ev && ev.notification && ev.notification.extra; if (!ex) return;
+              if (ex.kind === 'pdf' && ex.recentId) { location.href = '/tools/pdf-studio.html?recent=' + encodeURIComponent(ex.recentId); }
+              else { location.href = '/recent.html'; }
+            });
+          } catch (e) {}
+        },
+        /* OPEN-WITH: another app sent SnapJar a PDF/image (tap a PDF in a file manager →
+           pick SnapJar). MainActivity copied it to app storage; load + open it here. */
+        _checkIncoming: function () {
+          var IF = K.plugin('IncomingFile');
+          if (!IF || !IF.getPending || K._incomingBusy) return;
+          K._incomingBusy = true;
+          IF.getPending().then(function (res) {
+            K._incomingBusy = false;
+            if (!res || res.none || !res.path) return;
+            var src = (window.Capacitor && window.Capacitor.convertFileSrc) ? window.Capacitor.convertFileSrc(res.path) : res.path;
+            var name = res.name || 'document.pdf';
+            var isPdf = /pdf/i.test(res.mime || '') || /\.pdf$/i.test(name);
+            K.toast('Opening ' + name + '…', 'work');
+            fetch(src).then(function (r) { return r.blob(); }).then(function (blob) {
+              if (!window.SJRecents) { K.toast('Could not open the file', 'warn'); return; }
+              window.SJRecents.add({ name: name, kind: isPdf ? 'pdf' : 'file', blob: blob }).then(function (id) {
+                if (!id) { K.toast('Could not open the file', 'warn'); return; }
+                location.href = isPdf ? ('/tools/pdf-studio.html?recent=' + encodeURIComponent(id)) : '/recent.html';
+              });
+            }).catch(function () { K.toast('Could not open the file', 'warn'); });
+          }).catch(function () { K._incomingBusy = false; });
+        },
+        _imgThumb: function (blob) {
+          return new Promise(function (res) {
+            try {
+              var url = URL.createObjectURL(blob), img = new Image();
+              img.onload = function () {
+                try {
+                  var S = 256, s = Math.min(S / img.width, S / img.height, 1), w = Math.max(1, img.width * s | 0), h = Math.max(1, img.height * s | 0);
+                  var c = document.createElement('canvas'); c.width = w; c.height = h;
+                  c.getContext('2d').drawImage(img, 0, 0, w, h);
+                  URL.revokeObjectURL(url); res(c.toDataURL('image/jpeg', 0.7));
+                } catch (e) { URL.revokeObjectURL(url); res(null); }
+              };
+              img.onerror = function () { URL.revokeObjectURL(url); res(null); };
+              img.src = url;
+            } catch (e) { res(null); }
+          });
+        },
+        _grabDownload: function (a) {
+          var href = (a.getAttribute && a.getAttribute('href')) || a.href || '';
+          var name = (a.getAttribute && a.getAttribute('download')) || 'file';
+          if (!/^blob:|^data:/.test(href)) return false;
+          fetch(href).then(function (r) { return r.blob(); }).then(function (b) { K.saveDownload(b, name); }).catch(function () { K._saveToast(); });
+          return true;
+        },
+        _initFeedback: function () {
+          var native = K._isNative();
+          // 1) real user clicks on in-DOM download links
+          document.addEventListener('click', function (e) {
+            var a = e.target && e.target.closest && e.target.closest('a[download],[data-sj-download]');
+            if (!a || a._sjQuiet) return;
+            if (native && /^blob:|^data:/.test((a.getAttribute('href') || a.href || ''))) { e.preventDefault(); K._grabDownload(a); }
+            else setTimeout(K._saveToast, 60);
+          }, true);
+          // 2) programmatic downloads (jsPDF/pdf-lib/anchor.click()) — even detached anchors
+          try {
+            var proto = HTMLAnchorElement.prototype, orig = proto.click;
+            proto.click = function () {
+              try {
+                if (this.hasAttribute && this.hasAttribute('download') && !this._sjQuiet) {
+                  if (native && /^blob:|^data:/.test((this.getAttribute('href') || this.href || ''))) { if (K._grabDownload(this)) return; }
+                  else setTimeout(K._saveToast, 60);
+                }
+              } catch (e) {}
+              return orig.apply(this, arguments);
+            };
+          } catch (e) {}
+          document.addEventListener('change', function (e) {
+            var inp = e.target;
+            if (!inp || inp.type !== 'file' || !inp.files || !inp.files.length) return;
+            var big = 0, empty = 0, wrong = 0, n = inp.files.length, ex = K._acceptExts(inp.getAttribute('accept'));
+            for (var i = 0; i < n; i++) {
+              var f = inp.files[i];
+              if (f.size > 35 * 1024 * 1024) big++;
+              if (f.size === 0) empty++;
+              if (ex.length) { var fe = (f.name.split('.').pop() || '').toLowerCase(); if (fe && ex.indexOf(fe) < 0) wrong++; }
+            }
+            // root-level guards: these break every tool the same way — catch once, here
+            if (empty) K.toast(empty === n ? 'That file is empty — please choose another.' : 'Some files are empty and will be skipped.', 'warn', 3600);
+            else if (wrong) K.toast('That looks like the wrong file type for this tool — please pick ' + K._acceptLabel(inp.getAttribute('accept')) + '.', 'warn', 4000);
+            else if (big) K.toast('Large file — this can take a few seconds on your device', 'work', 3400);
+            // corrupt-PDF catch (root): a .pdf that isn't really a PDF fails silently in many tools
+            if (!empty && !wrong) for (var k = 0; k < n; k++) (function (f) {
+              if (f.size > 0 && /\.pdf$/i.test(f.name || '')) {
+                f.slice(0, 5).arrayBuffer().then(function (b) {
+                  var s = ''; new Uint8Array(b).forEach(function (c) { s += String.fromCharCode(c); });
+                  if (s.indexOf('%PDF') !== 0) K.toast('This PDF looks corrupt or isn’t a real PDF — try another file.', 'warn', 4200);
+                }).catch(function () {});
+              }
+            })(inp.files[k]);
+          }, true);
+        },
+        /* Shared input-extremes validator (UX audit §3 + §6): one plain-language gate every
+           tool can call so "people behaving like people" cases fail kindly, not with a crash.
+           Returns { ok:true } or { ok:false, msg:'what/why/what-next' }. */
+        checkFile: function (file, opts) {
+          opts = opts || {};
+          if (!file) return { ok: false, msg: 'No file selected — choose a file to continue.' };
+          if (file.size === 0) return { ok: false, msg: 'That file is empty — please pick another.' };
+          if (opts.maxMB && file.size > opts.maxMB * 1024 * 1024) return { ok: false, msg: 'That file is over ' + opts.maxMB + 'MB — try a smaller one.' };
+          if (opts.exts && opts.exts.length) {
+            var ext = (file.name.split('.').pop() || '').toLowerCase();
+            if (opts.exts.indexOf(ext) < 0) return { ok: false, msg: 'That’s a .' + (ext || '?') + ' file — this tool needs ' + opts.exts.map(function (x){ return '.' + x; }).join(' or ') + '.' };
+          }
+          return { ok: true };
+        },
+        /* derive the accepted extension list from an input's accept attribute (root-level
+           wrong-type guard). Returns [] when accept is broad/unknown → no false positives. */
+        _acceptExts: function (accept) {
+          if (!accept) return [];
+          var ex = [];
+          accept.toLowerCase().split(',').forEach(function (t) {
+            t = t.trim();
+            if (!t) return;
+            if (t.charAt(0) === '.') ex.push(t.slice(1));
+            else if (t === 'image/*') ex.push('png','jpg','jpeg','webp','gif','heic','heif','bmp','svg','ico','avif');
+            else if (t === 'application/pdf') ex.push('pdf');
+            else if (t.indexOf('wordprocessing') >= 0) ex.push('docx');
+            else if (t === 'image/svg+xml') ex.push('svg');
+          });
+          return ex;
+        },
+        _acceptLabel: function (accept) {
+          var a = (accept || '').toLowerCase();
+          if (a.indexOf('wordprocessing') >= 0 || a.indexOf('docx') >= 0) return 'a Word .docx';
+          if (a.indexOf('pdf') >= 0) return 'a PDF';
+          if (a.indexOf('svg') >= 0) return 'an SVG';
+          if (a.indexOf('image/') >= 0 || /\.(png|jpe?g|webp|gif|heic)/.test(a)) return 'an image';
+          return 'a supported file';
+        }
       };
       window.SnapJarKit = K;
+      function sjInit(){ K._initStatus(); K._initFeedback(); if (K._isNative()) { K._initNotifTap(); K._checkIncoming(); window.addEventListener('sjIncomingFile', K._checkIncoming); } }
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', sjInit); else sjInit();
     })();
   </script>
+  {IS_APP && <script is:inline set:html={APP_LINK_FIX}></script>}
+  {IS_APP && <script is:inline>
+    /* SJRecents — on-device document library (IndexedDB). Files (with bytes + a page-1
+       thumbnail) and user-created Folders, all local. Loose files auto-trim; foldered
+       files are kept (the user organised them). */
+    window.SJRecents = (function () {
+      var DB = 'snapjar', FILES = 'recents', FOLDERS = 'folders', MAX = 60;
+      function open() { return new Promise(function (res, rej) { var r = indexedDB.open(DB, 2);
+        r.onupgradeneeded = function () { var db = r.result;
+          if (!db.objectStoreNames.contains(FILES)) db.createObjectStore(FILES, { keyPath: 'id' });
+          if (!db.objectStoreNames.contains(FOLDERS)) db.createObjectStore(FOLDERS, { keyPath: 'id' }); };
+        r.onsuccess = function () { res(r.result); }; r.onerror = function () { rej(r.error); }; }); }
+      function st(store, mode) { return open().then(function (db) { return db.transaction(store, mode).objectStore(store); }); }
+      function uid(p) { return p + Date.now() + Math.random().toString(36).slice(2, 6); }
+      function all(store) { return st(store, 'readonly').then(function (s) { return new Promise(function (res) { var out = []; s.openCursor().onsuccess = function (e) { var c = e.target.result; if (c) { out.push(c.value); c.continue(); } else { out.sort(function (a, b) { return b.ts - a.ts; }); res(out); } }; }); }).catch(function () { return []; }); }
+      var API = {
+        add: function (item) {
+          if (!item || !item.blob) return Promise.resolve(null);
+          var rec = { id: uid('r'), name: item.name || 'Document.pdf', kind: item.kind || 'pdf', ts: Date.now(), size: item.blob.size || 0, blob: item.blob, thumb: item.thumb || null, folderId: item.folderId || null };
+          return st(FILES, 'readwrite').then(function (s) { return new Promise(function (res) { var r = s.put(rec); r.onsuccess = function () { res(rec.id); }; r.onerror = function () { res(null); }; }); }).then(function (id) { return API.trim().then(function () { return id; }); }).catch(function () { return null; });
+        },
+        update: function (id, patch) { return st(FILES, 'readwrite').then(function (s) { return new Promise(function (res) { var g = s.get(id); g.onsuccess = function () { var rec = g.result; if (!rec) { res(false); return; } for (var k in patch) rec[k] = patch[k]; s.put(rec); res(true); }; g.onerror = function () { res(false); }; }); }).catch(function () { return false; }); },
+        list: function (folderId) { folderId = folderId || null; return all(FILES).then(function (items) { return items.filter(function (it) { return (it.folderId || null) === folderId; }); }); },
+        get: function (id) { return st(FILES, 'readonly').then(function (s) { return new Promise(function (res) { var r = s.get(id); r.onsuccess = function () { res(r.result || null); }; r.onerror = function () { res(null); }; }); }).catch(function () { return null; }); },
+        remove: function (id) { return st(FILES, 'readwrite').then(function (s) { s.delete(id); }).catch(function () {}); },
+        move: function (id, folderId) { return API.update(id, { folderId: folderId || null }); },
+        rename: function (id, name) { return API.update(id, { name: name }); },
+        clear: function () { return st(FILES, 'readwrite').then(function (s) { s.clear(); }).catch(function () {}); },
+        trim: function () { return all(FILES).then(function (items) { var loose = items.filter(function (it) { return !it.folderId; }); return Promise.all(loose.slice(MAX).map(function (it) { return API.remove(it.id); })); }).catch(function () {}); },
+        /* folders */
+        addFolder: function (name) { var f = { id: uid('f'), name: name || 'Folder', ts: Date.now() }; return st(FOLDERS, 'readwrite').then(function (s) { return new Promise(function (res) { var r = s.put(f); r.onsuccess = function () { res(f.id); }; r.onerror = function () { res(null); }; }); }).catch(function () { return null; }); },
+        listFolders: function () { return all(FOLDERS); },
+        renameFolder: function (id, name) { return st(FOLDERS, 'readwrite').then(function (s) { var g = s.get(id); g.onsuccess = function () { var f = g.result; if (f) { f.name = name; s.put(f); } }; }).catch(function () {}); },
+        removeFolder: function (id) { return API.list(id).then(function (files) { return Promise.all(files.map(function (f) { return API.move(f.id, null); })); }).then(function () { return st(FOLDERS, 'readwrite').then(function (s) { s.delete(id); }); }).catch(function () {}); },
+        folderCount: function (id) { return API.list(id).then(function (f) { return f.length; }); }
+      };
+      return API;
+    })();
+  </script>}
   {!IS_APP && ADSENSE_CLIENT && (
     <script async src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`} crossorigin="anonymous"></script>
   )}
@@ -178,7 +541,7 @@ const IS_APP = import.meta.env.PUBLIC_APP_BUILD === '1';
           </div>
           <div class="mega-col">
             <div class="mega-h">📄 PDF</div>
-            <a role="menuitem" href="/tools/pdf-studio">PDF Studio ✦</a>
+            <a role="menuitem" href="/tools/pdf-studio">PDF Editor ✦</a>
             <a role="menuitem" href="/tools/pdf-tools">Merge PDF</a>
             <a role="menuitem" href="/tools/compress-pdf">Compress PDF</a>
             <a role="menuitem" href="/tools/organize-pdf">Organize PDF</a>
@@ -217,6 +580,314 @@ const IS_APP = import.meta.env.PUBLIC_APP_BUILD === '1';
   <slot />
 
   {IS_APP && <BottomNav />}
+
+  {IS_APP && (
+    <div class="sj-offline" id="sjOffline" hidden>
+      <span class="sjo-ic">📶</span>
+      <span class="sjo-tx">You're offline — tools still work. Turn on Wi-Fi or data to keep SnapJar free.</span>
+      <button class="sjo-x" id="sjOfflineX" type="button" aria-label="Dismiss">✕</button>
+    </div>
+  )}
+  {IS_APP && (
+    <div class="sjcp" id="sjcp" hidden>
+      <div class="sjcp-card" role="dialog" aria-modal="true" aria-label="Pick a colour">
+        <div class="sjcp-h">Pick a colour</div>
+        <div class="sjcp-sv" id="sjcpSV"><span class="sjcp-sv-th" id="sjcpSVTh"></span></div>
+        <div class="sjcp-hue" id="sjcpHue"><span class="sjcp-hue-th" id="sjcpHueTh"></span></div>
+        <div class="sjcp-row">
+          <span class="sjcp-prev" id="sjcpPrev"></span>
+          <span class="sjcp-hash">#</span>
+          <input class="sjcp-hex" id="sjcpHex" type="text" inputmode="latin" autocomplete="off" spellcheck="false" maxlength="7" aria-label="Hex value" />
+        </div>
+        <div class="sjcp-presets" id="sjcpPresets"></div>
+        <div class="sjcp-actions">
+          <button class="sjcp-btn" id="sjcpCancel" type="button">Cancel</button>
+          <button class="sjcp-btn primary" id="sjcpSet" type="button">Set colour</button>
+        </div>
+      </div>
+    </div>
+  )}
+  {IS_APP && <script is:inline>
+    /* Premium colour picker: replaces the native WebView colour dialog for every
+       <input type=color>. Hides the native input (keeps it as the value holder + event
+       source) and shows a styled swatch that opens our HSV bottom sheet. */
+    (function () {
+      if (!document.body.classList.contains('is-app')) return;
+      var sheet = document.getElementById('sjcp'); if (!sheet) return;
+      var SV = document.getElementById('sjcpSV'), SVTh = document.getElementById('sjcpSVTh');
+      var HUE = document.getElementById('sjcpHue'), HUETh = document.getElementById('sjcpHueTh');
+      var PREV = document.getElementById('sjcpPrev'), HEX = document.getElementById('sjcpHex');
+      var PRESETS = document.getElementById('sjcpPresets'), SET = document.getElementById('sjcpSet'), CANCEL = document.getElementById('sjcpCancel');
+      var h = 250, s = 0.6, v = 0.9, target = null;
+      var PALETTE = ['#FF3B30','#FF9500','#FFCC00','#34C759','#00C7BE','#30B0FF','#007AFF','#5856D6','#AF52DE','#FF2D55','#FFFFFF','#C7C7CC','#8E8E93','#000000'];
+      function clamp(n,a,b){ return Math.max(a, Math.min(b, n)); }
+      function hsv2rgb(H,S,V){ var c=V*S, x=c*(1-Math.abs((H/60)%2-1)), m=V-c, r,g,b;
+        if(H<60){r=c;g=x;b=0;}else if(H<120){r=x;g=c;b=0;}else if(H<180){r=0;g=c;b=x;}
+        else if(H<240){r=0;g=x;b=c;}else if(H<300){r=x;g=0;b=c;}else{r=c;g=0;b=x;}
+        return [Math.round((r+m)*255),Math.round((g+m)*255),Math.round((b+m)*255)]; }
+      function rgb2hsv(r,g,b){ r/=255;g/=255;b/=255; var mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn,H=0;
+        if(d){ if(mx===r)H=((g-b)/d)%6; else if(mx===g)H=(b-r)/d+2; else H=(r-g)/d+4; H*=60; if(H<0)H+=360; }
+        return [H, mx? d/mx : 0, mx]; }
+      function toHex(r,g,b){ return '#'+[r,g,b].map(function(x){return ('0'+x.toString(16)).slice(-2);}).join('').toUpperCase(); }
+      function curHex(){ var c=hsv2rgb(h,s,v); return toHex(c[0],c[1],c[2]); }
+      function paint(){
+        SV.style.background='linear-gradient(to top,#000,transparent),linear-gradient(to right,#fff,transparent),hsl('+h+',100%,50%)';
+        SVTh.style.left=(s*100)+'%'; SVTh.style.top=((1-v)*100)+'%';
+        var hex=curHex(); SVTh.style.background=hex; PREV.style.background=hex; HUETh.style.left=(h/360*100)+'%';
+        if(document.activeElement!==HEX) HEX.value=hex.slice(1);
+      }
+      function setFromHex(hx){ hx=(hx||'').replace('#','').trim(); if(hx.length===3)hx=hx.split('').map(function(c){return c+c;}).join('');
+        if(!/^[0-9a-fA-F]{6}$/.test(hx)) return false; var n=parseInt(hx,16),k=rgb2hsv((n>>16)&255,(n>>8)&255,n&255); h=k[0];s=k[1];v=k[2]; paint(); return true; }
+      function svDrag(e){ var r=SV.getBoundingClientRect(),p=e.touches?e.touches[0]:e; s=clamp((p.clientX-r.left)/r.width,0,1); v=clamp(1-(p.clientY-r.top)/r.height,0,1); paint(); }
+      function hueDrag(e){ var r=HUE.getBoundingClientRect(),p=e.touches?e.touches[0]:e; h=clamp((p.clientX-r.left)/r.width,0,1)*360; paint(); }
+      function bindDrag(el, fn){
+        function down(e){ e.preventDefault(); fn(e);
+          function mv(ev){ ev.preventDefault(); fn(ev); }
+          function up(){ document.removeEventListener('pointermove',mv); document.removeEventListener('pointerup',up); document.removeEventListener('touchmove',mv); document.removeEventListener('touchend',up); }
+          document.addEventListener('pointermove',mv); document.addEventListener('pointerup',up);
+          document.addEventListener('touchmove',mv,{passive:false}); document.addEventListener('touchend',up); }
+        el.addEventListener('pointerdown',down); el.addEventListener('touchstart',down,{passive:false});
+      }
+      bindDrag(SV, svDrag); bindDrag(HUE, hueDrag);
+      HEX.addEventListener('input', function(){ setFromHex(HEX.value); });
+      PALETTE.forEach(function(col){ var b=document.createElement('button'); b.type='button'; b.className='sjcp-ps'; b.style.background=col; b.setAttribute('aria-label',col); b.onclick=function(){ setFromHex(col); }; PRESETS.appendChild(b); });
+      function updateSwatch(sw,hex){ sw.querySelector('.sjcp-chip').style.background=hex; sw.querySelector('.sjcp-val').textContent=(hex||'').toUpperCase(); }
+      function open(input){ target=input; setFromHex(input.value || '#000000'); sheet.hidden=false; }
+      function close(){ sheet.hidden=true; target=null; }
+      CANCEL.onclick=close;
+      sheet.addEventListener('click', function(e){ if(e.target===sheet) close(); });
+      SET.onclick=function(){ if(target){ var hex=curHex(); target.value=hex; if(target._sjcpSwatch) updateSwatch(target._sjcpSwatch,hex); target.dispatchEvent(new Event('input',{bubbles:true})); target.dispatchEvent(new Event('change',{bubbles:true})); } close(); };
+      function upgrade(input){
+        if(input._sjcpDone) return; input._sjcpDone=true;
+        var sw=document.createElement('button'); sw.type='button'; sw.className='sjcp-swatch';
+        sw.innerHTML='<span class="sjcp-chip"></span><span class="sjcp-val"></span><svg class="sjcp-ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
+        updateSwatch(sw, input.value || '#000000');
+        input.style.display='none'; input._sjcpSwatch=sw;
+        input.parentNode.insertBefore(sw, input.nextSibling);
+        sw.onclick=function(e){ e.preventDefault(); e.stopPropagation(); open(input); };
+        input.addEventListener('click', function(e){ e.preventDefault(); open(input); });
+        input.addEventListener('input', function(){ updateSwatch(sw, input.value); });
+        input.addEventListener('change', function(){ updateSwatch(sw, input.value); });
+      }
+      function scan(){ var L=document.querySelectorAll('input[type=color]'); for(var i=0;i<L.length;i++) upgrade(L[i]); }
+      scan(); setTimeout(scan, 400);
+    })();
+  </script>}
+  {IS_APP && (
+    <div class="sjsel" id="sjsel" hidden>
+      <div class="sjsel-card" role="dialog" aria-modal="true" aria-label="Choose an option">
+        <div class="sjsel-h" id="sjselH">Select</div>
+        <div class="sjsel-list" id="sjselList"></div>
+      </div>
+    </div>
+  )}
+  {IS_APP && <script is:inline>
+    /* Premium dropdown (APP): replaces the native <select> popup with a themed bottom sheet
+       — consistent with every other sheet. The native select stays hidden as the value
+       holder + event source so each page's change handlers keep working. (csel = web only.) */
+    (function () {
+      if (!document.body.classList.contains('is-app')) return;
+      var sheet = document.getElementById('sjsel'); if (!sheet) return;
+      var listEl = document.getElementById('sjselList'), titleEl = document.getElementById('sjselH');
+      function splitLabel(t){ var m = (t || '').split(/\s+[—–-]\s+/); if (m.length > 1) return { title: m[0].trim(), desc: m.slice(1).join(' — ').trim() }; return { title: (t || '').trim(), desc: '' }; }
+      function fillTx(node, parts){ node.innerHTML = ''; var b = document.createElement('b'); b.textContent = parts.title || '—'; node.appendChild(b); if (parts.desc){ var s = document.createElement('small'); s.textContent = parts.desc; node.appendChild(s); } }
+      function updateBtn(sel){ if (!sel._sjBtn) return; var o = sel.options[sel.selectedIndex]; fillTx(sel._sjBtn.querySelector('.sjsel-tx'), splitLabel(o ? o.text : '')); }
+      function svgCheck(){ var s = document.createElementNS('http://www.w3.org/2000/svg','svg'); s.setAttribute('viewBox','0 0 24 24'); s.setAttribute('width','18'); s.setAttribute('height','18'); s.setAttribute('fill','none'); s.setAttribute('stroke','currentColor'); s.setAttribute('stroke-width','2.6'); s.setAttribute('stroke-linecap','round'); s.setAttribute('stroke-linejoin','round'); s.setAttribute('class','sjsel-ck'); s.innerHTML = '<path d="M20 6 9 17l-5-5"/>'; return s; }
+      function deriveLabel(sel){
+        if (sel.getAttribute('aria-label')) return sel.getAttribute('aria-label');
+        var l = sel.id && document.querySelector('label[for="' + sel.id + '"]'); if (l) return l.textContent.trim();
+        var lab = sel.closest('label'); if (lab){ var c = lab.cloneNode(true); var x = c.querySelector('select,input,.sjsel-trigger'); if (x && x.parentNode) x.parentNode.removeChild(x); var t = c.textContent.replace(/\s+/g,' ').trim(); if (t) return t; }
+        return 'Choose an option';
+      }
+      function open(sel){
+        titleEl.textContent = sel._sjLabel || 'Select'; listEl.innerHTML = '';
+        for (var i = 0; i < sel.options.length; i++){
+          (function(o, idx){
+            var on = idx === sel.selectedIndex;
+            var row = document.createElement('button'); row.type = 'button'; row.className = 'sjsel-opt' + (on ? ' on' : '');
+            var tx = document.createElement('span'); tx.className = 'sjsel-opt-tx'; fillTx(tx, splitLabel(o.text)); row.appendChild(tx);
+            if (on) row.appendChild(svgCheck());
+            row.onclick = function(){ if (sel.selectedIndex !== idx){ sel.selectedIndex = idx; sel.dispatchEvent(new Event('input',{bubbles:true})); sel.dispatchEvent(new Event('change',{bubbles:true})); updateBtn(sel); } close(); };
+            listEl.appendChild(row);
+          })(sel.options[i], i);
+        }
+        sheet.hidden = false;
+      }
+      function close(){ sheet.hidden = true; }
+      sheet.addEventListener('click', function(e){ if (e.target === sheet) close(); });
+      function upgrade(sel){
+        if (sel._sjDone || sel.multiple || sel.size > 1 || sel.hasAttribute('data-no-csel')) return; sel._sjDone = true;
+        sel._sjLabel = deriveLabel(sel);
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'sjsel-trigger';
+        b.innerHTML = '<span class="sjsel-tx"></span><svg class="sjsel-ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
+        sel._sjBtn = b; updateBtn(sel);
+        sel.style.display = 'none'; sel.setAttribute('tabindex','-1'); sel.setAttribute('aria-hidden','true');
+        sel.parentNode.insertBefore(b, sel.nextSibling);
+        b.onclick = function(e){ e.preventDefault(); e.stopPropagation(); open(sel); };
+        sel.addEventListener('change', function(){ updateBtn(sel); });
+      }
+      function scan(){ var L = document.querySelectorAll('select'); for (var i = 0; i < L.length; i++) upgrade(L[i]); }
+      scan(); setTimeout(scan, 400); setTimeout(scan, 1200);
+      /* some tools reveal their <select> only after a file loads / WASM is ready — catch those */
+      var _t; try { new MutationObserver(function(){ clearTimeout(_t); _t = setTimeout(scan, 150); }).observe(document.body, { childList: true, subtree: true }); } catch (e) {}
+    })();
+  </script>}
+  {IS_APP && <script is:inline>
+    (function () {
+      var bar = document.getElementById('sjOffline'); if (!bar) return;
+      var dismissed = false;
+      function sync(){ if (!bar) return; var off = (navigator.onLine === false); bar.hidden = !(off && !dismissed); }
+      document.getElementById('sjOfflineX').addEventListener('click', function (){ dismissed = true; bar.hidden = true; });
+      window.addEventListener('online', function (){ dismissed = false; sync(); });
+      window.addEventListener('offline', function (){ dismissed = false; sync(); });
+      sync();
+    })();
+  </script>}
+  {IS_APP && <script is:inline>
+    /* AdMob — only the BANNER floats; it sits in a strip ABOVE the bottom nav (the nav
+       stays pinned to the very bottom). The banner is AUTO-HIDDEN the instant any bottom
+       sheet, menu or modal opens, so it can NEVER cover Delete or other controls. A
+       throttled interstitial shows MORE ads at natural breakpoints without overlaying
+       anything. Disabled on the immersive reader/editor/scan. TEST IDs until real ones set. */
+    (function () {
+      var AdMob = window.SnapJarKit ? window.SnapJarKit.plugin('AdMob') : null, K = window.SnapJarKit;
+      if (!AdMob || !AdMob.initialize) return;
+      /* ========================= AdMob CONFIG — GO LIVE HERE =========================
+         To run REAL ads: (1) set ADS_TESTING = false, (2) paste YOUR real ad-unit IDs from
+         admob.google.com below, (3) put your real APP ID in android/.../AndroidManifest.xml
+         (com.google.android.gms.ads.APPLICATION_ID). Keep ADS_TESTING = true while developing
+         — NEVER show real ads on your own device (clicking them = AdMob ban). Register your
+         phone as a test device in AdMob if you must test real units. */
+      var ADS_TESTING = false; // true = ALWAYS test ads (safe while developing); false = real ads where IDs below are set
+      // Paste REAL ad-unit IDs from admob.google.com. Leave '' to keep THAT placement on Google TEST ads.
+      var REAL_BANNER = 'ca-app-pub-4351869860119610/5896419968';        // ✓ live banner unit (also serves the MREC size)
+      var REAL_INTERSTITIAL = 'ca-app-pub-4351869860119610/6251643185';  // ✓ live interstitial unit
+      var _realB = !ADS_TESTING && !!REAL_BANNER, _realI = !ADS_TESTING && !!REAL_INTERSTITIAL;
+      var TEST_BANNER = _realB ? REAL_BANNER : 'ca-app-pub-3940256099942544/6300978111';
+      var TEST_INTERSTITIAL = _realI ? REAL_INTERSTITIAL : 'ca-app-pub-3940256099942544/1033173712';
+      var BANNER_TESTING = !_realB, INTERSTITIAL_TESTING = !_realI; // isTesting per placement (real unit → false → real ads)
+      var immersive = location.pathname.indexOf('/tools/pdf-studio') === 0;
+      var root = document.documentElement, body = document.body;
+      function setAdH(px) { root.style.setProperty('--ad-h', (px > 0 ? px : 0) + 'px'); }
+      /* Reserve the top ad space from the VERY FIRST frame on every page. The native banner
+         persists across page navigations but its size event may NOT re-fire, so a page would
+         otherwise start with --ad-h:0 and the header would overlap the ad. We remember the
+         tallest ad height seen (localStorage) and apply it immediately; immersive pages = 0. */
+      /* reserve for the BIGGEST ad: never let the top space shrink below 90px (anchored
+         adaptive banners top out ~90px), and grow if a taller one ever appears → no creative
+         can EVER overlap the header, on first load or after a refresh. */
+      function rememberAdH(h) { try { var m = Math.max(h, 90, +(localStorage.getItem('sj_adh') || 0)); localStorage.setItem('sj_adh', m); localStorage.setItem('sj_ads_on', '1'); setAdH(m); } catch (e) { setAdH(Math.max(h, 90)); } }
+      if (immersive) { setAdH(0); }
+      else { try { var savedAdH = +(localStorage.getItem('sj_adh') || 0); setAdH(savedAdH > 90 ? savedAdH : 90); } catch (e) { setAdH(90); } }
+      function onSize(info) { var h = info && (info.height != null ? info.height : (info.size && info.size.height)); if (h && h > 0) rememberAdH(h); }
+      try { if (AdMob.addListener) { AdMob.addListener('bannerViewSizeChanged', onSize); AdMob.addListener('bannerAdSizeChanged', onSize); } } catch (e) {}
+      /* Measure the TRUE top of the nav region — including the raised Scan button, which
+         sticks up above the bar — and convert to the banner's physical-px margin so the
+         ad sits fully ABOVE the whole nav on any density/display. Guessing a height left
+         the banner clipping the Scan button; measuring the highest nav pixel fixes it. */
+      function navMargin() {
+        var vh = window.innerHeight || 800, top = vh, dpr = window.devicePixelRatio || 1;
+        var nav = document.querySelector('.appbar'); var scan = document.getElementById('navScan');
+        try { if (nav) top = Math.min(top, nav.getBoundingClientRect().top); } catch (e) {}
+        try { if (scan) top = Math.min(top, scan.getBoundingClientRect().top); } catch (e) {}
+        var clearance = Math.max(64, vh - top);   // CSS px from the highest nav pixel to the bottom
+        return Math.round((clearance + 50) * dpr); // clear the full nav + a 50px gap (×dpr→physical px the plugin wants)
+      }
+      /* hide the banner whenever ANY overlay/sheet/modal is open — never cover controls. */
+      var OVERLAY_SEL = '.sjcp:not([hidden]),.sjsel:not([hidden]),.lib-sheet,.scan-sheet:not([hidden]),.app-modal:not([hidden]),.sj-ask,.sj-sheet:not([hidden]),.pr-sheet:not([hidden]),#prShareSheet:not([hidden]),#prFilter:not([hidden]),#prQrRes:not([hidden]),#wrSettings:not([hidden]),[data-sj-sheet]:not([hidden])';
+      function overlayOpen() { try { return !!document.querySelector(OVERLAY_SEL); } catch (e) { return false; } }
+      var shown = false, t, paused = false;
+      function swallow(p) { if (p && typeof p.catch === 'function') p.catch(function () {}); }  // hide/resume/removeBanner reject if no banner — never throw
+      function pause() { if (paused) return; paused = true; if (shown) { try { swallow(AdMob.hideBanner()); } catch (e) {} } body.classList.remove('ads-on'); }
+      function resume() { if (!paused || overlayOpen()) return; paused = false; if (shown) { try { swallow(AdMob.resumeBanner()); } catch (e) {} body.classList.add('ads-on'); } }
+      function sync() { if (immersive) return; if (overlayOpen()) pause(); else resume(); }
+      function syncSoon() { clearTimeout(t); t = setTimeout(sync, 50); }
+      if (K) { K.adPause = pause; K.adResume = function () { setTimeout(sync, 0); }; }
+      try { new MutationObserver(syncSoon).observe(body, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden', 'class', 'style'] }); } catch (e) {}
+      /* the soft keyboard resizes the WebView → a bottom-anchored overlay banner floats
+         into the middle of the screen. Hide it whenever a text field is focused. */
+      function editable(el) { if (!el) return false; var tg = (el.tagName || '').toLowerCase(); return tg === 'input' || tg === 'textarea' || tg === 'select' || el.isContentEditable; }
+      document.addEventListener('focusin', function (e) { if (editable(e.target)) pause(); }, true);
+      document.addEventListener('focusout', function () { setTimeout(function () { if (!editable(document.activeElement)) resume(); }, 120); }, true);
+      /* GDPR/CCPA consent (Google UMP) — request BEFORE initializing/serving ads. For users
+         outside the EEA/UK/California a form isn't required and this resolves instantly; for
+         those who need it, the consent form is shown. Without this, ad fill is blocked/limited
+         in those regions. Set up the consent form once in the AdMob console (Privacy & messaging). */
+      function _consent() {
+        try {
+          if (AdMob.requestConsentInfo) {
+            return AdMob.requestConsentInfo({ tagForUnderAgeOfConsent: false }).then(function (info) {
+              if (info && info.isConsentFormAvailable && info.status === 'REQUIRED' && AdMob.showConsentForm) return AdMob.showConsentForm().catch(function () {});
+            }).catch(function () {});
+          }
+        } catch (e) {}
+        return Promise.resolve();
+      }
+      _consent().then(function () { return AdMob.initialize({ initializeForTesting: ADS_TESTING }); }).then(function () {
+        function prep() { try { AdMob.prepareInterstitial && AdMob.prepareInterstitial({ adId: TEST_INTERSTITIAL, isTesting: INTERSTITIAL_TESTING }).catch(function () {}); } catch (e) {} }
+        if (K) {
+          K._prepInterstitial = prep;
+          K.maybeInterstitial = function () {
+            try {
+              var now = +new Date(), last = +(localStorage.getItem('sj_int_ts') || 0), n = (+(localStorage.getItem('sj_int_n') || 0)) + 1;
+              localStorage.setItem('sj_int_n', n);
+              if (n % 3 !== 0 || now - last < 120000) return;
+              localStorage.setItem('sj_int_ts', now);
+              AdMob.showInterstitial && AdMob.showInterstitial().then(prep).catch(prep);
+            } catch (e) {}
+          };
+        }
+        /* EXTRA interstitial at a natural high-fill moment: when the user RE-OPENS the app
+           (foreground). Throttled inside maybeInterstitial so it never spams. */
+        try { var _App = K.plugin('App'); if (_App && _App.addListener) _App.addListener('appStateChange', function (s) { if (s && s.isActive && K && K.maybeInterstitial) setTimeout(K.maybeInterstitial, 700); }); } catch (e) {}
+        prep();
+        if (immersive) { try { swallow(AdMob.removeBanner()); } catch (e) {} setAdH(0); return; }
+        /* The native banner PERSISTS across page navigations, but on a new page showBanner()
+           may reject ("already shown") → don't tear down the reserved space. Once the ad has
+           shown even once (flag), reserve the top space IMMEDIATELY on every page so the
+           header never overlaps the ad during navigation. */
+        try { if (localStorage.getItem('sj_ads_on') === '1') body.classList.add('ads-on'); } catch (e) {}
+        function showAd() {
+          /* TOP_CENTER, margin 0 → the banner lives at the very TOP (below the status bar).
+             The bottom nav is therefore NEVER touched (opposite end of the screen). */
+          try { swallow(AdMob.showBanner({ adId: TEST_BANNER, adSize: 'ADAPTIVE_BANNER', position: 'TOP_CENTER', margin: 0, isTesting: BANNER_TESTING })
+            .then(function () { shown = true; try { localStorage.setItem('sj_ads_on', '1'); } catch (e) {} if (overlayOpen()) { paused = true; swallow(AdMob.hideBanner()); } else body.classList.add('ads-on'); })
+            .catch(function () { /* keep the reserved space — the banner usually persists from a prior page */ })); } catch (e) {}
+        }
+        /* FOLDABLE/ROTATE: when the display geometry changes (fold↔unfold, rotate), the
+           WebView resizes but the banner keeps its OLD margin → it lands on the navbar.
+           Re-place it with a freshly-measured margin. Width change distinguishes a
+           fold/rotate from the keyboard (handled separately above). */
+        var lastW = window.innerWidth, lastH = window.innerHeight, rzT;
+        function reposition() { if (immersive) return; try { swallow(AdMob.removeBanner()); } catch (e) {} shown = false; paused = false; body.classList.remove('ads-on'); showAd(); }
+        function onResize() {
+          var w = window.innerWidth;
+          if (Math.abs(w - lastW) < 40) return; // ONLY reposition on WIDTH change (fold/rotate) — not height (keyboard or the ad's own resize), which caused the banner to re-place itself badly
+          lastW = w; lastH = window.innerHeight; clearTimeout(rzT); rzT = setTimeout(reposition, 500);
+        }
+        window.addEventListener('resize', onResize);
+        if (window.screen && window.screen.orientation && window.screen.orientation.addEventListener) window.screen.orientation.addEventListener('change', function () { clearTimeout(rzT); rzT = setTimeout(reposition, 450); });
+        /* IN-CONTENT MREC (Option 4): a big 300x250 ad shown ONLY where there's genuine empty
+           space — the Recent/My Files empty state. It replaces the top banner there (one ad at
+           a time = policy-safe). Pages call these; we keep the height OUT of the persisted
+           banner height so it never bloats other pages' top space. */
+        K.adMrec = function () {
+          try { swallow(AdMob.removeBanner()); } catch (e) {}
+          shown = false; paused = false; body.classList.remove('ads-on'); body.classList.add('mrec-on'); setAdH(0);
+          try { swallow(AdMob.showBanner({ adId: TEST_BANNER, adSize: 'MEDIUM_RECTANGLE', position: 'CENTER', margin: 0, isTesting: BANNER_TESTING })); } catch (e) {}
+        };
+        K.adRestore = function () {
+          if (!body.classList.contains('mrec-on')) return;
+          body.classList.remove('mrec-on');
+          try { swallow(AdMob.removeBanner()); } catch (e) {}
+          shown = false; paused = false;
+          try { var s = +(localStorage.getItem('sj_adh') || 0); setAdH(s > 90 ? s : 90); } catch (e) { setAdH(90); }
+          showAd();
+        };
+        showAd();
+      }).catch(function () {});
+    })();
+  </script>}
 
   <section class="trust-strip">
     <div class="wrap trust-in">
@@ -359,5 +1030,166 @@ const IS_APP = import.meta.env.PUBLIC_APP_BUILD === '1';
       })();
     </script>
   )}
+
+  {!IS_APP && <script is:inline>
+    /* ===== Custom select — replaces the un-themeable native OS dropdown popup
+       with a styled popover (WEB ONLY). In the APP we use a bottom-sheet picker
+       instead (see the sjsel script above) for consistency with the other sheets.
+       The native <select> stays the source of
+       truth (existing code reads .value / listens for 'change'); we keep it in
+       sync. Defensive: any failure leaves the original native select working. */
+    (function () {
+      var SVG_CHEV = '<svg class="csel-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+      var SVG_TICK = '<svg class="csel-tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>';
+      var openInst = null;
+
+      function splitLabel(text) {
+        // "192 kbps — recommended (music & speech)" -> {title, desc}
+        var m = (text || '').split(/\s+[—–-]\s+/);
+        if (m.length > 1) return { title: m[0].trim(), desc: m.slice(1).join(' — ').trim() };
+        return { title: (text || '').trim(), desc: '' };
+      }
+      function fillNode(node, parts) {
+        var b = document.createElement('b'); b.textContent = parts.title || '—'; node.appendChild(b);
+        if (parts.desc) { var s = document.createElement('small'); s.textContent = parts.desc; node.appendChild(s); }
+      }
+
+      function enhance(sel) {
+        if (sel.__csel || sel.multiple || sel.size > 1 || sel.hasAttribute('data-no-csel')) return;
+        sel.__csel = true;
+
+        var wrap = document.createElement('div'); wrap.className = 'csel';
+        sel.parentNode.insertBefore(wrap, sel);
+        wrap.appendChild(sel);
+        sel.classList.add('csel-native');
+        sel.setAttribute('tabindex', '-1'); sel.setAttribute('aria-hidden', 'true');
+
+        var btn = document.createElement('button');
+        btn.type = 'button'; btn.className = 'csel-btn';
+        btn.setAttribute('aria-haspopup', 'listbox'); btn.setAttribute('aria-expanded', 'false');
+        var lblEl = (sel.id && document.querySelector('label[for="' + sel.id + '"]')) || sel.closest('label');
+        var lblTxt = sel.getAttribute('aria-label') || (lblEl && lblEl.textContent.trim());
+        if (lblTxt) btn.setAttribute('aria-label', lblTxt);
+        var lblNode = document.createElement('span'); lblNode.className = 'csel-lbl';
+        btn.appendChild(lblNode);
+        btn.insertAdjacentHTML('beforeend', SVG_CHEV);
+        wrap.appendChild(btn);
+
+        var pop = document.createElement('div');
+        pop.className = 'csel-pop'; pop.setAttribute('role', 'listbox');
+        document.body.appendChild(pop);
+
+        var inst = { sel: sel, btn: btn, pop: pop, active: -1 };
+
+        function syncBtn() {
+          var o = sel.options[sel.selectedIndex];
+          lblNode.innerHTML = '';
+          fillNode(lblNode, splitLabel(o ? o.textContent : ''));
+        }
+
+        function buildPop() {
+          pop.innerHTML = '';
+          for (var i = 0; i < sel.options.length; i++) {
+            (function (o, idx) {
+              var opt = document.createElement('button');
+              opt.type = 'button'; opt.className = 'csel-opt'; opt.setAttribute('role', 'option');
+              opt.setAttribute('aria-selected', idx === sel.selectedIndex ? 'true' : 'false');
+              var t = document.createElement('span'); t.className = 'csel-opt-txt';
+              fillNode(t, splitLabel(o.textContent));
+              opt.appendChild(t);
+              opt.insertAdjacentHTML('beforeend', SVG_TICK);
+              opt.addEventListener('click', function () { pick(idx); });
+              opt.addEventListener('mousemove', function () { setActive(idx); });
+              pop.appendChild(opt);
+            })(sel.options[i], i);
+          }
+        }
+        function setActive(i) {
+          var opts = pop.children;
+          if (inst.active >= 0 && opts[inst.active]) opts[inst.active].classList.remove('active');
+          inst.active = i;
+          if (i >= 0 && opts[i]) { opts[i].classList.add('active'); opts[i].scrollIntoView({ block: 'nearest' }); }
+        }
+        function place() {
+          var r = btn.getBoundingClientRect();
+          pop.style.width = r.width + 'px';
+          pop.style.left = r.left + 'px';
+          var h = pop.offsetHeight, gap = 6;
+          var below = window.innerHeight - r.bottom, above = r.top;
+          if (below < h + gap && above > below) {
+            pop.classList.add('up'); pop.style.top = Math.max(gap, r.top - h - gap) + 'px';
+          } else {
+            pop.classList.remove('up'); pop.style.top = (r.bottom + gap) + 'px';
+          }
+        }
+        function open() {
+          if (openInst && openInst !== inst) openInst.close();
+          buildPop();
+          place();                    // offsetHeight is valid while still at opacity 0
+          pop.classList.add('open');  // then animate in from the placed position
+          btn.setAttribute('aria-expanded', 'true');
+          setActive(sel.selectedIndex);
+          openInst = inst;
+          window.addEventListener('scroll', onScroll, true);
+          window.addEventListener('resize', place);
+        }
+        function close() {
+          pop.classList.remove('open'); btn.setAttribute('aria-expanded', 'false');
+          window.removeEventListener('scroll', onScroll, true);
+          window.removeEventListener('resize', place);
+          if (openInst === inst) openInst = null;
+        }
+        function onScroll() { place(); }
+        function pick(i) {
+          if (i !== sel.selectedIndex) {
+            sel.selectedIndex = i;
+            sel.dispatchEvent(new Event('input', { bubbles: true }));
+            sel.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+          syncBtn(); close(); btn.focus();
+        }
+        inst.close = close;
+
+        btn.addEventListener('click', function () {
+          if (pop.classList.contains('open')) close(); else open();
+        });
+        btn.addEventListener('keydown', function (e) {
+          var isOpen = pop.classList.contains('open');
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (!isOpen) { open(); return; }
+            var n = pop.children.length, next = inst.active < 0 ? 0 : inst.active + (e.key === 'ArrowDown' ? 1 : -1);
+            setActive((next + n) % n);
+          } else if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            if (!isOpen) open(); else if (inst.active >= 0) pick(inst.active);
+          } else if (e.key === 'Escape') {
+            if (isOpen) { e.preventDefault(); close(); }
+          } else if (e.key === 'Home' && isOpen) { e.preventDefault(); setActive(0); }
+          else if (e.key === 'End' && isOpen) { e.preventDefault(); setActive(pop.children.length - 1); }
+        });
+        pop.addEventListener('keydown', function (e) { if (e.key === 'Escape') { e.preventDefault(); close(); btn.focus(); } });
+
+        // outside click / native change / dynamic option changes
+        document.addEventListener('pointerdown', function (e) {
+          if (pop.classList.contains('open') && !pop.contains(e.target) && !btn.contains(e.target)) close();
+        });
+        sel.addEventListener('change', syncBtn);
+        try {
+          new MutationObserver(function () { syncBtn(); if (pop.classList.contains('open')) buildPop(); })
+            .observe(sel, { childList: true });
+        } catch (e) {}
+
+        syncBtn();
+      }
+
+      function init() {
+        var sels = document.querySelectorAll('select');
+        for (var i = 0; i < sels.length; i++) { try { enhance(sels[i]); } catch (e) {} }
+      }
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+      else init();
+    })();
+  </script>}
 </body>
 </html>

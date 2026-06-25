@@ -75,7 +75,7 @@ const faqItems = [
       $('hex').addEventListener('input',function(){var v=$('hex').value.trim();if(/^#?[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(v)){var c=hexToRgb(v);fromRgb(c.r,c.g,c.b);}});
       ['r','g','b'].forEach(function(id){$(id).addEventListener('input',function(){fromRgb(+$('r').value||0,+$('g').value||0,+$('b').value||0);});});
       ['h','s','l'].forEach(function(id){$(id).addEventListener('input',function(){var c=hslToRgb(+$('h').value||0,+$('s').value||0,+$('l').value||0);fromRgb(c.r,c.g,c.b);});});
-      document.querySelectorAll('.cpy').forEach(function(b){b.onclick=function(){var t=$(b.dataset.c).value;navigator.clipboard&&navigator.clipboard.writeText(t);b.textContent='Copied!';setTimeout(function(){b.textContent='Copy';},1000);};});
+      document.querySelectorAll('.cpy').forEach(function(b){b.onclick=function(){var t=$(b.dataset.c).value;if(window.SnapJarKit){window.SnapJarKit.copy(t);}else{try{navigator.clipboard&&navigator.clipboard.writeText(t).catch(function(){});}catch(e){}}b.textContent='Copied!';setTimeout(function(){b.textContent='Copy';},1000);};});
       fromRgb(107,77,255);
     })();
   </script>

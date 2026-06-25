@@ -3,7 +3,8 @@
    category grids of real 3D icons (Microsoft Fluent, bundled in /assets/icons),
    with multiple ad slots. Tools link to the SHARED tool pages. */
 const popular = [
-  { ic: 'open_book',       l: 'PDF Reader',   h: '/tools/pdf-reader' },
+  { ic: 'open_book',       l: 'PDF Reader',   h: '/tools/pdf-studio' },
+  { ic: 'memo',            l: 'PDF Editor',   h: '/tools/pdf-studio' },
   { ic: 'bookmark_tabs',   l: 'Merge PDF',    h: '/tools/pdf-tools' },
   { ic: 'clamp',           l: 'Compress PDF', h: '/tools/compress-pdf' },
   { ic: 'page_facing_up',  l: 'PDF → JPG',    h: '/tools/pdf-to-jpg' },
@@ -15,8 +16,8 @@ const popular = [
 ];
 const sections = [
   { id: 'watermark', h: 'Watermark', items: [
-    { ic: 'droplet',        l: 'Photo',     h: '/tools/watermark' },
-    { ic: 'droplet',        l: 'PDF',       h: '/tools/watermark-pdf' },
+    { ic: 'framed_picture', l: 'Photo',     h: '/tools/watermark' },
+    { ic: 'page_facing_up', l: 'PDF',       h: '/tools/watermark-pdf' },
   ]},
   { id: 'pdf-tools', h: 'PDF Tools', items: [
     { ic: 'bookmark_tabs',                 l: 'Merge',      h: '/tools/pdf-tools' },
@@ -31,6 +32,8 @@ const sections = [
     { ic: 'framed_picture',                l: 'JPG → PDF',  h: '/tools/jpg-to-pdf' },
     { ic: 'page_facing_up',                l: 'PDF → JPG',  h: '/tools/pdf-to-jpg' },
     { ic: 'memo',                          l: 'Text → PDF', h: '/tools/text-to-pdf' },
+    { ic: 'bookmark_tabs',                 l: 'Word → PDF', h: '/tools/word-to-pdf' },
+    { ic: 'memo',                          l: 'PDF → Word', h: '/tools/pdf-to-word' },
   ]},
   { id: 'image-tools', h: 'Image Tools', items: [
     { ic: 'clamp',                    l: 'Compress',  h: '/tools/compress' },
@@ -59,7 +62,6 @@ const sections = [
   { id: 'text-tools', h: 'Color & Text', items: [
     { ic: 'artist_palette',         l: 'Color Pick', h: '/tools/color-picker' },
     { ic: 'artist_palette',         l: 'Palette',    h: '/tools/palette-extractor' },
-    { ic: 'input_numbers',          l: 'Convert',    h: '/tools/color-converter' },
     { ic: 'rainbow',                l: 'Gradient',   h: '/tools/gradient-generator' },
     { ic: 'input_latin_letters',    l: 'Word Count', h: '/tools/word-counter' },
     { ic: 'straight_ruler',         l: 'Char Count', h: '/tools/character-counter' },
