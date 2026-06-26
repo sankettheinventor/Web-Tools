@@ -782,10 +782,15 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
          own strip and the header always sits below it. */
       function rememberAdH(h) { try { var m = Math.min(Math.max(h, 100), 120); localStorage.setItem('sj_adh', m); localStorage.setItem('sj_ads_on', '1'); setAdH(m); } catch (e) { setAdH(Math.min(Math.max(h, 100), 120)); } }
       if (immersive) { setAdH(0); }
-      else { try { var savedAdH = +(localStorage.getItem('sj_adh') || 0); if (!(savedAdH >= 100 && savedAdH <= 120)) savedAdH = 100; localStorage.setItem('sj_adh', savedAdH); setAdH(savedAdH); } catch (e) { setAdH(100); }
-        try { body.classList.add('ads-on'); } catch (e) {} }   /* reserve the ad strip from the FIRST frame so the header is never under the ad while the banner loads */
+      else { try { var savedAdH = +(localStorage.getItem('sj_adh') || 0); if (!(savedAdH >= 100 && savedAdH <= 120)) savedAdH = 100; localStorage.setItem('sj_adh', savedAdH); setAdH(savedAdH); } catch (e) { setAdH(100); } }
       function onSize(info) { var h = info && (info.height != null ? info.height : (info.size && info.size.height)); if (h && h > 0) rememberAdH(h); }
-      try { if (AdMob.addListener) { AdMob.addListener('bannerViewSizeChanged', onSize); AdMob.addListener('bannerAdSizeChanged', onSize); } } catch (e) {}
+      try { if (AdMob.addListener) {
+        AdMob.addListener('bannerViewSizeChanged', onSize); AdMob.addListener('bannerAdSizeChanged', onSize);
+        /* an ad actually loaded → reserve its strip + show it */
+        AdMob.addListener('bannerAdLoaded', function () { if (immersive) return; try { var sv = +(localStorage.getItem('sj_adh') || 0); setAdH(sv >= 100 && sv <= 120 ? sv : 100); body.classList.add('ads-on'); } catch (e) {} });
+        /* no fill (or error) → collapse the strip so there's no empty gap pre-launch */
+        AdMob.addListener('bannerAdFailedToLoad', function () { setAdH(0); try { body.classList.remove('ads-on'); } catch (e) {} });
+      } } catch (e) {}
       /* Measure the TRUE top of the nav region — including the raised Scan button, which
          sticks up above the bar — and convert to the banner's physical-px margin so the
          ad sits fully ABOVE the whole nav on any density/display. Guessing a height left

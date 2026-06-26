@@ -294,7 +294,12 @@ body.is-app .tool .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: to
 .scan-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
 .scan-opt{ position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:9px; padding:16px 6px; border:1px solid var(--sheet-line); border-radius:16px; background:var(--sheet-row); color:var(--app-ink); font:inherit; cursor:pointer; transition:transform var(--d-micro) var(--ease-out), background var(--d-micro) var(--ease-out), border-color var(--d-micro) var(--ease-out); }
 .scan-opt:active{ transform:scale(.95); background:var(--sheet-row-active); border-color:var(--app-accent); }
-.scan-opt .so-ic{ font-size:26px; line-height:1; filter:drop-shadow(0 4px 8px rgba(0,0,0,.18)); }
+.scan-opt .so-ic{ width:46px; height:46px; border-radius:13px; display:grid; place-items:center;
+  background:linear-gradient(140deg, var(--g1,#7c5cff), var(--g2,#a78bfa));
+  box-shadow:0 7px 16px -5px var(--g1,#7c5cff), inset 0 1px 0 rgba(255,255,255,.32);
+  transition:transform var(--d-micro) var(--ease-out); }
+.scan-opt .so-ic svg{ width:24px; height:24px; color:#fff; }
+.scan-opt:active .so-ic{ transform:scale(.94); }
 .scan-opt .so-l{ font-size:12px; font-weight:700; letter-spacing:.1px; }
 .scan-opt .so-soon{ position:absolute; top:7px; right:7px; font-size:8.5px; font-weight:800; text-transform:uppercase; letter-spacing:.5px; color:#fff; background:linear-gradient(135deg,var(--brand2),var(--brand)); padding:2px 6px; border-radius:7px; }
 .scan-cancel{ width:100%; margin-top:14px; padding:14px; border:0; border-radius:14px; background:var(--sheet-row); color:var(--app-dim); font:inherit; font-weight:700; cursor:pointer; }
