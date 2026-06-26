@@ -29,6 +29,9 @@ body.is-app {
   --app-pad: 22px;        /* consistent left/right breathing room */
   background: var(--app-bg);
   color: var(--app-ink);
+  /* edge-to-edge (viewport-fit=cover): keep content below the status bar when there is
+     no ad. When an ad shows, .ads-on overrides this with the larger --ad-zone. */
+  padding-top: env(safe-area-inset-top);
   padding-bottom: calc(86px + env(safe-area-inset-bottom));
 }
 /* DARK theme — premium too: deep canvas, raised tiles, light ink. Toggle works in-app. */
@@ -54,7 +57,7 @@ body.is-app .ad { display: none; }
 body.is-app .theme-btn { display: grid; }
 
 /* top bar: clean white, just the brand (NOT the bottom .appbar nav) */
-body.is-app nav:not(.appbar) { background: var(--app-bg); border-bottom: 1px solid var(--app-line); backdrop-filter: none; }
+body.is-app nav:not(.appbar) { background: var(--app-bg); border-bottom: 1px solid var(--app-line); backdrop-filter: none; position: sticky; top: env(safe-area-inset-top); z-index: 40; }
 body.is-app .brand { color: var(--app-ink); }
 
 /* ===================== APP HOME ===================== */
@@ -406,6 +409,6 @@ body.is-app.ads-on::before {
 }
 /* in-content MREC mode (empty My Files): no top banner → no top reservation; lift the
    empty-state text up so the centered 300x250 ad fills the empty area below it. */
-body.is-app.mrec-on { padding-top: 0; }
+body.is-app.mrec-on { padding-top: env(safe-area-inset-top); }
 body.is-app.mrec-on .lib-empty { justify-content: flex-start; padding-top: 8px; }
 body.is-app.mrec-on .lib-empty-ic { display: none; }

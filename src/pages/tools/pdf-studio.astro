@@ -438,7 +438,7 @@ const faqItems = [
 
     .pr-doc{height:calc(100vh - 58px - 60px);overflow-y:auto;overflow-x:hidden;background:#e9e7f1;padding:18px 0;display:flex;flex-direction:column;align-items:center;gap:16px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;will-change:scroll-position}
     :root[data-theme="dark"] .pr-doc{background:#13111b}
-    body.is-app .pr-doc{height:calc(100vh - 58px - 62px - env(safe-area-inset-bottom))}
+    body.is-app .pr-doc{height:calc(100vh - 58px - 62px - env(safe-area-inset-bottom) - env(safe-area-inset-top))}
     /* when the top ad is showing, the body is padded down by --ad-zone — shrink the reader to match so nothing is hidden */
     body.is-app.ads-on .pr-doc{height:calc(100vh - 58px - 62px - env(safe-area-inset-bottom) - var(--ad-zone))}
     .pr-doc.sepia{background:#c9c2a8}
