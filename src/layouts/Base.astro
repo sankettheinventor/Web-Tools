@@ -852,7 +852,7 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
         function showAd() {
           /* TOP_CENTER, margin 0 → the banner lives at the very TOP (below the status bar).
              The bottom nav is therefore NEVER touched (opposite end of the screen). */
-          try { swallow(AdMob.showBanner({ adId: TEST_BANNER, adSize: 'ADAPTIVE_BANNER', position: 'TOP_CENTER', margin: 0, isTesting: BANNER_TESTING })
+          try { swallow(AdMob.showBanner({ adId: TEST_BANNER, adSize: 'BANNER', position: 'TOP_CENTER', margin: 0, isTesting: BANNER_TESTING })
             .then(function () { shown = true; try { localStorage.setItem('sj_ads_on', '1'); } catch (e) {} if (overlayOpen()) { paused = true; swallow(AdMob.hideBanner()); } else body.classList.add('ads-on'); })
             .catch(function () { /* keep the reserved space — the banner usually persists from a prior page */ })); } catch (e) {}
         }
