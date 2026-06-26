@@ -778,9 +778,11 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
          can EVER overlap the header, on first load or after a refresh. */
       /* Use the ACTUAL anchored-banner height (small), floored at 50 and capped at 110, so a
          past medium-rectangle (250px) can't inflate the top zone. */
-      function rememberAdH(h) { try { var m = Math.min(Math.max(h, 50), 110); localStorage.setItem('sj_adh', m); localStorage.setItem('sj_ads_on', '1'); setAdH(m); } catch (e) { setAdH(Math.min(Math.max(h, 50), 110)); } }
+      /* fixed 320x100 large banner — reserve exactly its height (floor 100, cap 120) so it has its
+         own strip and the header always sits below it. */
+      function rememberAdH(h) { try { var m = Math.min(Math.max(h, 100), 120); localStorage.setItem('sj_adh', m); localStorage.setItem('sj_ads_on', '1'); setAdH(m); } catch (e) { setAdH(Math.min(Math.max(h, 100), 120)); } }
       if (immersive) { setAdH(0); }
-      else { try { var savedAdH = +(localStorage.getItem('sj_adh') || 0); if (!(savedAdH >= 50 && savedAdH <= 110)) savedAdH = 56; localStorage.setItem('sj_adh', savedAdH); setAdH(savedAdH); } catch (e) { setAdH(56); }
+      else { try { var savedAdH = +(localStorage.getItem('sj_adh') || 0); if (!(savedAdH >= 100 && savedAdH <= 120)) savedAdH = 100; localStorage.setItem('sj_adh', savedAdH); setAdH(savedAdH); } catch (e) { setAdH(100); }
         try { body.classList.add('ads-on'); } catch (e) {} }   /* reserve the ad strip from the FIRST frame so the header is never under the ad while the banner loads */
       function onSize(info) { var h = info && (info.height != null ? info.height : (info.size && info.size.height)); if (h && h > 0) rememberAdH(h); }
       try { if (AdMob.addListener) { AdMob.addListener('bannerViewSizeChanged', onSize); AdMob.addListener('bannerAdSizeChanged', onSize); } } catch (e) {}
@@ -853,7 +855,7 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
         function showAd() {
           /* TOP_CENTER, margin 0 → the banner lives at the very TOP (below the status bar).
              The bottom nav is therefore NEVER touched (opposite end of the screen). */
-          try { swallow(AdMob.showBanner({ adId: TEST_BANNER, adSize: 'BANNER', position: 'TOP_CENTER', margin: 0, isTesting: BANNER_TESTING })
+          try { swallow(AdMob.showBanner({ adId: TEST_BANNER, adSize: 'LARGE_BANNER', position: 'TOP_CENTER', margin: 0, isTesting: BANNER_TESTING })
             .then(function () { shown = true; try { localStorage.setItem('sj_ads_on', '1'); } catch (e) {} if (overlayOpen()) { paused = true; swallow(AdMob.hideBanner()); } else body.classList.add('ads-on'); })
             .catch(function () { /* keep the reserved space — the banner usually persists from a prior page */ })); } catch (e) {}
         }
@@ -884,7 +886,7 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
           body.classList.remove('mrec-on');
           try { swallow(AdMob.removeBanner()); } catch (e) {}
           shown = false; paused = false;
-          try { var s = +(localStorage.getItem('sj_adh') || 0); if (!(s >= 50 && s <= 110)) s = 56; setAdH(s); } catch (e) { setAdH(56); }
+          try { var s = +(localStorage.getItem('sj_adh') || 0); if (!(s >= 100 && s <= 120)) s = 100; setAdH(s); } catch (e) { setAdH(100); }
           showAd();
         };
         showAd();

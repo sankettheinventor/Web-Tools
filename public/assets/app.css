@@ -389,7 +389,7 @@ body.is-app .tool .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: to
 /* TOP AD ZONE SPEC: reserve the banner's height (--ad-h, floored at 90px for the biggest
    anchored adaptive banner) + the status-bar inset + the native top offset (~46px) + a
    small clearance. Sized so NO ad creative — even a large one — can overlap the header. */
-:root { --ad-zone: calc(var(--ad-h, 56px) + env(safe-area-inset-top) + 14px); }
+:root { --ad-zone: calc(var(--ad-h, 100px) + env(safe-area-inset-top) + 14px); }
 body.is-app.ads-on { padding-top: var(--ad-zone); }
 /* header (logo + theme) stays fixed just under the ad */
 body.is-app.ads-on nav:not(.appbar) { top: var(--ad-zone); z-index: 41; }
