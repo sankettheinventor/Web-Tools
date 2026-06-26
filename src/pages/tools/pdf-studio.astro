@@ -250,6 +250,7 @@ const faqItems = [
     <div class="pr-sheet-card" role="dialog" aria-modal="true" aria-label="Choose a voice">
       <div class="pr-sheet-h">Choose a voice · on-device</div>
       <div class="tts-vlist" id="ttsVlist"></div>
+      <button class="tts-getvoices" id="ttsGetVoices" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Get more voices — Indian, Hindi &amp; more</button>
       <button class="pr-sheet-close" id="ttsVoiceClose" type="button">Done</button>
     </div>
   </div>
@@ -639,6 +640,9 @@ const faqItems = [
     .tts-v-tx small{font-size:12px;color:var(--dim)}
     .tts-v-ck{flex:0 0 auto;color:var(--brand);font-weight:900;opacity:0}
     .tts-v.on .tts-v-ck{opacity:1}
+    .tts-getvoices{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:13px;margin:0 0 8px;border:1px dashed color-mix(in srgb,var(--brand) 55%,transparent);border-radius:13px;background:color-mix(in srgb,var(--brand) 9%,transparent);color:var(--brand);font:inherit;font-weight:800;font-size:13.5px;cursor:pointer}
+    .tts-getvoices svg{width:18px;height:18px;flex:0 0 auto}
+    .tts-getvoices:active{transform:scale(.98)}
 
     /* ---------- READING COMFORT ---------- */
     .pr-doc .pr-page{filter:brightness(var(--pr-bright,1))}
@@ -1757,13 +1761,17 @@ const faqItems = [
         return 'en';
       }
       function ttsApplyAutoVoice(){
-        if (!TTS.voices.length) return;
+        if (!TTS.voices.length) return true;
         var dl = ttsDocLang(), cur = (TTS.voiceObj && TTS.voiceObj.lang) || '';
         if (dl === 'hi' && !/^hi/i.test(cur)){
           var hv = TTS.voices.filter(function (v){ return /^hi/i.test(v.lang || ''); })[0];
-          if (hv){ TTS.voiceObj = hv; TTS.voiceIndex = (hv._idx != null ? hv._idx : -1); TTS.lang = hv.lang || 'hi-IN'; }
-          else if (window.SnapJarKit) window.SnapJarKit.toast('This looks like a Hindi document — add a Hindi voice in Settings → Text-to-speech to hear it.', 'info', 6000);
+          if (hv){ TTS.voiceObj = hv; TTS.voiceIndex = (hv._idx != null ? hv._idx : -1); TTS.lang = hv.lang || 'hi-IN'; return true; }
+          /* no Hindi voice installed — an English voice would just spell Devanagari. Offer the installer. */
+          if (window.SnapJarKit) window.SnapJarKit.toast('Hindi document — install a free Hindi voice to listen.', 'info', 5000);
+          try { ttsOpenVoices(); } catch (e) {}
+          return false;
         }
+        return true;
       }
       /* readable language label for the voice picker (so Indian English / Hindi are easy to spot) */
       var _ttsDN; try { _ttsDN = new Intl.DisplayNames([navigator.language || 'en'], { type: 'language' }); } catch (e) {}
@@ -1882,7 +1890,7 @@ const faqItems = [
         for (var k = 0; k < order.length; k++){
           var cnt = await ttsLoadPage(order[k]);
           if (token !== TTS.seq) return;
-          if (cnt){ TTS.page = order[k]; TTS.ui = 0; ttsApplyAutoVoice(); ttsRun(); return; }
+          if (cnt){ TTS.page = order[k]; TTS.ui = 0; if (ttsApplyAutoVoice() === false){ ttsStop(); return; } ttsRun(); return; }
         }
         ttsFinish();
         if (window.SnapJarKit) window.SnapJarKit.toast('No readable text — this PDF looks scanned. Try Scan to text (OCR).', 'info', 5000);
@@ -1938,6 +1946,15 @@ const faqItems = [
       $('ttsVoice').onclick = ttsOpenVoices;
       $('ttsVoiceClose').onclick = function (){ $('ttsVoiceSheet').hidden = true; };
       $('ttsVoiceSheet').onclick = function (e){ if (e.target === $('ttsVoiceSheet')) $('ttsVoiceSheet').hidden = true; };
+      /* one-tap install of free offline voices (Indian English, Hindi & many Indian languages)
+         from inside the app — no digging through Android Settings. Works offline after download. */
+      $('ttsGetVoices').onclick = function (){
+        TTS.voicesLoaded = false;
+        if (TTSP && TTSP.openInstall){ TTSP.openInstall().catch(function (){}); if (window.SnapJarKit) window.SnapJarKit.toast('Pick English (India), Hindi or any language to download — it works offline after.', 'info', 6000); }
+        else if (window.SnapJarKit) window.SnapJarKit.toast('Voice download is available in the SnapJar app.', 'info');
+      };
+      /* coming back from the installer (or any app switch) → refresh the available voices */
+      document.addEventListener('visibilitychange', function (){ if (!document.hidden){ TTS.voicesLoaded = false; ttsLoadVoices(); } });
       window.addEventListener('pagehide', function (){ ttsStopEngine(); });
 
       /* ===================== READING COMFORT (theme + brightness, persisted) ===================== */
