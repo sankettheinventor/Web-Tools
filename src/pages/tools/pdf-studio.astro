@@ -409,7 +409,7 @@ const faqItems = [
     .pr-find input:focus{border-color:var(--brand)}
     .pr-match{font-size:12px;color:var(--dim);font-weight:700;white-space:nowrap}
 
-    .pr-doc{height:calc(100vh - 58px - 60px);overflow:auto;background:#e9e7f1;padding:18px 0;display:flex;flex-direction:column;align-items:center;gap:16px;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
+    .pr-doc{height:calc(100vh - 58px - 60px);overflow-y:auto;overflow-x:hidden;background:#e9e7f1;padding:18px 0;display:flex;flex-direction:column;align-items:center;gap:16px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;will-change:scroll-position}
     :root[data-theme="dark"] .pr-doc{background:#13111b}
     body.is-app .pr-doc{height:calc(100vh - 58px - 62px - env(safe-area-inset-bottom))}
     .pr-doc.sepia{background:#c9c2a8}
@@ -688,7 +688,7 @@ const faqItems = [
             var n = +e.target.dataset.n;
             if (e.isIntersecting){ renderPage(n); if (e.intersectionRatio > 0.5){ curPage = n; updateInd(); } }
           });
-        }, { root: $('prDoc'), rootMargin: '300px 0px', threshold: [0, 0.5] });
+        }, { root: $('prDoc'), rootMargin: '1400px 0px', threshold: [0, 0.5] });
         pageEls.forEach(function (el){ io.observe(el); });
       }
       function updateInd(){ $('prCur').textContent = curPage; }
@@ -704,8 +704,8 @@ const faqItems = [
           // on hi-DPI phones, then DISPLAY the canvas at CSS-pixel size. Without this the
           // canvas backing store was 1× and the screen up-scaled it → the blurry page.
           // Floor at 2× so a WebView that under-reports devicePixelRatio (some report 1)
-          // still renders crisp; cap at 4× so we never blow the canvas memory ceiling.
-          var dpr = Math.min(Math.max(window.devicePixelRatio || 1, 2), 4);
+          // still renders crisp; cap at 3× to keep canvas memory light for smooth scrolling.
+          var dpr = Math.min(Math.max(window.devicePixelRatio || 1, 2), 3);
           // Clamp the backing-store size (cssPx × dpr) to the canvas memory ceiling; only
           // huge pages lose a little density, layout size is unchanged either way.
           var fit = window.SnapJarKit ? window.SnapJarKit.fitDims(vp.width * dpr, vp.height * dpr) : { scale: 1, clamped: false };
@@ -1626,40 +1626,38 @@ const faqItems = [
       }
       $('wrDone').onclick = window.SnapJarKit ? window.SnapJarKit.guard($('wrDone'), doWrite) : doWrite;
 
-      /* ===================== LISTEN — read aloud (offline Web Speech, on-device voices) =====================
-         Speaks the document sentence-by-sentence using the device's built-in TTS engine — fully on-device,
-         no network, no model download. Each sentence is highlighted in the real text layer as it is read. */
-      var synth = (typeof window !== 'undefined' && window.speechSynthesis) ? window.speechSynthesis : null;
-      var TTS = { active: false, playing: false, page: 1, units: [], ui: 0, seq: 0, rate: 1, voice: null, voices: [] };
-      function ttsSupported(){ return !!synth && typeof window.SpeechSynthesisUtterance !== 'undefined'; }
-      function ttsLoadVoices(){
-        if (!synth) return [];
-        TTS.voices = synth.getVoices() || [];
-        TTS.voices.sort(function (a, b){ var ae = /^en/i.test(a.lang) ? 0 : 1, be = /^en/i.test(b.lang) ? 0 : 1; if (ae !== be) return ae - be; return (a.name || '').localeCompare(b.name || ''); });
-        if (!TTS.voice && TTS.voices.length){
-          var saved = null; try { saved = localStorage.getItem('sj_tts_voice'); } catch (e) {}
-          TTS.voice = (saved && TTS.voices.filter(function (v){ return v.voiceURI === saved; })[0]) ||
-                      TTS.voices.filter(function (v){ return /^en/i.test(v.lang); })[0] || TTS.voices[0];
-        }
-        return TTS.voices;
-      }
-      if (synth){ try { synth.onvoiceschanged = ttsLoadVoices; } catch (e) {} ttsLoadVoices(); }
+      /* ===================== LISTEN — read aloud (native TTS, on-device, offline) =====================
+         Android System WebView does NOT implement Web Speech (speechSynthesis is undefined), so we drive
+         the device's own offline TTS engine via the @capacitor-community/text-to-speech plugin. On the web
+         build (no Capacitor) we fall back to Web Speech. Reads sentence-by-sentence with live highlight. */
+      var TTSP = (window.SnapJarKit && window.SnapJarKit.plugin) ? window.SnapJarKit.plugin('TextToSpeech')
+               : (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.TextToSpeech) || null;
+      var synth = (!TTSP && typeof window !== 'undefined' && window.speechSynthesis) ? window.speechSynthesis : null;
+      var TTS = { active: false, playing: false, page: 1, units: [], ui: 0, seq: 0, rate: 1, voiceObj: null, voiceIndex: -1, lang: 'en-US', voices: [], voicesLoaded: false };
+      function ttsSupported(){ return !!TTSP || (!!synth && typeof window.SpeechSynthesisUtterance !== 'undefined'); }
       try { var _sr = localStorage.getItem('sj_tts_rate'); if (_sr) TTS.rate = +_sr || 1; } catch (e) {}
 
-      /* Android WebView drops the FIRST speak() unless it happens inside the user
-         gesture — our real speak fires after async page render, so prime the engine
-         here (synchronously, on tap) with a silent utterance to unlock it. */
-      function ttsUnlock(){
-        try { if (synth && window.SpeechSynthesisUtterance){ var u = new window.SpeechSynthesisUtterance(' '); u.volume = 0; synth.speak(u); } } catch (e) {}
+      function ttsPickDefault(){
+        if (TTS.voiceObj || !TTS.voices.length) return;
+        var saved = null; try { saved = localStorage.getItem('sj_tts_voice'); } catch (e) {}
+        var v = (saved && TTS.voices.filter(function (x){ return x.voiceURI === saved; })[0]) ||
+                TTS.voices.filter(function (x){ return /^en/i.test(x.lang || ''); })[0] || TTS.voices[0];
+        if (v){ TTS.voiceObj = v; TTS.voiceIndex = (v._idx != null ? v._idx : -1); TTS.lang = v.lang || 'en-US'; }
       }
-      /* Chromium auto-pauses long-running speech after ~15s; nudge it to keep going. */
-      var ttsKeep = null;
-      function ttsKeepAlive(on){
-        if (ttsKeep){ clearInterval(ttsKeep); ttsKeep = null; }
-        if (on && synth){ ttsKeep = setInterval(function (){ try { if (TTS.playing && !synth.paused) synth.resume(); } catch (e) {} }, 9000); }
+      function ttsLoadVoices(){
+        if (TTS.voicesLoaded) return Promise.resolve();
+        if (TTSP && TTSP.getSupportedVoices){
+          return TTSP.getSupportedVoices().then(function (r){
+            TTS.voices = ((r && r.voices) || []).map(function (v, i){ v._idx = i; return v; });
+            TTS.voicesLoaded = true; ttsPickDefault();
+          }).catch(function () { TTS.voices = []; });
+        }
+        if (synth){ TTS.voices = (synth.getVoices() || []).map(function (v, i){ v._idx = i; return v; }); TTS.voicesLoaded = TTS.voices.length > 0; ttsPickDefault(); }
+        return Promise.resolve();
       }
+      if (synth){ try { synth.onvoiceschanged = function (){ TTS.voicesLoaded = false; ttsLoadVoices(); }; } catch (e) {} }
 
-      /* scroll a page into view and wait until its text layer spans exist */
+      /* scroll a page into view and wait until its text-layer spans exist */
       function ensureRendered(n){
         return new Promise(function (resolve){
           var el = pageEls[n - 1]; if (!el){ resolve(null); return; }
@@ -1698,24 +1696,36 @@ const faqItems = [
         $('ttsNow').textContent = u.text;
       }
       function ttsLoadPage(n){ return ensureRendered(n).then(function (tl){ TTS.units = ttsBuildUnits(tl); return TTS.units.length; }); }
-      function ttsSpeak(){
-        if (!TTS.active || !TTS.playing || !synth || !doc) return;
-        if (TTS.ui >= TTS.units.length){
-          (function next(n){
-            if (n > doc.numPages) { ttsFinish(); return; }
-            ttsLoadPage(n).then(function (cnt){ if (cnt){ TTS.page = n; TTS.ui = 0; ttsSpeak(); } else next(n + 1); });
-          })(TTS.page + 1);
-          return;
+      /* speak one sentence; resolves when finished (or interrupted) */
+      function ttsSpeakText(text){
+        if (TTSP && TTSP.speak){
+          var opts = { text: text, lang: TTS.lang || 'en-US', rate: TTS.rate, pitch: 1.0, volume: 1.0, category: 'playback' };
+          if (TTS.voiceIndex != null && TTS.voiceIndex >= 0) opts.voice = TTS.voiceIndex;
+          return TTSP.speak(opts).catch(function () {});
         }
-        var u = TTS.units[TTS.ui];
-        ttsHighlight(u); curPage = TTS.page; updateInd();
-        var my = ++TTS.seq;
-        var utt = new window.SpeechSynthesisUtterance(u.text);
-        if (TTS.voice) utt.voice = TTS.voice;
-        utt.rate = TTS.rate; utt.pitch = 1;
-        utt.onend = function (){ if (my !== TTS.seq || !TTS.active || !TTS.playing) return; TTS.ui++; ttsSpeak(); };
-        utt.onerror = function (){ if (my !== TTS.seq || !TTS.active || !TTS.playing) return; TTS.ui++; ttsSpeak(); };
-        try { synth.speak(utt); } catch (e) {}
+        if (synth){
+          return new Promise(function (res){
+            try { var u = new window.SpeechSynthesisUtterance(text); if (TTS.voiceObj) u.voice = TTS.voiceObj; u.rate = TTS.rate; u.pitch = 1; u.onend = res; u.onerror = res; synth.speak(u); } catch (e) { res(); }
+          });
+        }
+        return Promise.resolve();
+      }
+      function ttsStopEngine(){ try { if (TTSP && TTSP.stop) TTSP.stop(); else if (synth) synth.cancel(); } catch (e) {} }
+      /* the playback loop — token-guarded so pause/jump/voice/rate changes cleanly take over */
+      async function ttsRun(){
+        var token = TTS.seq;
+        while (TTS.active && TTS.playing && token === TTS.seq && doc){
+          if (TTS.ui >= TTS.units.length){
+            var n = TTS.page + 1, moved = false;
+            while (n <= doc.numPages){ var c = await ttsLoadPage(n); if (token !== TTS.seq) return; if (c){ TTS.page = n; TTS.ui = 0; moved = true; break; } n++; }
+            if (!moved){ ttsFinish(); return; }
+          }
+          var u = TTS.units[TTS.ui]; if (!u){ ttsFinish(); return; }
+          ttsHighlight(u); curPage = TTS.page; updateInd();
+          await ttsSpeakText(u.text);
+          if (token !== TTS.seq || !TTS.active || !TTS.playing) return;
+          TTS.ui++;
+        }
       }
       function ttsSyncUI(){
         var p = $('ttsPlay'); if (!p) return;
@@ -1726,44 +1736,41 @@ const faqItems = [
         var r = $('ttsRate'); if (r){ var rt = (TTS.rate % 1 === 0) ? String(TTS.rate) : TTS.rate.toFixed(2).replace(/0$/, ''); r.textContent = rt + '×'; }
         var lc = $('prListen'); if (lc) lc.classList.toggle('on', TTS.active && TTS.playing);
       }
-      function ttsStart(){
+      async function ttsStart(){
         if (!ttsSupported()){ if (window.SnapJarKit) window.SnapJarKit.toast('Read-aloud isn’t available on this device', 'err'); return; }
         if (!doc) return;
-        ttsLoadVoices();
-        TTS.active = true; TTS.playing = true; ttsKeepAlive(true);
+        await ttsLoadVoices();
+        TTS.active = true; TTS.playing = true; TTS.seq++;
         $('ttsBar').hidden = false; $('ttsNow').textContent = 'Preparing…'; ttsSyncUI();
-        var order = [], i;
+        var token = TTS.seq, order = [], i;
         for (i = curPage; i <= doc.numPages; i++) order.push(i);
         for (i = 1; i < curPage; i++) order.push(i);
-        (function tryNext(k){
-          if (k >= order.length){
-            ttsFinish();
-            if (window.SnapJarKit) window.SnapJarKit.toast('No readable text — this PDF looks scanned. Try Scan to text (OCR).', 'info', 5000);
-            return;
-          }
-          var n = order[k];
-          ttsLoadPage(n).then(function (cnt){ if (cnt && TTS.active){ TTS.page = n; TTS.ui = 0; ttsSpeak(); } else tryNext(k + 1); });
-        })(0);
-      }
-      function ttsPause(){ TTS.playing = false; TTS.seq++; ttsKeepAlive(false); try { synth.cancel(); } catch (e) {} ttsSyncUI(); }
-      function ttsResume(){ if (!TTS.active){ ttsStart(); return; } TTS.playing = true; ttsKeepAlive(true); ttsSyncUI(); ttsSpeak(); }
-      function ttsFinish(){ TTS.playing = false; TTS.seq++; ttsKeepAlive(false); try { if (synth) synth.cancel(); } catch (e) {} $('ttsNow').textContent = ''; ttsSyncUI(); }
-      function ttsStop(){ TTS.active = false; TTS.playing = false; TTS.seq++; ttsKeepAlive(false); try { if (synth) synth.cancel(); } catch (e) {} ttsClearHL(); var b = $('ttsBar'); if (b) b.hidden = true; var l = $('prListen'); if (l) l.classList.remove('on'); }
-      function ttsJump(d){
-        if (!TTS.active) return;
-        TTS.seq++; try { synth.cancel(); } catch (e) {}
-        TTS.ui += d; TTS.playing = true;
-        if (TTS.ui < 0){
-          (function prev(n){
-            if (n < 1){ TTS.ui = 0; ttsSyncUI(); ttsSpeak(); return; }
-            ttsLoadPage(n).then(function (cnt){ if (cnt){ TTS.page = n; TTS.ui = TTS.units.length - 1; ttsSyncUI(); ttsSpeak(); } else prev(n - 1); });
-          })(TTS.page - 1);
-          return;
+        for (var k = 0; k < order.length; k++){
+          var cnt = await ttsLoadPage(order[k]);
+          if (token !== TTS.seq) return;
+          if (cnt){ TTS.page = order[k]; TTS.ui = 0; ttsRun(); return; }
         }
-        ttsSyncUI(); ttsSpeak();
+        ttsFinish();
+        if (window.SnapJarKit) window.SnapJarKit.toast('No readable text — this PDF looks scanned. Try Scan to text (OCR).', 'info', 5000);
       }
-      $('prListen').onclick = function (){ if (!doc) return; if (TTS.active && TTS.playing) ttsPause(); else { ttsUnlock(); ttsResume(); } };
-      $('ttsPlay').onclick = function (){ if (TTS.active && TTS.playing) ttsPause(); else { ttsUnlock(); ttsResume(); } };
+      function ttsPause(){ TTS.playing = false; TTS.seq++; ttsStopEngine(); ttsSyncUI(); }
+      function ttsResume(){ if (!TTS.active){ ttsStart(); return; } TTS.playing = true; TTS.seq++; ttsSyncUI(); ttsRun(); }
+      function ttsFinish(){ TTS.playing = false; TTS.seq++; ttsStopEngine(); $('ttsNow').textContent = ''; ttsSyncUI(); }
+      function ttsStop(){ TTS.active = false; TTS.playing = false; TTS.seq++; ttsStopEngine(); ttsClearHL(); var b = $('ttsBar'); if (b) b.hidden = true; var l = $('prListen'); if (l) l.classList.remove('on'); }
+      async function ttsJump(d){
+        if (!TTS.active) return;
+        TTS.seq++; ttsStopEngine(); var token = TTS.seq; TTS.playing = true; ttsSyncUI();
+        TTS.ui += d;
+        if (TTS.ui < 0){
+          var n = TTS.page - 1, moved = false;
+          while (n >= 1){ var c = await ttsLoadPage(n); if (token !== TTS.seq) return; if (c){ TTS.page = n; TTS.ui = TTS.units.length - 1; moved = true; break; } n--; }
+          if (!moved){ await ttsLoadPage(TTS.page); if (token !== TTS.seq) return; TTS.ui = 0; }
+        }
+        ttsRun();
+      }
+      function ttsRestart(){ if (TTS.active && TTS.playing){ TTS.seq++; ttsStopEngine(); ttsRun(); } }
+      $('prListen').onclick = function (){ if (!doc) return; if (TTS.active && TTS.playing) ttsPause(); else ttsResume(); };
+      $('ttsPlay').onclick = function (){ if (TTS.active && TTS.playing) ttsPause(); else ttsResume(); };
       $('ttsPrev').onclick = function (){ ttsJump(-1); };
       $('ttsNext').onclick = function (){ ttsJump(1); };
       $('ttsClose').onclick = ttsStop;
@@ -1771,31 +1778,33 @@ const faqItems = [
       $('ttsRate').onclick = function (){
         var i = TTS_RATES.indexOf(TTS.rate); i = (i + 1) % TTS_RATES.length; TTS.rate = TTS_RATES[i];
         try { localStorage.setItem('sj_tts_rate', String(TTS.rate)); } catch (e) {}
-        ttsSyncUI();
-        if (TTS.active && TTS.playing){ TTS.seq++; try { synth.cancel(); } catch (e) {} ttsSpeak(); }
+        ttsSyncUI(); ttsRestart();
       };
       function ttsOpenVoices(){
-        ttsLoadVoices();
-        var list = $('ttsVlist'); list.innerHTML = '';
-        if (!TTS.voices.length){ list.innerHTML = '<p class="nt-empty">No voices found on this device. On Android, add voices in Settings → Accessibility → Text-to-speech.</p>'; }
-        TTS.voices.forEach(function (v){
-          var b = document.createElement('button'); b.type = 'button'; b.className = 'tts-v' + (TTS.voice && v.voiceURI === TTS.voice.voiceURI ? ' on' : '');
-          b.innerHTML = '<span class="tts-v-tx"><b></b><small></small></span><span class="tts-v-ck">✓</span>';
-          b.querySelector('b').textContent = v.name || 'Voice';
-          b.querySelector('small').textContent = (v.lang || '') + (v.localService ? ' · on-device' : '');
-          b.onclick = function (){
-            TTS.voice = v; try { localStorage.setItem('sj_tts_voice', v.voiceURI); } catch (e) {}
-            list.querySelectorAll('.tts-v').forEach(function (x){ x.classList.remove('on'); }); b.classList.add('on');
-            if (TTS.active && TTS.playing){ TTS.seq++; try { synth.cancel(); } catch (e) {} ttsSpeak(); }
-          };
-          list.appendChild(b);
+        ttsLoadVoices().then(function (){
+          var list = $('ttsVlist'); list.innerHTML = '';
+          if (!TTS.voices.length){ list.innerHTML = '<p class="nt-empty">No voices found. On Android, add voices in Settings → Accessibility → Text-to-speech (or install Google Text-to-Speech).</p>'; }
+          var shown = TTS.voices.slice().sort(function (a, b){ var ae = /^en/i.test(a.lang || '') ? 0 : 1, be = /^en/i.test(b.lang || '') ? 0 : 1; if (ae !== be) return ae - be; return (a.name || a.lang || '').localeCompare(b.name || b.lang || ''); });
+          shown.forEach(function (v){
+            var b = document.createElement('button'); b.type = 'button'; b.className = 'tts-v' + (TTS.voiceObj && v.voiceURI === TTS.voiceObj.voiceURI ? ' on' : '');
+            b.innerHTML = '<span class="tts-v-tx"><b></b><small></small></span><span class="tts-v-ck">✓</span>';
+            b.querySelector('b').textContent = v.name || v.voiceURI || 'Voice';
+            b.querySelector('small').textContent = (v.lang || '') + (v.localService === false ? '' : ' · on-device');
+            b.onclick = function (){
+              TTS.voiceObj = v; TTS.voiceIndex = (v._idx != null ? v._idx : -1); TTS.lang = v.lang || 'en-US';
+              try { localStorage.setItem('sj_tts_voice', v.voiceURI); } catch (e) {}
+              list.querySelectorAll('.tts-v').forEach(function (x){ x.classList.remove('on'); }); b.classList.add('on');
+              ttsRestart();
+            };
+            list.appendChild(b);
+          });
+          $('ttsVoiceSheet').hidden = false;
         });
-        $('ttsVoiceSheet').hidden = false;
       }
       $('ttsVoice').onclick = ttsOpenVoices;
       $('ttsVoiceClose').onclick = function (){ $('ttsVoiceSheet').hidden = true; };
       $('ttsVoiceSheet').onclick = function (e){ if (e.target === $('ttsVoiceSheet')) $('ttsVoiceSheet').hidden = true; };
-      window.addEventListener('pagehide', function (){ try { if (synth) synth.cancel(); } catch (e) {} });
+      window.addEventListener('pagehide', function (){ ttsStopEngine(); });
 
       /* ===================== READING COMFORT (theme + brightness, persisted) ===================== */
       (function (){
