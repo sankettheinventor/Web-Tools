@@ -729,6 +729,7 @@ const faqItems = [
         await layout(false);
         status('');   // clear "Opening…" — the page is rendered now
         if (window.SnapJarKit) window.SnapJarKit.toast('Opened ' + shortName(curName) + ' · ' + doc.numPages + ' page' + (doc.numPages === 1 ? '' : 's'), 'ok');
+        try { if (!localStorage.getItem('sj_tapread_hint')){ setTimeout(function (){ if (window.SnapJarKit && doc) window.SnapJarKit.toast('Tip: tap any line to start read-aloud from there 🎧', 'info', 5000); }, 1800); localStorage.setItem('sj_tapread_hint', '1'); } } catch (e) {}
         /* save into the on-device library (with a thumbnail) when user-initiated */
         if (recentName && window.SJRecents) { try { var thumb = await makeThumb(); window.SJRecents.add({ name: recentName, kind: 'pdf', blob: file, thumb: thumb }); } catch (e) {} }
       }
@@ -1917,6 +1918,23 @@ const faqItems = [
         ttsRun();
       }
       function ttsRestart(){ if (TTS.active && TTS.playing){ TTS.seq++; ttsStopEngine(); ttsRun(); } }
+      /* Premium "tap to read from here": tap any line on the page to begin — or jump — read-aloud
+         from that exact sentence (the page is already rendered, so no scroll/skip). */
+      function ttsStartFromSpan(spanEl){
+        if (!doc || !spanEl) return;
+        var pgEl = spanEl.closest('.pr-page'); if (!pgEl) return;
+        var pageNo = pageEls.indexOf(pgEl) + 1; if (pageNo < 1) return;
+        var tl = pgEl.querySelector('.textLayer'); if (!tl) return;
+        ttsLoadVoices().then(function (){
+          TTS.units = ttsBuildUnits(tl);
+          var idx = 0; for (var i = 0; i < TTS.units.length; i++){ if ((TTS.units[i].spans || []).indexOf(spanEl) >= 0){ idx = i; break; } }
+          TTS.page = pageNo; TTS.ui = idx;
+          TTS.active = true; TTS.playing = true; TTS.seq++; ttsStopEngine();
+          $('ttsBar').hidden = false; var pm = $('prMain'); if (pm) pm.classList.add('tts-on'); ttsSyncUI();
+          if (ttsApplyAutoVoice() === false){ ttsStop(); return; }
+          ttsRun();
+        });
+      }
       $('prListen').onclick = function (){ if (!doc) return; if (TTS.active && TTS.playing) ttsPause(); else ttsResume(); };
       $('ttsPlay').onclick = function (){ if (TTS.active && TTS.playing) ttsPause(); else ttsResume(); };
       $('ttsPrev').onclick = function (){ ttsJump(-1); };
@@ -2076,8 +2094,16 @@ const faqItems = [
         if (host){
           var praf = 0;
           host.addEventListener('scroll', function (){ setHidden(true); clearTimeout(ct); ct = setTimeout(function (){ setHidden(false); }, 1100); if (!praf) praf = requestAnimationFrame(function (){ praf = 0; computeCurPage(); }); }, { passive: true });
-          /* tap an empty area of the page to toggle the controls (immersive reading) */
-          host.addEventListener('click', function (e){ if (e.target && e.target.closest && e.target.closest('button,a,input,textarea')) return; setHidden(!hidden); });
+          /* tap a line of text → start/jump read-aloud from there; tap empty area → toggle controls */
+          host.addEventListener('click', function (e){
+            var t = e.target;
+            if (t && t.closest){
+              if (t.closest('button,a,input,textarea')) return;
+              var span = t.closest('.textLayer span');
+              if (span && (span.textContent || '').trim()){ try { ttsStartFromSpan(span); } catch (x) {} return; }
+            }
+            setHidden(!hidden);
+          });
         }
         var more = $('prMoreSheet');
         function onDocClick(e){ if (e.target && e.target.closest && e.target.closest('#prMoreSheet')) return; closeMore(); }
