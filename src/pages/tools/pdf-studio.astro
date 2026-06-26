@@ -1725,7 +1725,7 @@ const faqItems = [
       var TTSP = (window.SnapJarKit && window.SnapJarKit.plugin) ? window.SnapJarKit.plugin('TextToSpeech')
                : (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.TextToSpeech) || null;
       var synth = (!TTSP && typeof window !== 'undefined' && window.speechSynthesis) ? window.speechSynthesis : null;
-      var TTS = { active: false, playing: false, page: 1, units: [], ui: 0, seq: 0, rate: 1, voiceObj: null, voiceIndex: -1, lang: 'en-US', voices: [], voicesLoaded: false };
+      var TTS = { active: false, playing: false, page: 1, units: [], ui: 0, seq: 0, rate: 1, voiceObj: null, voiceIndex: -1, lang: 'en-US', voices: [], voicesLoaded: false, userPicked: false };
       function ttsSupported(){ return !!TTSP || (!!synth && typeof window.SpeechSynthesisUtterance !== 'undefined'); }
       try { var _sr = localStorage.getItem('sj_tts_rate'); if (_sr) TTS.rate = +_sr || 1; } catch (e) {}
 
@@ -1748,6 +1748,26 @@ const faqItems = [
         return Promise.resolve();
       }
       if (synth){ try { synth.onvoiceschanged = function (){ TTS.voicesLoaded = false; ttsLoadVoices(); }; } catch (e) {} }
+
+      /* detect the document's script so a Hindi (or other non-Latin) book is read with a
+         matching on-device voice instead of being spelled out by an English voice. */
+      function ttsDocLang(){
+        var s = ''; for (var i = 0; i < Math.min(TTS.units.length, 8); i++) s += TTS.units[i].text + ' ';
+        if (/[ऀ-ॿ]/.test(s)) return 'hi';   // Devanagari (Hindi / Marathi / ...)
+        return 'en';
+      }
+      function ttsApplyAutoVoice(){
+        if (!TTS.voices.length) return;
+        var dl = ttsDocLang(), cur = (TTS.voiceObj && TTS.voiceObj.lang) || '';
+        if (dl === 'hi' && !/^hi/i.test(cur)){
+          var hv = TTS.voices.filter(function (v){ return /^hi/i.test(v.lang || ''); })[0];
+          if (hv){ TTS.voiceObj = hv; TTS.voiceIndex = (hv._idx != null ? hv._idx : -1); TTS.lang = hv.lang || 'hi-IN'; }
+          else if (window.SnapJarKit) window.SnapJarKit.toast('This looks like a Hindi document — add a Hindi voice in Settings → Text-to-speech to hear it.', 'info', 6000);
+        }
+      }
+      /* readable language label for the voice picker (so Indian English / Hindi are easy to spot) */
+      var _ttsDN; try { _ttsDN = new Intl.DisplayNames([navigator.language || 'en'], { type: 'language' }); } catch (e) {}
+      function ttsLangName(code){ try { return (_ttsDN && _ttsDN.of(code)) || code || ''; } catch (e) { return code || ''; } }
 
       /* scroll a page into view and wait until its text-layer spans exist */
       function ensureRendered(n){
@@ -1777,15 +1797,22 @@ const faqItems = [
           var r = s.getBoundingClientRect();
           if (full.length && !/\s$/.test(full) && !/^\s/.test(t)){
             var sameLine = prev && Math.abs(r.top - prev.top) < Math.max(4, r.height * 0.6);
+            var gap = prev ? (r.left - prev.right) : 0;
             if (!sameLine) full += ' ';
-            else if (prev && (r.left - prev.right) > r.height * 0.22) full += ' ';
+            else if (gap >= r.height * 0.5) full += '  ';   // word boundary (wider gap) → marked with 2 spaces
+            else if (gap >= r.height * 0.12) full += ' ';   // normal/letter space → 1 space
+            /* else: glyphs touching → same word, no space (keeps split words like "fight" whole) */
           }
           var start = full.length; full += t; map.push({ span: s, start: start, end: full.length });
           prev = r;
         });
         var units = [], re = /[^.!?\n]+[.!?]+["')\]’”]*|[^.!?\n]+(?=\n|$)/g, m;
         while ((m = re.exec(full))){
-          var text = (m[0] || '').replace(/\s+/g, ' ').trim(); if (!text || text.length < 2) continue;
+          var raw = m[0] || '';
+          /* collapse letter-spaced runs ("S T R A T E G I C" -> "STRATEGIC"); the 2-space
+             word boundaries survive so adjacent words don't merge ("DEEP  DIVE"). */
+          raw = raw.replace(/(?:[A-Za-z] ){3,}[A-Za-z]/g, function (x){ return x.replace(/ /g, ''); });
+          var text = raw.replace(/\s+/g, ' ').trim(); if (!text || text.length < 2) continue;
           var s = m.index, e = m.index + m[0].length;
           var us = map.filter(function (x){ return x.end > s && x.start < e; }).map(function (x){ return x.span; });
           units.push({ text: text, spans: us });
@@ -1855,7 +1882,7 @@ const faqItems = [
         for (var k = 0; k < order.length; k++){
           var cnt = await ttsLoadPage(order[k]);
           if (token !== TTS.seq) return;
-          if (cnt){ TTS.page = order[k]; TTS.ui = 0; ttsRun(); return; }
+          if (cnt){ TTS.page = order[k]; TTS.ui = 0; ttsApplyAutoVoice(); ttsRun(); return; }
         }
         ttsFinish();
         if (window.SnapJarKit) window.SnapJarKit.toast('No readable text — this PDF looks scanned. Try Scan to text (OCR).', 'info', 5000);
@@ -1896,9 +1923,9 @@ const faqItems = [
             var b = document.createElement('button'); b.type = 'button'; b.className = 'tts-v' + (TTS.voiceObj && v.voiceURI === TTS.voiceObj.voiceURI ? ' on' : '');
             b.innerHTML = '<span class="tts-v-tx"><b></b><small></small></span><span class="tts-v-ck">✓</span>';
             b.querySelector('b').textContent = v.name || v.voiceURI || 'Voice';
-            b.querySelector('small').textContent = (v.lang || '') + (v.localService === false ? '' : ' · on-device');
+            b.querySelector('small').textContent = ttsLangName(v.lang) + (v.lang ? ' · ' + v.lang : '') + (v.localService === false ? '' : ' · on-device');
             b.onclick = function (){
-              TTS.voiceObj = v; TTS.voiceIndex = (v._idx != null ? v._idx : -1); TTS.lang = v.lang || 'en-US';
+              TTS.voiceObj = v; TTS.voiceIndex = (v._idx != null ? v._idx : -1); TTS.lang = v.lang || 'en-US'; TTS.userPicked = true;
               try { localStorage.setItem('sj_tts_voice', v.voiceURI); } catch (e) {}
               list.querySelectorAll('.tts-v').forEach(function (x){ x.classList.remove('on'); }); b.classList.add('on');
               ttsRestart();
