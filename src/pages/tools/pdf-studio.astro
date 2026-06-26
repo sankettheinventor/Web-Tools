@@ -65,7 +65,6 @@ const faqItems = [
         <button id="prMode" class="pr-fab" type="button" title="Reading theme" aria-label="Reading theme &amp; brightness"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v18a9 9 0 0 0 0-18Z" fill="currentColor" stroke="none"/></svg></button>
         <button id="prListen" class="pr-fab pr-fab-listen" type="button" title="Listen — read aloud" aria-label="Listen — read this document aloud"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="2.5" y="13.5" width="4.5" height="7" rx="1.6"/><rect x="17" y="13.5" width="4.5" height="7" rx="1.6"/></svg></button>
         <button id="prEditBtn" class="pr-fab pr-fab-edit" type="button" title="Edit PDF" aria-label="Edit this PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
-        <button id="prFindBtn" class="pr-fab" type="button" title="Search" aria-label="Search in document"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></button>
       </div>
 
       <!-- search (floats just above the reader bar) -->
@@ -94,6 +93,7 @@ const faqItems = [
       <div class="pr-sheet" id="prMoreSheet" hidden>
         <div class="pr-sheet-card" role="dialog" aria-modal="true" aria-label="More options">
           <div class="pr-sheet-h">More</div>
+          <button class="pr-src" id="prFindBtn" type="button"><span class="pr-src-ic">🔍</span><span class="pr-src-tx"><b>Search in document</b><small>Find text &amp; jump to matches</small></span></button>
           <button class="pr-src" id="prOpenNew" type="button"><span class="pr-src-ic">📂</span><span class="pr-src-tx"><b>Open another PDF</b><small>Pick a different document</small></span></button>
           <button class="pr-src" id="prNotes" type="button"><span class="pr-src-ic">📝</span><span class="pr-src-tx"><b>Notes</b><small>Saved on this device</small></span><span id="prNotesBadge" class="pr-badge pr-badge-row" hidden></span></button>
           <button class="pr-src" id="prSplit" type="button"><span class="pr-src-ic">✂️</span><span class="pr-src-tx"><b>Split into pages</b><small>Save each page as its own PDF</small></span></button>
@@ -448,12 +448,12 @@ const faqItems = [
     .pr-main{position:relative}
     .pr-doc{padding-bottom:120px}
     /* right floating quick-action rail */
-    .pr-rail{position:fixed;right:12px;top:50%;transform:translateY(-50%);z-index:60;display:flex;flex-direction:column;gap:13px;transition:opacity .26s var(--ease-out),transform .26s var(--ease-out)}
-    .pr-fab{width:50px;height:50px;border-radius:50%;border:0;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;position:relative;
+    .pr-rail{position:fixed;right:10px;top:50%;transform:translateY(-50%);z-index:60;display:flex;flex-direction:column;gap:10px;transition:opacity .26s var(--ease-out),transform .26s var(--ease-out)}
+    .pr-fab{width:42px;height:42px;border-radius:50%;border:0;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;position:relative;
       background:color-mix(in srgb,var(--nav-bg) 90%,transparent);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);
-      color:var(--txt);box-shadow:0 8px 24px -10px rgba(20,16,44,.5),0 0 0 1px color-mix(in srgb,var(--line) 55%,transparent);
+      color:var(--txt);box-shadow:0 6px 18px -8px rgba(20,16,44,.5),0 0 0 1px color-mix(in srgb,var(--line) 55%,transparent);
       transition:transform var(--d-micro) var(--ease-out),background var(--d-micro) var(--ease-out)}
-    .pr-fab svg{width:23px;height:23px;display:block}
+    .pr-fab svg{width:19px;height:19px;display:block}
     .pr-fab:active{transform:scale(.9)}
     .pr-fab-listen{background:linear-gradient(135deg,#2bb673,#15a06b);color:#fff;box-shadow:0 10px 26px -10px rgba(43,182,115,.7)}
     .pr-fab-listen.on{background:linear-gradient(135deg,#e0a23a,#e5484d)}
