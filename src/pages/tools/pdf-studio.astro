@@ -249,6 +249,7 @@ const faqItems = [
   <div class="pr-sheet" id="ttsVoiceSheet" hidden>
     <div class="pr-sheet-card" role="dialog" aria-modal="true" aria-label="Choose a voice">
       <div class="pr-sheet-h">Choose a voice · on-device</div>
+      <input id="ttsVFilter" type="search" class="tts-vfilter" placeholder="Filter — e.g. Hindi, India, English…" aria-label="Filter voices" autocomplete="off" />
       <div class="tts-vlist" id="ttsVlist"></div>
       <button class="tts-getvoices" id="ttsGetVoices" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Get more voices — Indian, Hindi &amp; more</button>
       <button class="pr-sheet-close" id="ttsVoiceClose" type="button">Done</button>
@@ -640,6 +641,9 @@ const faqItems = [
     .tts-v-tx small{font-size:12px;color:var(--dim)}
     .tts-v-ck{flex:0 0 auto;color:var(--brand);font-weight:900;opacity:0}
     .tts-v.on .tts-v-ck{opacity:1}
+    .tts-vfilter{width:100%;box-sizing:border-box;height:42px;padding:0 14px;margin:0 0 10px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--txt);font:inherit;font-size:14px;outline:none}
+    .tts-vfilter:focus{border-color:var(--brand)}
+    .tts-vgroup{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;color:var(--brand);padding:10px 6px 5px;position:sticky;top:0;background:var(--sheet-card,var(--surface))}
     .tts-getvoices{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:13px;margin:0 0 8px;border:1px dashed color-mix(in srgb,var(--brand) 55%,transparent);border-radius:13px;background:color-mix(in srgb,var(--brand) 9%,transparent);color:var(--brand);font:inherit;font-weight:800;font-size:13.5px;cursor:pointer}
     .tts-getvoices svg{width:18px;height:18px;flex:0 0 auto}
     .tts-getvoices:active{transform:scale(.98)}
@@ -1784,11 +1788,13 @@ const faqItems = [
           try { el.scrollIntoView({ block: 'start', behavior: 'smooth' }); } catch (e) { try { el.scrollIntoView(); } catch (_) {} }
           renderPage(n);
           var tries = 0;
+          /* Wait until the page is FULLY rendered (state 'done' is set only after the whole
+             text layer finishes). Returning on the first span gave a PARTIAL text layer, so
+             paragraphs/bullets that rendered a moment later were skipped by read-aloud. */
           (function poll(){
-            var tl = el.querySelector('.textLayer');
-            if (tl && tl.querySelector('span')) return resolve(tl);
-            if (tries > 80) return resolve(tl || null);
-            tries++; setTimeout(poll, 50);
+            if (state[n] === 'done') return resolve(el.querySelector('.textLayer'));
+            if (tries > 120) return resolve(el.querySelector('.textLayer'));
+            tries++; setTimeout(poll, 40);
           })();
         });
       }
@@ -1922,28 +1928,50 @@ const faqItems = [
         try { localStorage.setItem('sj_tts_rate', String(TTS.rate)); } catch (e) {}
         ttsSyncUI(); ttsRestart();
       };
-      function ttsOpenVoices(){
-        ttsLoadVoices().then(function (){
-          var list = $('ttsVlist'); list.innerHTML = '';
-          if (!TTS.voices.length){ list.innerHTML = '<p class="nt-empty">No voices found. On Android, add voices in Settings → Accessibility → Text-to-speech (or install Google Text-to-Speech).</p>'; }
-          var shown = TTS.voices.slice().sort(function (a, b){ var ae = /^en/i.test(a.lang || '') ? 0 : 1, be = /^en/i.test(b.lang || '') ? 0 : 1; if (ae !== be) return ae - be; return (a.name || a.lang || '').localeCompare(b.name || b.lang || ''); });
-          shown.forEach(function (v){
-            var b = document.createElement('button'); b.type = 'button'; b.className = 'tts-v' + (TTS.voiceObj && v.voiceURI === TTS.voiceObj.voiceURI ? ' on' : '');
-            b.innerHTML = '<span class="tts-v-tx"><b></b><small></small></span><span class="tts-v-ck">✓</span>';
-            b.querySelector('b').textContent = v.name || v.voiceURI || 'Voice';
-            b.querySelector('small').textContent = ttsLangName(v.lang) + (v.lang ? ' · ' + v.lang : '') + (v.localService === false ? '' : ' · on-device');
-            b.onclick = function (){
-              TTS.voiceObj = v; TTS.voiceIndex = (v._idx != null ? v._idx : -1); TTS.lang = v.lang || 'en-US'; TTS.userPicked = true;
-              try { localStorage.setItem('sj_tts_voice', v.voiceURI); } catch (e) {}
-              list.querySelectorAll('.tts-v').forEach(function (x){ x.classList.remove('on'); }); b.classList.add('on');
-              ttsRestart();
-            };
-            list.appendChild(b);
-          });
-          $('ttsVoiceSheet').hidden = false;
+      /* surface Indian languages first so they're never "missing" in a 400+ voice list */
+      function ttsLangRank(lang){
+        lang = (lang || '').toLowerCase();
+        if (/^hi/.test(lang)) return 0;                 // Hindi
+        if (/^en[-_]?in/.test(lang)) return 1;          // English (India)
+        var indian = ['bn', 'ta', 'te', 'mr', 'gu', 'kn', 'ml', 'pa', 'ur', 'or', 'as', 'ne', 'sa', 'kok'];
+        for (var i = 0; i < indian.length; i++) if (lang.indexOf(indian[i]) === 0) return 2;
+        if (/^en/.test(lang)) return 3;                 // other English
+        return 4;
+      }
+      function ttsRenderVoices(filter){
+        var list = $('ttsVlist'); list.innerHTML = '';
+        if (!TTS.voices.length){ list.innerHTML = '<p class="nt-empty">No voices found. Tap “Get more voices” below to install Indian, Hindi &amp; other voices.</p>'; return; }
+        filter = (filter || '').trim().toLowerCase();
+        var shown = TTS.voices.slice().filter(function (v){
+          if (!filter) return true;
+          return ((v.name || '') + ' ' + (v.lang || '') + ' ' + ttsLangName(v.lang)).toLowerCase().indexOf(filter) >= 0;
+        }).sort(function (a, b){
+          var ra = ttsLangRank(a.lang), rb = ttsLangRank(b.lang); if (ra !== rb) return ra - rb;
+          var lc = (a.lang || '').localeCompare(b.lang || ''); if (lc !== 0) return lc;
+          return (a.name || '').localeCompare(b.name || '');
+        });
+        if (!shown.length){ list.innerHTML = '<p class="nt-empty">No voice matches that filter. Tap “Get more voices” to install one.</p>'; return; }
+        var curLang = null;
+        shown.forEach(function (v){
+          if (v.lang !== curLang){ curLang = v.lang; var h = document.createElement('div'); h.className = 'tts-vgroup'; h.textContent = ttsLangName(v.lang) + ' · ' + (v.lang || ''); list.appendChild(h); }
+          var b = document.createElement('button'); b.type = 'button'; b.className = 'tts-v' + (TTS.voiceObj && v.voiceURI === TTS.voiceObj.voiceURI ? ' on' : '');
+          b.innerHTML = '<span class="tts-v-tx"><b></b><small></small></span><span class="tts-v-ck">✓</span>';
+          b.querySelector('b').textContent = v.name || v.voiceURI || 'Voice';
+          b.querySelector('small').textContent = (v.localService === false ? 'needs network' : 'on-device');
+          b.onclick = function (){
+            TTS.voiceObj = v; TTS.voiceIndex = (v._idx != null ? v._idx : -1); TTS.lang = v.lang || 'en-US'; TTS.userPicked = true;
+            try { localStorage.setItem('sj_tts_voice', v.voiceURI); } catch (e) {}
+            list.querySelectorAll('.tts-v').forEach(function (x){ x.classList.remove('on'); }); b.classList.add('on');
+            ttsRestart();
+          };
+          list.appendChild(b);
         });
       }
+      function ttsOpenVoices(){
+        ttsLoadVoices().then(function (){ ttsRenderVoices($('ttsVFilter') ? $('ttsVFilter').value : ''); $('ttsVoiceSheet').hidden = false; });
+      }
       $('ttsVoice').onclick = ttsOpenVoices;
+      if ($('ttsVFilter')) $('ttsVFilter').addEventListener('input', function (){ ttsRenderVoices(this.value); });
       $('ttsVoiceClose').onclick = function (){ $('ttsVoiceSheet').hidden = true; };
       $('ttsVoiceSheet').onclick = function (e){ if (e.target === $('ttsVoiceSheet')) $('ttsVoiceSheet').hidden = true; };
       /* one-tap install of free offline voices (Indian English, Hindi & many Indian languages)
