@@ -155,7 +155,7 @@ const faqItems = [
     .adv-h span{font-weight:800;font-size:var(--t-md)}
     .adv-h small{color:var(--dim);font-size:var(--t-sm)}
     .save{background:var(--result-bg);border:1px solid var(--line);border-radius:var(--r-lg);padding:var(--s4);margin-top:var(--s4)}
-    .save-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3)}
+    .save-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:var(--s3)}
     .save-row+.save-row{margin-top:var(--s3)}
     .save-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--s3) var(--s4)}
     .save-box .k{font-size:var(--t-xs);color:var(--dim)}
