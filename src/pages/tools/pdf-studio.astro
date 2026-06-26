@@ -89,16 +89,12 @@ const faqItems = [
         <button id="prMore" class="pr-rb" type="button" title="More" aria-label="More options"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
       </div>
 
-      <!-- more sheet -->
-      <div class="pr-sheet" id="prMoreSheet" hidden>
-        <div class="pr-sheet-card" role="dialog" aria-modal="true" aria-label="More options">
-          <div class="pr-sheet-h">More</div>
-          <button class="pr-src" id="prFindBtn" type="button"><span class="pr-src-ic">🔍</span><span class="pr-src-tx"><b>Search in document</b><small>Find text &amp; jump to matches</small></span></button>
-          <button class="pr-src" id="prOpenNew" type="button"><span class="pr-src-ic">📂</span><span class="pr-src-tx"><b>Open another PDF</b><small>Pick a different document</small></span></button>
-          <button class="pr-src" id="prNotes" type="button"><span class="pr-src-ic">📝</span><span class="pr-src-tx"><b>Notes</b><small>Saved on this device</small></span><span id="prNotesBadge" class="pr-badge pr-badge-row" hidden></span></button>
-          <button class="pr-src" id="prSplit" type="button"><span class="pr-src-ic">✂️</span><span class="pr-src-tx"><b>Split into pages</b><small>Save each page as its own PDF</small></span></button>
-          <button class="pr-sheet-close" id="prMoreClose" type="button">Close</button>
-        </div>
+      <!-- More — dropdown popover (opens upward from the bar) -->
+      <div class="pr-menu" id="prMoreSheet" role="menu" aria-label="More" hidden>
+        <button class="pr-mi" id="prFindBtn" type="button" role="menuitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><span>Search in document</span></button>
+        <button class="pr-mi" id="prOpenNew" type="button" role="menuitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h3.4a2 2 0 0 1 1.6.8l.9 1.2a2 2 0 0 0 1.6.8H19a2 2 0 0 1 2 2"/><path d="M3.3 10h17.4a1 1 0 0 1 .98 1.2l-1.3 6.4a1 1 0 0 1-.98.8H4.6a1 1 0 0 1-.98-.8l-1.3-6.4A1 1 0 0 1 3.3 10Z"/></svg><span>Open another PDF</span></button>
+        <button class="pr-mi" id="prNotes" type="button" role="menuitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h10l4 4v14H5Z"/><path d="M15 3v4h4M9 12h6M9 16h4"/></svg><span>Notes</span><span id="prNotesBadge" class="pr-badge pr-badge-row" hidden></span></button>
+        <button class="pr-mi" id="prSplit" type="button" role="menuitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.6"/><circle cx="6" cy="18" r="2.6"/><path d="M8.1 7.6 20 18M8.1 16.4 20 6"/></svg><span>Split into pages</span></button>
       </div>
     </div>
 
@@ -487,6 +483,20 @@ const faqItems = [
     .pr-rail.pr-chrome-hidden{transform:translateY(-50%) translateX(26px)}
     .pr-rbar.pr-chrome-hidden{transform:translateX(-50%) translateY(26px)}
     .pr-badge-row{position:static;margin-left:auto}
+    /* More — dropdown popover (Canva-style), opens upward from the bar's right edge */
+    .pr-menu{position:fixed;right:calc(50% - min(47vw,220px));bottom:calc(60px + env(safe-area-inset-bottom) + 120px);z-index:70;
+      display:flex;flex-direction:column;gap:1px;padding:6px;min-width:212px;
+      background:color-mix(in srgb,var(--nav-bg) 97%,transparent);backdrop-filter:blur(22px) saturate(1.4);-webkit-backdrop-filter:blur(22px) saturate(1.4);
+      border:1px solid color-mix(in srgb,var(--line) 55%,transparent);border-radius:15px;
+      box-shadow:0 20px 54px -16px rgba(20,16,44,.7);transform-origin:bottom right;animation:pr-menu-in .16s var(--ease-out) both}
+    .pr-menu[hidden]{display:none}
+    @keyframes pr-menu-in{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:none}}
+    .pr-mi{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:11px 12px;border:0;border-radius:10px;background:transparent;color:var(--txt);font:inherit;font-size:14.5px;font-weight:600;cursor:pointer;transition:background var(--d-micro) var(--ease-out)}
+    .pr-mi:hover{background:color-mix(in srgb,var(--brand) 14%,transparent)}
+    .pr-mi:active{transform:scale(.98)}
+    .pr-mi svg{width:19px;height:19px;flex:0 0 auto;opacity:.85}
+    .pr-mi span{flex:1}
+    .pr-mi .pr-badge-row{flex:0 0 auto}
 
     /* ---------- EDITOR ---------- */
     .ed{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;background:var(--app-bg,#0b0b10)}
@@ -1962,12 +1972,11 @@ const faqItems = [
           host.addEventListener('click', function (e){ if (e.target && e.target.closest && e.target.closest('button,a,input,textarea')) return; setHidden(!hidden); });
         }
         var more = $('prMoreSheet');
-        if ($('prMore')) $('prMore').onclick = function (){ if (more) more.hidden = false; };
-        if (more){
-          $('prMoreClose').onclick = function (){ more.hidden = true; };
-          more.onclick = function (e){ if (e.target === more) more.hidden = true; };
-          more.querySelectorAll('.pr-src').forEach(function (b){ b.addEventListener('click', function (){ more.hidden = true; }); });
-        }
+        function onDocClick(e){ if (e.target && e.target.closest && e.target.closest('#prMoreSheet')) return; closeMore(); }
+        function closeMore(){ if (more) more.hidden = true; document.removeEventListener('click', onDocClick, true); }
+        function openMore(){ if (!more) return; more.hidden = false; setTimeout(function (){ document.addEventListener('click', onDocClick, true); }, 0); }
+        if ($('prMore')) $('prMore').onclick = function (e){ if (e.stopPropagation) e.stopPropagation(); if (!more) return; if (more.hidden) openMore(); else closeMore(); };
+        if (more){ more.querySelectorAll('.pr-mi').forEach(function (b){ b.addEventListener('click', closeMore); }); }
       })();
 
       /* deep links from My Files: ?recent=<id> (open saved), ?new=1 (create), ?open=1 (source sheet) */
