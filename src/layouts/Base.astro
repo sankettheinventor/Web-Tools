@@ -766,7 +766,7 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
       var TEST_BANNER = _realB ? REAL_BANNER : 'ca-app-pub-3940256099942544/6300978111';
       var TEST_INTERSTITIAL = _realI ? REAL_INTERSTITIAL : 'ca-app-pub-3940256099942544/1033173712';
       var BANNER_TESTING = !_realB, INTERSTITIAL_TESTING = !_realI; // isTesting per placement (real unit → false → real ads)
-      var immersive = location.pathname.indexOf('/tools/pdf-studio') === 0;
+      var immersive = false; /* the PDF reader now shows a compact top ad; the editor/writer/scan hide it via overlay detection */
       var root = document.documentElement, body = document.body;
       function setAdH(px) { root.style.setProperty('--ad-h', (px > 0 ? px : 0) + 'px'); }
       /* Reserve the top ad space from the VERY FIRST frame on every page. The native banner
@@ -776,9 +776,11 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
       /* reserve for the BIGGEST ad: never let the top space shrink below 90px (anchored
          adaptive banners top out ~90px), and grow if a taller one ever appears → no creative
          can EVER overlap the header, on first load or after a refresh. */
-      function rememberAdH(h) { try { var m = Math.max(h, 90, +(localStorage.getItem('sj_adh') || 0)); localStorage.setItem('sj_adh', m); localStorage.setItem('sj_ads_on', '1'); setAdH(m); } catch (e) { setAdH(Math.max(h, 90)); } }
+      /* Use the ACTUAL anchored-banner height (small), floored at 50 and capped at 110, so a
+         past medium-rectangle (250px) can't inflate the top zone. */
+      function rememberAdH(h) { try { var m = Math.min(Math.max(h, 50), 110); localStorage.setItem('sj_adh', m); localStorage.setItem('sj_ads_on', '1'); setAdH(m); } catch (e) { setAdH(Math.min(Math.max(h, 50), 110)); } }
       if (immersive) { setAdH(0); }
-      else { try { var savedAdH = +(localStorage.getItem('sj_adh') || 0); setAdH(savedAdH > 90 ? savedAdH : 90); } catch (e) { setAdH(90); } }
+      else { try { var savedAdH = +(localStorage.getItem('sj_adh') || 0); if (!(savedAdH >= 50 && savedAdH <= 110)) savedAdH = 56; localStorage.setItem('sj_adh', savedAdH); setAdH(savedAdH); } catch (e) { setAdH(56); } }
       function onSize(info) { var h = info && (info.height != null ? info.height : (info.size && info.size.height)); if (h && h > 0) rememberAdH(h); }
       try { if (AdMob.addListener) { AdMob.addListener('bannerViewSizeChanged', onSize); AdMob.addListener('bannerAdSizeChanged', onSize); } } catch (e) {}
       /* Measure the TRUE top of the nav region — including the raised Scan button, which
@@ -794,7 +796,7 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
         return Math.round((clearance + 50) * dpr); // clear the full nav + a 50px gap (×dpr→physical px the plugin wants)
       }
       /* hide the banner whenever ANY overlay/sheet/modal is open — never cover controls. */
-      var OVERLAY_SEL = '.sjcp:not([hidden]),.sjsel:not([hidden]),.lib-sheet,.scan-sheet:not([hidden]),.app-modal:not([hidden]),.sj-ask,.sj-sheet:not([hidden]),.pr-sheet:not([hidden]),#prShareSheet:not([hidden]),#prFilter:not([hidden]),#prQrRes:not([hidden]),#wrSettings:not([hidden]),[data-sj-sheet]:not([hidden])';
+      var OVERLAY_SEL = '.sjcp:not([hidden]),.sjsel:not([hidden]),.lib-sheet,.scan-sheet:not([hidden]),.app-modal:not([hidden]),.sj-ask,.sj-sheet:not([hidden]),.pr-sheet:not([hidden]),#prShareSheet:not([hidden]),#prFilter:not([hidden]),#prQrRes:not([hidden]),#wrSettings:not([hidden]),#prEdit:not([hidden]),#prWrite:not([hidden]),[data-sj-sheet]:not([hidden])';
       function overlayOpen() { try { return !!document.querySelector(OVERLAY_SEL); } catch (e) { return false; } }
       var shown = false, t, paused = false;
       function swallow(p) { if (p && typeof p.catch === 'function') p.catch(function () {}); }  // hide/resume/removeBanner reject if no banner — never throw
@@ -881,7 +883,7 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
           body.classList.remove('mrec-on');
           try { swallow(AdMob.removeBanner()); } catch (e) {}
           shown = false; paused = false;
-          try { var s = +(localStorage.getItem('sj_adh') || 0); setAdH(s > 90 ? s : 90); } catch (e) { setAdH(90); }
+          try { var s = +(localStorage.getItem('sj_adh') || 0); if (!(s >= 50 && s <= 110)) s = 56; setAdH(s); } catch (e) { setAdH(56); }
           showAd();
         };
         showAd();

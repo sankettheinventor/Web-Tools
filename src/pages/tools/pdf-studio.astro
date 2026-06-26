@@ -271,17 +271,6 @@ const faqItems = [
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19"/></svg>
         <input id="cfBright" type="range" min="50" max="160" value="100" aria-label="Brightness" />
       </div>
-      <div class="cf-lab">Focus sound · plays offline</div>
-      <div class="wr-seg wr-seg-full" id="cfSound">
-        <button data-s="off" type="button">Off</button>
-        <button data-s="music" type="button">Music</button>
-        <button data-s="rain" type="button">Rain</button>
-        <button data-s="ocean" type="button">Ocean</button>
-      </div>
-      <div class="cf-bright" id="cfVolRow" hidden>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 4.5a9 9 0 0 1 0 15"/></svg>
-        <input id="cfVol" type="range" min="0" max="100" value="40" aria-label="Focus sound volume" />
-      </div>
       <button class="pr-sheet-close" id="cfClose" type="button">Done</button>
     </div>
   </div>
@@ -450,6 +439,8 @@ const faqItems = [
     .pr-doc{height:calc(100vh - 58px - 60px);overflow-y:auto;overflow-x:hidden;background:#e9e7f1;padding:18px 0;display:flex;flex-direction:column;align-items:center;gap:16px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;will-change:scroll-position}
     :root[data-theme="dark"] .pr-doc{background:#13111b}
     body.is-app .pr-doc{height:calc(100vh - 58px - 62px - env(safe-area-inset-bottom))}
+    /* when the top ad is showing, the body is padded down by --ad-zone — shrink the reader to match so nothing is hidden */
+    body.is-app.ads-on .pr-doc{height:calc(100vh - 58px - 62px - env(safe-area-inset-bottom) - var(--ad-zone))}
     .pr-doc.sepia{background:#c9c2a8}
     .pr-doc.night{background:#0b0b10}
     .pr-page{position:relative;background:#fff;box-shadow:0 14px 44px -16px rgba(20,16,44,.5),0 2px 6px -3px rgba(20,16,44,.18);flex:0 0 auto}
@@ -2167,73 +2158,6 @@ const faqItems = [
           sheet.onclick = function (e){ if (e.target === sheet) sheet.hidden = true; };
           window.addEventListener('online', function (){ if (sheet && !sheet.hidden){ sheet.hidden = true; var f = pending; pending = null; if (f) f(); } });
         }
-      })();
-
-      /* ===================== FOCUS SOUND / MUSIC — generated on-device (Web Audio), fully offline =====================
-         No audio files, no streaming, no licensing. "Music" is a gentle ambient instrumental — soft chord pads on
-         a calm progression (Cmaj7 → G → Am7 → Fmaj7) with warmth + reverb; Rain/Ocean are noise ambiences. Plays
-         alongside read-aloud at a low level to aid concentration. */
-      (function (){
-        var FS = { ctx: null, src: null, gain: null, lfo: null, master: null, timer: null, cur: 'off', vol: 0.45 };
-        try { var sc = localStorage.getItem('sj_fs'); if (sc){ var o = JSON.parse(sc); FS.cur = (o.cur === 'brown' ? 'music' : (o.cur || 'off')); if (o.vol != null) FS.vol = o.vol; } } catch (e) {}
-        function save(){ try { localStorage.setItem('sj_fs', JSON.stringify({ cur: FS.cur, vol: FS.vol })); } catch (e) {} }
-        function stop(){
-          try { if (FS.timer){ clearInterval(FS.timer); FS.timer = null; } } catch (e) {}
-          try { if (FS.master){ var c = FS.ctx, t = c ? c.currentTime : 0, m = FS.master; m.gain.cancelScheduledValues(t); m.gain.setValueAtTime(m.gain.value, t); m.gain.linearRampToValueAtTime(0.0001, t + 0.25); setTimeout(function (){ try { m.disconnect(); } catch (e) {} }, 450); FS.master = null; } } catch (e) {}
-          try { if (FS.lfo){ FS.lfo.stop(); FS.lfo.disconnect(); FS.lfo = null; } } catch (e) {}
-          try { if (FS.src){ FS.src.stop(); FS.src.disconnect(); FS.src = null; } } catch (e) {}
-          FS.gain = null;
-        }
-        function midi(m){ return 440 * Math.pow(2, (m - 69) / 12); }
-        function startMusic(ctx){
-          var master = ctx.createGain(); master.gain.value = FS.vol; master.connect(ctx.destination); FS.master = master;
-          var lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1700; lp.connect(master);
-          var delay = ctx.createDelay(1.0); delay.delayTime.value = 0.36; var fb = ctx.createGain(); fb.gain.value = 0.32; var wet = ctx.createGain(); wet.gain.value = 0.26;
-          lp.connect(delay); delay.connect(fb); fb.connect(delay); delay.connect(wet); wet.connect(master);
-          var chords = [[48, 60, 64, 67, 71], [43, 55, 59, 62, 67], [45, 57, 60, 64, 67], [41, 53, 57, 60, 65]]; // Cmaj7 · G · Am7 · Fmaj7
-          var ci = 0;
-          function voice(freq, dur, peak){
-            var o1 = ctx.createOscillator(), o2 = ctx.createOscillator(), g = ctx.createGain();
-            o1.type = 'sine'; o2.type = 'triangle'; o1.frequency.value = freq; o2.frequency.value = freq; o2.detune.value = 6;
-            g.gain.value = 0; o1.connect(g); o2.connect(g); g.connect(lp);
-            var t = ctx.currentTime;
-            g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(peak, t + 1.4); g.gain.linearRampToValueAtTime(0.0001, t + dur);
-            o1.start(t); o2.start(t); o1.stop(t + dur + 0.1); o2.stop(t + dur + 0.1);
-          }
-          function playChord(notes){ notes.forEach(function (n, i){ voice(midi(n), 5.6, i === 0 ? 0.11 : 0.075); }); }
-          playChord(chords[0]);
-          FS.timer = setInterval(function (){ if (!FS.master) return; ci = (ci + 1) % chords.length; playChord(chords[ci]); }, 5000);
-        }
-        function start(kind){
-          stop();
-          if (!kind || kind === 'off'){ FS.cur = 'off'; return; }
-          var Ctx = window.AudioContext || window.webkitAudioContext; if (!Ctx) return;
-          if (!FS.ctx){ try { FS.ctx = new Ctx(); } catch (e) { return; } }
-          var ctx = FS.ctx; if (ctx.state === 'suspended') ctx.resume();
-          FS.cur = kind;
-          if (kind === 'music'){ startMusic(ctx); return; }
-          var sr = ctx.sampleRate, len = sr * 4, buf = ctx.createBuffer(1, len, sr), d = buf.getChannelData(0), i;
-          if (kind === 'ocean'){ var last = 0; for (i = 0; i < len; i++){ var w = Math.random() * 2 - 1; last = (last + 0.02 * w) / 1.02; d[i] = last * 3.2; } }
-          else { for (i = 0; i < len; i++) d[i] = Math.random() * 2 - 1; }   // rain = white base
-          var src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
-          var gain = ctx.createGain(), f;
-          if (kind === 'rain'){ var hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 500; var lp2 = ctx.createBiquadFilter(); lp2.type = 'lowpass'; lp2.frequency.value = 7000; src.connect(hp); hp.connect(lp2); lp2.connect(gain); }
-          else { f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 420; src.connect(f); f.connect(gain); }  // ocean
-          gain.connect(ctx.destination);
-          if (kind === 'ocean'){ gain.gain.value = FS.vol * 0.6; var lfo = ctx.createOscillator(); lfo.frequency.value = 0.12; var lg = ctx.createGain(); lg.gain.value = FS.vol * 0.4; lfo.connect(lg); lg.connect(gain.gain); lfo.start(); FS.lfo = lfo; }
-          else gain.gain.value = FS.vol;
-          src.start(); FS.src = src; FS.gain = gain;
-        }
-        function setVol(v){ FS.vol = v; if (FS.master) FS.master.gain.value = v; if (FS.gain) FS.gain.gain.value = (FS.cur === 'ocean' ? v * 0.6 : v); save(); }
-        function syncUI(){
-          var seg = $('cfSound'); if (seg) seg.querySelectorAll('button').forEach(function (b){ b.classList.toggle('on', b.getAttribute('data-s') === FS.cur); });
-          var vr = $('cfVolRow'); if (vr) vr.hidden = (FS.cur === 'off');
-          var vv = $('cfVol'); if (vv) vv.value = Math.round(FS.vol * 100);
-        }
-        if ($('cfSound')) $('cfSound').querySelectorAll('button').forEach(function (b){ b.onclick = function (){ start(b.getAttribute('data-s')); save(); syncUI(); }; });
-        if ($('cfVol')) $('cfVol').oninput = function (){ setVol((+$('cfVol').value || 0) / 100); };
-        syncUI();
-        window.__fsStop = stop;
       })();
 
       /* deep links from My Files: ?recent=<id> (open saved), ?new=1 (create), ?open=1 (source sheet) */
