@@ -793,6 +793,16 @@ const faqItems = [
         } catch (e) {}
         return 0;
       }
+      /* the text-layer span at the START of the current selection (so play reads from there) */
+      function ttsSelectionSpan(){
+        try {
+          var sel = window.getSelection(); if (!sel || !sel.rangeCount) return null;
+          var r = sel.getRangeAt(0); var node = r.startContainer || sel.anchorNode; if (!node) return null;
+          var el = node.nodeType === 1 ? node : node.parentNode;
+          var span = el && el.closest ? el.closest('.textLayer span') : null;
+          return (span && (span.textContent || '').trim()) ? span : null;
+        } catch (e) { return null; }
+      }
 
       async function renderPage(n){
         var el = pageEls[n - 1];
@@ -1886,9 +1896,11 @@ const faqItems = [
       async function ttsStart(){
         if (!ttsSupported()){ if (window.SnapJarKit) window.SnapJarKit.toast('Read-aloud isn’t available on this device', 'err'); return; }
         if (!doc) return;
+        var _selSpan = ttsSelectionSpan();
+        if (_selSpan){ ttsStartFromSpan(_selSpan); return; }   // selected text → read from there
         await ttsLoadVoices();
         computeCurPage();
-        var startPage = ttsSelectionPage() || curPage || 1;
+        var startPage = curPage || 1;
         TTS.active = true; TTS.playing = true; TTS.seq++;
         $('ttsBar').hidden = false; $('ttsNow').textContent = 'Preparing…'; var _pm = $('prMain'); if (_pm) _pm.classList.add('tts-on'); ttsSyncUI();
         var token = TTS.seq, order = [], i;
@@ -1925,6 +1937,7 @@ const faqItems = [
         var pgEl = spanEl.closest('.pr-page'); if (!pgEl) return;
         var pageNo = pageEls.indexOf(pgEl) + 1; if (pageNo < 1) return;
         var tl = pgEl.querySelector('.textLayer'); if (!tl) return;
+        try { var _s = window.getSelection(); if (_s && _s.removeAllRanges) _s.removeAllRanges(); } catch (e) {}
         ttsLoadVoices().then(function (){
           TTS.units = ttsBuildUnits(tl);
           var idx = 0; for (var i = 0; i < TTS.units.length; i++){ if ((TTS.units[i].spans || []).indexOf(spanEl) >= 0){ idx = i; break; } }
@@ -1935,8 +1948,8 @@ const faqItems = [
           ttsRun();
         });
       }
-      $('prListen').onclick = function (){ if (!doc) return; if (TTS.active && TTS.playing) ttsPause(); else ttsResume(); };
-      $('ttsPlay').onclick = function (){ if (TTS.active && TTS.playing) ttsPause(); else ttsResume(); };
+      $('prListen').onclick = function (){ if (!doc) return; var sp = ttsSelectionSpan(); if (sp){ ttsStartFromSpan(sp); return; } if (TTS.active && TTS.playing) ttsPause(); else ttsResume(); };
+      $('ttsPlay').onclick = function (){ if (TTS.active && TTS.playing){ ttsPause(); return; } var sp = ttsSelectionSpan(); if (sp){ ttsStartFromSpan(sp); return; } ttsResume(); };
       $('ttsPrev').onclick = function (){ ttsJump(-1); };
       $('ttsNext').onclick = function (){ ttsJump(1); };
       $('ttsClose').onclick = ttsStop;
