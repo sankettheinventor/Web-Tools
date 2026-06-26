@@ -271,7 +271,29 @@ const faqItems = [
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19"/></svg>
         <input id="cfBright" type="range" min="50" max="160" value="100" aria-label="Brightness" />
       </div>
+      <div class="cf-lab">Focus sound · plays offline</div>
+      <div class="wr-seg wr-seg-full" id="cfSound">
+        <button data-s="off" type="button">Off</button>
+        <button data-s="brown" type="button">Calm</button>
+        <button data-s="rain" type="button">Rain</button>
+        <button data-s="ocean" type="button">Ocean</button>
+      </div>
+      <div class="cf-bright" id="cfVolRow" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 4.5a9 9 0 0 1 0 15"/></svg>
+        <input id="cfVol" type="range" min="0" max="100" value="40" aria-label="Focus sound volume" />
+      </div>
       <button class="pr-sheet-close" id="cfClose" type="button">Done</button>
+    </div>
+  </div>
+
+  <!-- internet needed (premium prompt for the few online features) -->
+  <div class="pr-sheet" id="sjNetSheet" hidden>
+    <div class="pr-sheet-card" role="dialog" aria-modal="true" aria-label="Internet needed">
+      <div class="sjnet-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14 0"/><path d="M1.5 8.5a16 16 0 0 1 21 0"/><path d="M8.5 16.4a6 6 0 0 1 7 0"/><circle cx="12" cy="20" r="1" fill="currentColor"/></svg></div>
+      <div class="sjnet-h">Turn on the internet</div>
+      <p class="sjnet-p">A few extras — like downloading new voices, or ads that keep SnapJar free — need a connection. Your documents always stay private on your device.</p>
+      <button class="nt-save" id="sjNetRetry" type="button">I've turned it on — retry</button>
+      <button class="pr-sheet-close" id="sjNetClose" type="button">Not now</button>
     </div>
   </div>
 
@@ -671,6 +693,11 @@ const faqItems = [
     .nt-item-del{border:0;background:none;color:var(--dim);font-size:15px;cursor:pointer;padding:2px 6px;line-height:1}
     .nt-item-tx{font-size:14.5px;line-height:1.55;color:var(--txt);white-space:pre-wrap;word-break:break-word}
     .nt-empty{text-align:center;color:var(--dim);font-size:13.5px;line-height:1.55;padding:24px 8px}
+    /* internet-needed prompt */
+    .sjnet-ic{width:60px;height:60px;margin:4px auto 12px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--brand) 14%,transparent);color:var(--brand)}
+    .sjnet-ic svg{width:30px;height:30px}
+    .sjnet-h{text-align:center;font-size:18px;font-weight:800;color:var(--txt);margin:0 0 8px}
+    .sjnet-p{text-align:center;font-size:14px;line-height:1.55;color:var(--dim);margin:0 8px 16px}
   </style>
 
   <script>
@@ -706,7 +733,7 @@ const faqItems = [
       /* ============================ READER ============================ */
       async function openFile(file, recentName){
         if (!file) return;
-        try { ttsStop(); } catch (e) {}
+        try { ttsStop(); } catch (e) {} try { if (window.__fsStop) window.__fsStop(); } catch (e) {}
         status('Opening…');
         try {
           var buf = await file.arrayBuffer();
@@ -1142,7 +1169,7 @@ const faqItems = [
       };
       $('prShareClose').onclick = function (){ $('prShareSheet').hidden = true; };
       $('prShareSheet').onclick = function (e){ if (e.target === $('prShareSheet')) $('prShareSheet').hidden = true; };
-      $('prOpenNew').onclick = function (){ try { ttsStop(); } catch (e) {} $('prMain').hidden = true; $('prOpen').hidden = false; $('prSeo').style.display = ''; var f = document.querySelector('.faq'); if (f) f.style.display = ''; file.value = ''; status(''); };
+      $('prOpenNew').onclick = function (){ try { ttsStop(); } catch (e) {} try { if (window.__fsStop) window.__fsStop(); } catch (e) {} $('prMain').hidden = true; $('prOpen').hidden = false; $('prSeo').style.display = ''; var f = document.querySelector('.faq'); if (f) f.style.display = ''; file.value = ''; status(''); };
       /* premium page navigator: a grid of live page thumbnails to jump anywhere */
       function openThumbs(){
         if (!doc) return;
@@ -1217,7 +1244,7 @@ const faqItems = [
 
       function enterEditFromDoc(){
         if (!doc) return;
-        try { ttsStop(); } catch (e) {}
+        try { ttsStop(); } catch (e) {} try { if (window.__fsStop) window.__fsStop(); } catch (e) {}
         ED.on = true; ED.pages = []; ED.cur = 0; ED.sel = null; ED.srcBytes = lastBytes;
         var jobs = [];
         for (var n = 1; n <= doc.numPages; n++) (function (n){ jobs.push(doc.getPage(n).then(function (p){ var v = p.getViewport({ scale: 1 }); return { kind: 'src', srcIndex: n - 1, w: v.width, h: v.height, rotate: 0, els: [] }; })); })(n);
@@ -1518,7 +1545,7 @@ const faqItems = [
       var wrSize = 0, wrBody = $('wrBody'), wrTitle = $('wrTitle'), wrBar = $('wrBar');
       var WR_COLORS = ['#15131c', '#7c5cff', '#e5484d', '#2bb673', '#3a8cff', '#e0a23a', '#d6409f', '#7a7686'];
       function enterWrite(fresh){
-        try { ttsStop(); } catch (e) {}
+        try { ttsStop(); } catch (e) {} try { if (window.__fsStop) window.__fsStop(); } catch (e) {}
         $('prOpen').hidden = true; $('prMain').hidden = true; $('prEdit').hidden = true; $('prWrite').hidden = false;
         $('prSeo').style.display = 'none'; var f = document.querySelector('.faq'); if (f) f.style.display = 'none';
         if (fresh !== false) { wrTitle.innerHTML = ''; wrBody.innerHTML = ''; }
@@ -2008,9 +2035,12 @@ const faqItems = [
       /* one-tap install of free offline voices (Indian English, Hindi & many Indian languages)
          from inside the app — no digging through Android Settings. Works offline after download. */
       $('ttsGetVoices').onclick = function (){
-        TTS.voicesLoaded = false;
-        if (TTSP && TTSP.openInstall){ TTSP.openInstall().catch(function (){}); if (window.SnapJarKit) window.SnapJarKit.toast('Pick English (India), Hindi or any language to download — it works offline after.', 'info', 6000); }
-        else if (window.SnapJarKit) window.SnapJarKit.toast('Voice download is available in the SnapJar app.', 'info');
+        function go(){
+          TTS.voicesLoaded = false;
+          if (TTSP && TTSP.openInstall){ TTSP.openInstall().catch(function (){}); if (window.SnapJarKit) window.SnapJarKit.toast('Pick English (India), Hindi or any language to download — it works offline after.', 'info', 6000); }
+          else if (window.SnapJarKit) window.SnapJarKit.toast('Voice download is available in the SnapJar app.', 'info');
+        }
+        if (window.__requireNet) window.__requireNet(go); else go();   // downloading voices needs internet
       };
       /* coming back from the installer (or any app switch) → refresh the available voices */
       document.addEventListener('visibilitychange', function (){ if (!document.hidden){ TTS.voicesLoaded = false; ttsLoadVoices(); } });
@@ -2124,6 +2154,59 @@ const faqItems = [
         function openMore(){ if (!more) return; more.hidden = false; setTimeout(function (){ document.addEventListener('click', onDocClick, true); }, 0); }
         if ($('prMore')) $('prMore').onclick = function (e){ if (e.stopPropagation) e.stopPropagation(); if (!more) return; if (more.hidden) openMore(); else closeMore(); };
         if (more){ more.querySelectorAll('.pr-mi').forEach(function (b){ b.addEventListener('click', closeMore); }); }
+      })();
+
+      /* ===================== INTERNET-NEEDED prompt (premium, only for online features) ===================== */
+      (function (){
+        function ok(){ return navigator.onLine !== false; }
+        var pending = null, sheet = $('sjNetSheet');
+        window.__requireNet = function (fn){ if (ok()){ fn && fn(); return true; } pending = fn || null; if (sheet) sheet.hidden = false; return false; };
+        if (sheet){
+          $('sjNetRetry').onclick = function (){ if (ok()){ sheet.hidden = true; var f = pending; pending = null; if (f) f(); } else if (window.SnapJarKit) window.SnapJarKit.toast('Still offline — please switch on Wi-Fi or mobile data.', 'err'); };
+          $('sjNetClose').onclick = function (){ sheet.hidden = true; pending = null; };
+          sheet.onclick = function (e){ if (e.target === sheet) sheet.hidden = true; };
+          window.addEventListener('online', function (){ if (sheet && !sheet.hidden){ sheet.hidden = true; var f = pending; pending = null; if (f) f(); } });
+        }
+      })();
+
+      /* ===================== FOCUS SOUND — generated on-device (Web Audio), fully offline =====================
+         No audio files, no streaming, no licensing: calm/rain/ocean ambiences are synthesised from noise so
+         they play instantly, offline, and keep the privacy promise. Plays alongside read-aloud at a low level. */
+      (function (){
+        var FS = { ctx: null, src: null, gain: null, lfo: null, cur: 'off', vol: 0.4 };
+        try { var sc = localStorage.getItem('sj_fs'); if (sc){ var o = JSON.parse(sc); FS.cur = o.cur || 'off'; if (o.vol != null) FS.vol = o.vol; } } catch (e) {}
+        function save(){ try { localStorage.setItem('sj_fs', JSON.stringify({ cur: FS.cur, vol: FS.vol })); } catch (e) {} }
+        function stop(){ try { if (FS.lfo){ FS.lfo.stop(); FS.lfo.disconnect(); FS.lfo = null; } if (FS.src){ FS.src.stop(); FS.src.disconnect(); FS.src = null; } } catch (e) {} }
+        function start(kind){
+          stop();
+          if (!kind || kind === 'off'){ FS.cur = 'off'; return; }
+          var Ctx = window.AudioContext || window.webkitAudioContext; if (!Ctx) return;
+          if (!FS.ctx){ try { FS.ctx = new Ctx(); } catch (e) { return; } }
+          var ctx = FS.ctx; if (ctx.state === 'suspended') ctx.resume();
+          var sr = ctx.sampleRate, len = sr * 4, buf = ctx.createBuffer(1, len, sr), d = buf.getChannelData(0), i;
+          if (kind === 'brown' || kind === 'ocean'){ var last = 0; for (i = 0; i < len; i++){ var w = Math.random() * 2 - 1; last = (last + 0.02 * w) / 1.02; d[i] = last * 3.2; } }
+          else { for (i = 0; i < len; i++) d[i] = Math.random() * 2 - 1; }
+          var src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+          var gain = ctx.createGain(), f;
+          if (kind === 'brown'){ f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 500; src.connect(f); f.connect(gain); }
+          else if (kind === 'rain'){ var hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 500; var lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 7000; src.connect(hp); hp.connect(lp); lp.connect(gain); }
+          else if (kind === 'ocean'){ f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 420; src.connect(f); f.connect(gain); }
+          else { f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 9000; src.connect(f); f.connect(gain); }
+          gain.connect(ctx.destination);
+          if (kind === 'ocean'){ gain.gain.value = FS.vol * 0.6; var lfo = ctx.createOscillator(); lfo.frequency.value = 0.12; var lg = ctx.createGain(); lg.gain.value = FS.vol * 0.4; lfo.connect(lg); lg.connect(gain.gain); lfo.start(); FS.lfo = lfo; }
+          else gain.gain.value = FS.vol;
+          src.start(); FS.src = src; FS.gain = gain; FS.cur = kind;
+        }
+        function setVol(v){ FS.vol = v; if (FS.gain) FS.gain.gain.value = (FS.cur === 'ocean' ? v * 0.6 : v); save(); }
+        function syncUI(){
+          var seg = $('cfSound'); if (seg) seg.querySelectorAll('button').forEach(function (b){ b.classList.toggle('on', b.getAttribute('data-s') === FS.cur); });
+          var vr = $('cfVolRow'); if (vr) vr.hidden = (FS.cur === 'off');
+          var vv = $('cfVol'); if (vv) vv.value = Math.round(FS.vol * 100);
+        }
+        if ($('cfSound')) $('cfSound').querySelectorAll('button').forEach(function (b){ b.onclick = function (){ start(b.getAttribute('data-s')); save(); syncUI(); }; });
+        if ($('cfVol')) $('cfVol').oninput = function (){ setVol((+$('cfVol').value || 0) / 100); };
+        syncUI();
+        window.__fsStop = stop;
       })();
 
       /* deep links from My Files: ?recent=<id> (open saved), ?new=1 (create), ?open=1 (source sheet) */
