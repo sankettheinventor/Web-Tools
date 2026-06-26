@@ -756,14 +756,34 @@ const faqItems = [
       function observe(){
         if (io) io.disconnect();
         io = new IntersectionObserver(function (entries){
-          entries.forEach(function (e){
-            var n = +e.target.dataset.n;
-            if (e.isIntersecting){ renderPage(n); if (e.intersectionRatio > 0.5){ curPage = n; updateInd(); } }
-          });
-        }, { root: $('prDoc'), rootMargin: '1400px 0px', threshold: [0, 0.5] });
+          entries.forEach(function (e){ if (e.isIntersecting) renderPage(+e.target.dataset.n); });
+        }, { root: $('prDoc'), rootMargin: '1400px 0px', threshold: 0 });
         pageEls.forEach(function (el){ io.observe(el); });
       }
       function updateInd(){ $('prCur').textContent = curPage; }
+      /* Current page = the page under the upper third of the viewport, from REAL geometry —
+         not the IntersectionObserver (its 1400px render-ahead margin reports off-screen pages
+         as visible, which made read-aloud start on the wrong page). Incremental from curPage,
+         so it stays cheap even on a 200-page document. */
+      function computeCurPage(){
+        var host = $('prDoc'); if (!host || !pageEls.length) return;
+        var hostTop = host.getBoundingClientRect().top, probeY = host.clientHeight * 0.35;
+        function topOf(i){ return pageEls[i - 1].getBoundingClientRect().top - hostTop; }
+        var p = Math.min(Math.max(curPage || 1, 1), pageEls.length);
+        while (p < pageEls.length && topOf(p + 1) <= probeY) p++;
+        while (p > 1 && topOf(p) > probeY) p--;
+        if (p !== curPage){ curPage = p; updateInd(); }
+      }
+      /* if the user selected text, start read-aloud from the page that selection sits on */
+      function ttsSelectionPage(){
+        try {
+          var sel = window.getSelection(); if (!sel || !sel.rangeCount || sel.isCollapsed) return 0;
+          var node = sel.anchorNode, el = node && (node.nodeType === 1 ? node : node.parentNode);
+          var pg = el && el.closest && el.closest('.pr-page');
+          if (pg){ var idx = pageEls.indexOf(pg); if (idx >= 0) return idx + 1; }
+        } catch (e) {}
+        return 0;
+      }
 
       async function renderPage(n){
         var el = pageEls[n - 1];
@@ -1748,8 +1768,21 @@ const faqItems = [
       function ttsBuildUnits(tl){
         if (!tl) return [];
         var spans = Array.prototype.slice.call(tl.querySelectorAll('span'));
-        var full = '', map = [];
-        spans.forEach(function (s){ var t = s.textContent || ''; if (!t) return; var start = full.length; full += t; map.push({ span: s, start: start, end: full.length }); full += ' '; });
+        var full = '', map = [], prev = null;
+        /* Join spans using REAL geometry: a space only when there's a visible gap or a line
+           break. pdf.js often splits one word across spans — inserting a space after every
+           span turned "fight" into "f i g h t", which the TTS engine then spelled out. */
+        spans.forEach(function (s){
+          var t = s.textContent; if (!t) return;
+          var r = s.getBoundingClientRect();
+          if (full.length && !/\s$/.test(full) && !/^\s/.test(t)){
+            var sameLine = prev && Math.abs(r.top - prev.top) < Math.max(4, r.height * 0.6);
+            if (!sameLine) full += ' ';
+            else if (prev && (r.left - prev.right) > r.height * 0.22) full += ' ';
+          }
+          var start = full.length; full += t; map.push({ span: s, start: start, end: full.length });
+          prev = r;
+        });
         var units = [], re = /[^.!?\n]+[.!?]+["')\]’”]*|[^.!?\n]+(?=\n|$)/g, m;
         while ((m = re.exec(full))){
           var text = (m[0] || '').replace(/\s+/g, ' ').trim(); if (!text || text.length < 2) continue;
@@ -1812,11 +1845,13 @@ const faqItems = [
         if (!ttsSupported()){ if (window.SnapJarKit) window.SnapJarKit.toast('Read-aloud isn’t available on this device', 'err'); return; }
         if (!doc) return;
         await ttsLoadVoices();
+        computeCurPage();
+        var startPage = ttsSelectionPage() || curPage || 1;
         TTS.active = true; TTS.playing = true; TTS.seq++;
         $('ttsBar').hidden = false; $('ttsNow').textContent = 'Preparing…'; var _pm = $('prMain'); if (_pm) _pm.classList.add('tts-on'); ttsSyncUI();
         var token = TTS.seq, order = [], i;
-        for (i = curPage; i <= doc.numPages; i++) order.push(i);
-        for (i = 1; i < curPage; i++) order.push(i);
+        for (i = startPage; i <= doc.numPages; i++) order.push(i);
+        for (i = 1; i < startPage; i++) order.push(i);
         for (var k = 0; k < order.length; k++){
           var cnt = await ttsLoadPage(order[k]);
           if (token !== TTS.seq) return;
@@ -1967,7 +2002,8 @@ const faqItems = [
         function setHidden(h){ if (h === hidden) return; hidden = h; if (rail) rail.classList.toggle('pr-chrome-hidden', h); if (rbar) rbar.classList.toggle('pr-chrome-hidden', h); }
         window.__prShowChrome = function (){ setHidden(false); };
         if (host){
-          host.addEventListener('scroll', function (){ setHidden(true); clearTimeout(ct); ct = setTimeout(function (){ setHidden(false); }, 1100); }, { passive: true });
+          var praf = 0;
+          host.addEventListener('scroll', function (){ setHidden(true); clearTimeout(ct); ct = setTimeout(function (){ setHidden(false); }, 1100); if (!praf) praf = requestAnimationFrame(function (){ praf = 0; computeCurPage(); }); }, { passive: true });
           /* tap an empty area of the page to toggle the controls (immersive reading) */
           host.addEventListener('click', function (e){ if (e.target && e.target.closest && e.target.closest('button,a,input,textarea')) return; setHidden(!hidden); });
         }
