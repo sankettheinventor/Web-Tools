@@ -780,7 +780,8 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
          past medium-rectangle (250px) can't inflate the top zone. */
       function rememberAdH(h) { try { var m = Math.min(Math.max(h, 50), 110); localStorage.setItem('sj_adh', m); localStorage.setItem('sj_ads_on', '1'); setAdH(m); } catch (e) { setAdH(Math.min(Math.max(h, 50), 110)); } }
       if (immersive) { setAdH(0); }
-      else { try { var savedAdH = +(localStorage.getItem('sj_adh') || 0); if (!(savedAdH >= 50 && savedAdH <= 110)) savedAdH = 56; localStorage.setItem('sj_adh', savedAdH); setAdH(savedAdH); } catch (e) { setAdH(56); } }
+      else { try { var savedAdH = +(localStorage.getItem('sj_adh') || 0); if (!(savedAdH >= 50 && savedAdH <= 110)) savedAdH = 56; localStorage.setItem('sj_adh', savedAdH); setAdH(savedAdH); } catch (e) { setAdH(56); }
+        try { body.classList.add('ads-on'); } catch (e) {} }   /* reserve the ad strip from the FIRST frame so the header is never under the ad while the banner loads */
       function onSize(info) { var h = info && (info.height != null ? info.height : (info.size && info.size.height)); if (h && h > 0) rememberAdH(h); }
       try { if (AdMob.addListener) { AdMob.addListener('bannerViewSizeChanged', onSize); AdMob.addListener('bannerAdSizeChanged', onSize); } } catch (e) {}
       /* Measure the TRUE top of the nav region — including the raised Scan button, which
