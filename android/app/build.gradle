@@ -52,6 +52,10 @@ dependencies {
     implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
     implementation project(':capacitor-android')
     implementation "androidx.documentfile:documentfile:1.0.1"
+    // GMA SDK on the APP classpath so our native AppOpenPlugin can compile against it.
+    // Same version the @capacitor-community/admob plugin pulls (it declares it `implementation`,
+    // which is NOT exposed to consumers) → gradle resolves to a single version, no conflict.
+    implementation "com.google.android.gms:play-services-ads:24.7.+"
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"

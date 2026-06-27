@@ -16,6 +16,7 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(FolderAccessPlugin.class);
         registerPlugin(IncomingFilePlugin.class);
+        registerPlugin(AppOpenPlugin.class);
         super.onCreate(savedInstanceState);
         handleIncoming(getIntent());
     }

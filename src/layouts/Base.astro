@@ -974,6 +974,43 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
           K.adReadAloudEnd = function () { if (INT_CFG.enabled && INT_CFG.onReadAloudEnd) K.maybeInterstitial(); };
         }
         prep();
+        /* ===== APP OPEN ADS — native AppOpenPlugin (the JS admob plugin has none) =====
+           Full-screen ad shown when the user RETURNS to the app from the background — NEVER
+           over the initial cold launch (we only fire after a real background→foreground), and
+           never while a sheet/modal is open or right after another full-screen ad. Preloaded
+           and reloaded after each show; frequency-capped so rapid app-switching can't spam it. */
+        try {
+          var AppOpen = K && K.plugin ? K.plugin('AppOpenAd') : null;
+          if (AppOpen && AppOpen.load) {
+            var REAL_APP_OPEN = 'ca-app-pub-4351869860119610/9389012222';   // ✓ live App Open unit
+            var APP_OPEN_ID = (!ADS_TESTING && REAL_APP_OPEN) ? REAL_APP_OPEN : 'ca-app-pub-3940256099942544/9257395921';
+            var aoReady = false, aoWasBg = false, AO_GAP_MS = 60000;
+            function aoLoad() { try { AppOpen.load({ adId: APP_OPEN_ID }); } catch (e) {} }
+            if (AppOpen.addListener) {
+              AppOpen.addListener('appOpenLoaded', function () { aoReady = true; });
+              AppOpen.addListener('appOpenFailedToLoad', function () { aoReady = false; });
+              AppOpen.addListener('appOpenDismissed', function () { aoReady = false; aoLoad(); });   // preload the next
+              AppOpen.addListener('appOpenFailedToShow', function () { aoReady = false; aoLoad(); });
+            }
+            aoLoad();
+            var _App2 = K.plugin('App');
+            if (_App2 && _App2.addListener) _App2.addListener('appStateChange', function (s) {
+              try {
+                if (!s) return;
+                if (!s.isActive) { aoWasBg = true; return; }            // went to background
+                if (!aoWasBg) return;                                    // active without prior background = cold start → skip
+                aoWasBg = false;
+                var now = +new Date();
+                var lastFs = Math.max(+(localStorage.getItem('sj_ao_ts') || 0), +(localStorage.getItem('sj_int_ts') || 0));
+                if (now - lastFs < AO_GAP_MS) return;                    // don't stack with a recent full-screen ad
+                if (overlayOpen()) return;                               // a sheet/modal is open → never cover it
+                if (!aoReady) { aoLoad(); return; }                      // nothing preloaded → prep for next return
+                localStorage.setItem('sj_ao_ts', now);
+                AppOpen.show();
+              } catch (e) {}
+            });
+          }
+        } catch (e) {}
         if (immersive) { try { swallow(AdMob.removeBanner()); } catch (e) {} setAdH(0); return; }
         /* The native banner PERSISTS across page navigations, but on a new page showBanner()
            may reject ("already shown") → don't tear down the reserved space. Once the ad has
