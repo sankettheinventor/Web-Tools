@@ -609,7 +609,9 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
             <a role="menuitem" href="/tools/favicon">Favicon &amp; Icons</a>
             <a role="menuitem" href="/tools/svg-optimizer">SVG Optimizer</a>
           </div>
-          <a class="mega-media" role="menuitem" href="/tools/video-to-mp3">🎵 Video to MP3 — extract audio from any video, in your browser</a>
+          {import.meta.env.PUBLIC_APP_BUILD !== '1' && (
+            <a class="mega-media" role="menuitem" href="/tools/video-to-mp3">🎵 Video to MP3 — extract audio from any video, in your browser</a>
+          )}
           {import.meta.env.PUBLIC_APP_BUILD !== '1' && (
             <a class="mega-media" role="menuitem" href="https://elegant-crostata-510d7b.netlify.app/" target="_blank" rel="nofollow noopener">⬇️ Video Downloader — save clips from Vimeo, TikTok &amp; more (separate tool) ↗</a>
           )}
@@ -630,7 +632,7 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
   {IS_APP && (
     <div class="sj-offline" id="sjOffline" hidden>
       <span class="sjo-ic">📶</span>
-      <span class="sjo-tx">You're offline — turn on Wi-Fi or mobile data for the full SnapJar experience.</span>
+      <span class="sjo-tx">You're offline — every tool still works on your device. Some images or links may not load.</span>
       <button class="sjo-x" id="sjOfflineX" type="button" aria-label="Dismiss">✕</button>
     </div>
   )}
@@ -930,19 +932,22 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
         if (K) {
           K._prepInterstitial = prep;
           /* ===== INTERSTITIAL POLICY — AdMob-safe + tunable =====
-             Shown ONLY at a DELIBERATE transition the user starts (tapping the bottom nav or an
-             in-app link) — a moment the user already expects a new screen, so a full-screen ad
-             can NEVER land under an in-progress content tap. NEVER on a timer, NEVER on app
-             launch/return (both caused the "my tap opened the advertiser" bug). Capped TWO ways
-             at once: a minimum TIME gap AND a minimum number of NAVIGATIONS between ads — so it
-             runs regularly at natural breakpoints without ever feeling spammy. An export makes
-             the very next navigation eligible immediately. Tune the four values below (also
-             reachable at runtime via window.SnapJarKit._intCfg). */
+             Full-screen ads run ONLY at explicit "seams" the user reaches deliberately — never
+             on a timer, never on app launch/return, never mid-action — so an ad can NEVER land
+             under an in-progress tap (the "my tap opened the advertiser" bug). The three enabled
+             seams (each toggleable):
+               • onExport       — after a file is SAVED/EXPORTED, shown at the user's NEXT in-app
+                                  navigation (a deliberate transition, not the instant of saving).
+               • onReaderExit   — when the user closes the PDF reader / exits the editor.
+               • onReadAloudEnd — when read-aloud finishes the doc, or the user ends the session.
+             Conversions intentionally do NOT trigger one (product decision). Every seam still
+             passes through ONE hard frequency floor (minGapMs). Tune at window.SnapJarKit._intCfg. */
           var INT_CFG = K._intCfg = {
             enabled: true,
-            minGapMs: 70000,   // hard floor — never two interstitials closer than ~70s
-            everyNNav: 3,      // routine cadence — at most one per N deliberate navigations
-            onExport: true     // an export makes the NEXT navigation eligible right away
+            minGapMs: 70000,      // hard floor — never two interstitials closer than ~70s
+            onExport: true,       // after save/export → at the next deliberate navigation
+            onReaderExit: true,   // closing the PDF reader / exiting the editor
+            onReadAloudEnd: true  // read-aloud finished the doc, or the user ended the session
           };
           K.maybeInterstitial = function (force) {
             try {
@@ -954,20 +959,19 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
               AdMob.showInterstitial && AdMob.showInterstitial().then(prep).catch(prep);
             } catch (e) {}
           };
-          /* Count REAL in-app navigations (persisted in localStorage — Astro is MPA, so the
-             script reloads every page and an in-memory counter would reset). At each deliberate
-             nav, show an interstitial if the routine cadence is hit OR an export is due. Only
-             in-app anchor links count → the Scan button (opens a sheet, doesn't navigate) and
-             other buttons NEVER trigger a full-screen ad. */
+          /* SEAM 1 — after an export/save (K._intDue is set in the save flow), show at the user's
+             NEXT genuine in-app navigation. Only in-app anchor links count, so buttons and the
+             Scan tab (opens a sheet, not a navigation) never trigger a full-screen ad. */
           document.addEventListener('click', function (e) {
             try {
+              if (!INT_CFG.enabled || !INT_CFG.onExport || !K._intDue) return;
               var t = e.target; if (!t || !t.closest) return;
-              if (!t.closest('a[href^="/"]')) return;                 // a genuine in-app navigation
-              var n = (+(localStorage.getItem('sj_nav_n') || 0)) + 1; localStorage.setItem('sj_nav_n', n);
-              var eligible = (INT_CFG.onExport && K._intDue) || (INT_CFG.enabled && (n % INT_CFG.everyNNav === 0));
-              if (eligible) setTimeout(function () { K.maybeInterstitial(); }, 0);  // still enforces minGapMs inside
+              if (t.closest('a[href^="/"]')) setTimeout(function () { K.maybeInterstitial(); }, 0);  // still gap-capped inside
             } catch (e) {}
           }, true);
+          /* SEAMS 2 & 3 — the PDF tool calls these at reader/editor exit and at read-aloud end. */
+          K.adTaskExit = function () { if (INT_CFG.enabled && INT_CFG.onReaderExit) K.maybeInterstitial(); };
+          K.adReadAloudEnd = function () { if (INT_CFG.enabled && INT_CFG.onReadAloudEnd) K.maybeInterstitial(); };
         }
         prep();
         if (immersive) { try { swallow(AdMob.removeBanner()); } catch (e) {} setAdH(0); return; }
