@@ -171,14 +171,26 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
           type = type || 'info';
           var host = K._toastHost;
           if (!host || !host.isConnected) { host = document.createElement('div'); host.className = 'sj-toasts'; host.setAttribute('role', 'status'); host.setAttribute('aria-live', 'polite'); (document.body || document.documentElement).appendChild(host); K._toastHost = host; }
+          function dismiss(el){ if (el._t) clearTimeout(el._t); el.classList.add('out'); setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 280); }
+          function schedule(el, d){ if (el._t) clearTimeout(el._t); el._t = setTimeout(function () { dismiss(el); }, d); }
+          var dur = ms || (type === 'err' ? 4200 : 2600);
+          var live = host.querySelectorAll('.sj-toast:not(.out)');
+          // de-dupe: an identical message already showing → just refresh its timer (no stacking)
+          for (var i = 0; i < live.length; i++) { var lm = live[i].querySelector('.sj-tmsg'); if (lm && lm.textContent === msg) { schedule(live[i], dur); return live[i]; } }
+          // cap the stack at 3 — retire the oldest so toasts never wall off the screen
+          for (var j = 0; j <= live.length - 3; j++) dismiss(live[j]);
           var t = document.createElement('div'); t.className = 'sj-toast sj-' + type;
           t.innerHTML = '<span class="sj-tic">' + K._icon(type) + '</span><span class="sj-tmsg"></span>';
           t.lastChild.textContent = msg;
           host.appendChild(t);
           requestAnimationFrame(function () { t.classList.add('in'); });
-          var dur = ms || (type === 'err' ? 4200 : 2600);
-          setTimeout(function () { t.classList.add('out'); setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 280); }, dur);
+          schedule(t, dur);
           return t;
+        },
+        /* Tactile feedback — Capacitor Haptics if present, else the Web Vibration API. */
+        haptic: function (style) {
+          try { var H = K.plugin('Haptics'); if (H && H.impact) { H.impact({ style: style === 'heavy' ? 'HEAVY' : style === 'medium' ? 'MEDIUM' : 'LIGHT' }); return; } } catch (e) {}
+          try { if (navigator.vibrate) navigator.vibrate(style === 'heavy' ? 16 : style === 'medium' ? 11 : 7); } catch (e) {}
         },
         /* Classify a status string into a state so colour/icon/motion match the message. */
         classify: function (s) {
@@ -189,23 +201,28 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
           return 'info';
         },
         /* Premium replacement for window.prompt(). Resolves the value or null on cancel. */
+        /* Text prompt by default. Pass opts.confirm:true for a yes/no confirm (no input,
+           OK resolves true, Cancel resolves null), opts.body for sub-text, opts.danger to
+           tint the OK button red (destructive actions). Backward compatible. */
         ask: function (opts) {
           opts = opts || {};
           return new Promise(function (resolve) {
             var ov = document.createElement('div'); ov.className = 'sj-ask';
+            var inField = opts.confirm ? '' : ('<input class="sj-ask-in" type="' + (opts.type || 'text') + '"' + (opts.min != null ? ' min="' + opts.min + '"' : '') + (opts.max != null ? ' max="' + opts.max + '"' : '') + ' />');
             ov.innerHTML = '<div class="sj-ask-card" role="dialog" aria-modal="true"><div class="sj-ask-t"></div>' +
-              '<input class="sj-ask-in" type="' + (opts.type || 'text') + '"' + (opts.min != null ? ' min="' + opts.min + '"' : '') + (opts.max != null ? ' max="' + opts.max + '"' : '') + ' />' +
-              '<div class="sj-ask-row"><button class="sj-ask-cancel" type="button">Cancel</button><button class="sj-ask-ok" type="button">' + (opts.ok || 'OK') + '</button></div></div>';
+              (opts.body ? '<div class="sj-ask-b"></div>' : '') + inField +
+              '<div class="sj-ask-row"><button class="sj-ask-cancel" type="button">' + (opts.cancel || 'Cancel') + '</button><button class="sj-ask-ok" type="button">' + (opts.ok || 'OK') + '</button></div></div>';
             ov.querySelector('.sj-ask-t').textContent = opts.title || '';
-            var inp = ov.querySelector('.sj-ask-in'); inp.value = opts.value != null ? opts.value : '';
-            if (opts.placeholder) inp.placeholder = opts.placeholder;
+            if (opts.body) ov.querySelector('.sj-ask-b').textContent = opts.body;
+            var inp = ov.querySelector('.sj-ask-in'); if (inp) { inp.value = opts.value != null ? opts.value : ''; if (opts.placeholder) inp.placeholder = opts.placeholder; }
+            var okb = ov.querySelector('.sj-ask-ok'); if (opts.danger) { okb.style.background = '#e5484d'; okb.style.color = '#fff'; okb.style.borderColor = '#e5484d'; }
             function close(v) { ov.classList.add('out'); setTimeout(function () { if (ov.parentNode) ov.parentNode.removeChild(ov); }, 220); resolve(v); }
-            ov.querySelector('.sj-ask-ok').onclick = function () { close(inp.value); };
+            okb.onclick = function () { close(opts.confirm ? true : inp.value); };
             ov.querySelector('.sj-ask-cancel').onclick = function () { close(null); };
             ov.addEventListener('click', function (e) { if (e.target === ov) close(null); });
-            inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') close(inp.value); if (e.key === 'Escape') close(null); });
+            if (inp) inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') close(inp.value); if (e.key === 'Escape') close(null); });
             (document.body || document.documentElement).appendChild(ov);
-            requestAnimationFrame(function () { ov.classList.add('in'); inp.focus(); inp.select && inp.select(); });
+            requestAnimationFrame(function () { ov.classList.add('in'); if (inp) { inp.focus(); inp.select && inp.select(); } });
           });
         },
         /* Auto-upgrade EVERY tool's status line: watch known status elements and, when
@@ -279,11 +296,34 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
             K.toast(uri ? 'Saved to Files › Documents › SnapJar — also in Recent' : 'Saved — find it in Recent', 'ok', 3800);
             if (!opts.skipRecent) {
               K._notifySaved(name, kind, recentId, uri);
-              // show MORE ads at a natural success moment (throttled inside maybeInterstitial)
-              if (K.maybeInterstitial) setTimeout(K.maybeInterstitial, 1400);
+              // mark an interstitial as DUE — it shows at the user's NEXT deliberate navigation
+              // (never on a timer that could land under a tap). See maybeInterstitial.
+              K._intDue = true;
             }
             return { recentId: recentId, uri: uri };
           });
+        },
+        /* Share a blob as a real file → opens the system share sheet (apps/contacts/email/cloud).
+           Web Share with files first; else write to cache and share the file URI via the Share plugin. */
+        shareFile: function (blob, name, title) {
+          name = (name || 'file').replace(/[\\/]/g, '_'); title = title || name;
+          return (async function () {
+            try {
+              var f = new File([blob], name, { type: blob.type || 'application/octet-stream' });
+              if (navigator.canShare && navigator.canShare({ files: [f] }) && navigator.share) { await navigator.share({ files: [f], title: title }); return true; }
+            } catch (e) { if (e && e.name === 'AbortError') return true; }
+            try {
+              var Fs = K.plugin('Filesystem'), Sh = K.plugin('Share');
+              if (Fs && Fs.writeFile && Sh && Sh.share) {
+                var b64 = await new Promise(function (res, rej) { var r = new FileReader(); r.onload = function () { res(String(r.result).split(',')[1] || ''); }; r.onerror = rej; r.readAsDataURL(blob); });
+                await Fs.writeFile({ path: name, data: b64, directory: 'CACHE', recursive: true });
+                var u = await Fs.getUri({ path: name, directory: 'CACHE' });
+                await Sh.share({ title: title, url: u.uri, files: [u.uri] });
+                return true;
+              }
+            } catch (e) { if (e && /cancel|abort|dismiss/i.test((e.message || '') + '')) return true; }
+            K.toast('Sharing isn’t available on this device', 'info'); return false;
+          })();
         },
         /* Fire a real OS notification for a saved file; tapping it opens the file in SnapJar. */
         _notifySaved: function (name, kind, recentId, uri) {
@@ -316,8 +356,10 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
           try {
             LN.addListener('localNotificationActionPerformed', function (ev) {
               var ex = ev && ev.notification && ev.notification.extra; if (!ex) return;
-              if (ex.kind === 'pdf' && ex.recentId) { location.href = '/tools/pdf-studio.html?recent=' + encodeURIComponent(ex.recentId); }
-              else { location.href = '/recent.html'; }
+              var nm = ex.name || '';
+              if (ex.kind === 'pdf' && ex.recentId) location.href = '/tools/pdf-studio.html?recent=' + encodeURIComponent(ex.recentId);
+              else if (ex.recentId && /\.(docx?|xlsx?|pptx?|csv|txt)$/i.test(nm)) location.href = '/tools/pdf-studio.html?docopen=' + encodeURIComponent(ex.recentId);
+              else location.href = '/recent.html';
             });
           } catch (e) {}
         },
@@ -331,14 +373,18 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
             K._incomingBusy = false;
             if (!res || res.none || !res.path) return;
             var src = (window.Capacitor && window.Capacitor.convertFileSrc) ? window.Capacitor.convertFileSrc(res.path) : res.path;
-            var name = res.name || 'document.pdf';
+            var name = res.name || 'document';
             var isPdf = /pdf/i.test(res.mime || '') || /\.pdf$/i.test(name);
+            var isDoc = /\.(docx?|xlsx?|pptx?|csv|txt)$/i.test(name) || /word|sheet|excel|presentation|csv|text\/plain/i.test(res.mime || '');
+            var isImg = /^image\//i.test(res.mime || '') || /\.(jpe?g|png|webp|gif|bmp|heic)$/i.test(name);
             K.toast('Opening ' + name + '…', 'work');
             fetch(src).then(function (r) { return r.blob(); }).then(function (blob) {
               if (!window.SJRecents) { K.toast('Could not open the file', 'warn'); return; }
               window.SJRecents.add({ name: name, kind: isPdf ? 'pdf' : 'file', blob: blob }).then(function (id) {
                 if (!id) { K.toast('Could not open the file', 'warn'); return; }
-                location.href = isPdf ? ('/tools/pdf-studio.html?recent=' + encodeURIComponent(id)) : '/recent.html';
+                if (isPdf) location.href = '/tools/pdf-studio.html?recent=' + encodeURIComponent(id);
+                else if (isDoc) location.href = '/tools/pdf-studio.html?docopen=' + encodeURIComponent(id);
+                else location.href = '/recent.html';   // images & other → My Files
               });
             }).catch(function () { K.toast('Could not open the file', 'warn'); });
           }).catch(function () { K._incomingBusy = false; });
@@ -744,6 +790,37 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
     })();
   </script>}
   {IS_APP && <script is:inline>
+    /* Drag-to-dismiss for every bottom sheet — the grab handle finally works.
+       Reuses each sheet's own backdrop-close so behaviour stays consistent. */
+    (function () {
+      var CARDS = '.scan-card,.pr-sheet-card,.sjcp-card,.sjsel-card,.lib-sheet-card,.app-modal-card,.sj-ask-card';
+      var d = null;
+      document.addEventListener('pointerdown', function (e) {
+        if (!e.target.closest) return;
+        var card = e.target.closest(CARDS); if (!card) return;
+        var r = card.getBoundingClientRect();
+        if (e.clientY - r.top > 64) return;                                 // only from the top grab zone
+        if (e.target.closest('button,a,input,textarea,select,canvas,[role=button],.sjcp-sv,.sjcp-hue')) return;
+        d = { card: card, y0: e.clientY, h: r.height, dy: 0 }; card.style.transition = 'none';
+      }, true);
+      document.addEventListener('pointermove', function (e) {
+        if (!d) return; var dy = e.clientY - d.y0; if (dy < 0) dy = 0; d.dy = dy;
+        d.card.style.transform = 'translateY(' + dy + 'px)';
+      });
+      function end() {
+        if (!d) return; var card = d.card, dy = d.dy, h = d.h; card.style.transition = '';
+        if (dy > Math.min(150, h * 0.32)) {
+          card.style.transform = 'translateY(' + (h + 60) + 'px)';
+          var ov = card.parentElement;
+          setTimeout(function () { card.style.transform = ''; if (ov && ov.click) ov.click(); }, 170);
+        } else { card.style.transform = ''; }
+        d = null;
+      }
+      document.addEventListener('pointerup', end);
+      document.addEventListener('pointercancel', end);
+    })();
+  </script>}
+  {IS_APP && <script is:inline>
     /* AdMob — only the BANNER floats; it sits in a strip ABOVE the bottom nav (the nav
        stays pinned to the very bottom). The banner is AUTO-HIDDEN the instant any bottom
        sheet, menu or modal opens, so it can NEVER cover Delete or other controls. A
@@ -781,8 +858,14 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
       /* fixed 320x100 large banner — reserve exactly its height (floor 100, cap 120) so it has its
          own strip and the header always sits below it. */
       function rememberAdH(h) { try { var m = Math.min(Math.max(h, 100), 120); localStorage.setItem('sj_adh', m); localStorage.setItem('sj_ads_on', '1'); setAdH(m); } catch (e) { setAdH(Math.min(Math.max(h, 100), 120)); } }
-      if (immersive) { setAdH(0); }
-      else { try { var savedAdH = +(localStorage.getItem('sj_adh') || 0); if (!(savedAdH >= 100 && savedAdH <= 120)) savedAdH = 100; localStorage.setItem('sj_adh', savedAdH); setAdH(savedAdH); } catch (e) { setAdH(100); } }
+      /* COLLAPSE-WHEN-EMPTY: reserve the top strip ONLY when a banner is actually showing in
+         THIS app session. sessionStorage survives intra-app page navigation (so the header
+         never overlaps a banner still showing from the previous page) but resets on a fresh
+         app launch (so a cold start with no ad fill shows NO white gap). */
+      function reservedH() { try { var s = +(localStorage.getItem('sj_adh') || 0); return (s >= 100 && s <= 120) ? s : 100; } catch (e) { return 100; } }
+      var adShowing = false; try { adShowing = sessionStorage.getItem('sj_ad_showing') === '1'; } catch (e) {}
+      if (immersive || !adShowing) { setAdH(0); }
+      else { setAdH(reservedH()); body.classList.add('ads-on'); }
       function onSize(info) { var h = info && (info.height != null ? info.height : (info.size && info.size.height)); if (h && h > 0) rememberAdH(h); }
       /* Has a real ad EVER filled this slot? Persisted so it survives page navigations
          (Astro is MPA — every navigation re-runs this script) and app restarts. Banners
@@ -794,10 +877,10 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
       try { if (AdMob.addListener) {
         AdMob.addListener('bannerViewSizeChanged', onSize); AdMob.addListener('bannerAdSizeChanged', onSize);
         /* an ad actually loaded → reserve its strip + show it */
-        AdMob.addListener('bannerAdLoaded', function () { if (immersive) return; everFilled = true; try { localStorage.setItem('sj_ad_filled', '1'); } catch (e) {} try { var sv = +(localStorage.getItem('sj_adh') || 0); setAdH(sv >= 100 && sv <= 120 ? sv : 100); body.classList.add('ads-on'); } catch (e) {} });
+        AdMob.addListener('bannerAdLoaded', function () { if (immersive) return; everFilled = true; try { localStorage.setItem('sj_ad_filled', '1'); sessionStorage.setItem('sj_ad_showing', '1'); } catch (e) {} setAdH(reservedH()); try { body.classList.add('ads-on'); } catch (e) {} });
         /* no fill (or error): if the slot has filled before, KEEP the reserved strip stable
            (the banner refills into it — no flicker). Only collapse if it has never filled. */
-        AdMob.addListener('bannerAdFailedToLoad', function () { if (everFilled) return; setAdH(0); try { body.classList.remove('ads-on'); } catch (e) {} });
+        AdMob.addListener('bannerAdFailedToLoad', function () { try { if (sessionStorage.getItem('sj_ad_showing') === '1') return; } catch (e) {} setAdH(0); try { body.classList.remove('ads-on'); } catch (e) {} });
       } } catch (e) {}
       /* Measure the TRUE top of the nav region — including the raised Scan button, which
          sticks up above the bar — and convert to the banner's physical-px margin so the
@@ -817,7 +900,7 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
       var shown = false, t, paused = false;
       function swallow(p) { if (p && typeof p.catch === 'function') p.catch(function () {}); }  // hide/resume/removeBanner reject if no banner — never throw
       function pause() { if (paused) return; paused = true; if (shown) { try { swallow(AdMob.hideBanner()); } catch (e) {} } body.classList.remove('ads-on'); }
-      function resume() { if (!paused || overlayOpen()) return; paused = false; if (shown) { try { swallow(AdMob.resumeBanner()); } catch (e) {} body.classList.add('ads-on'); } }
+      function resume() { if (!paused || overlayOpen()) return; paused = false; var sh = false; try { sh = sessionStorage.getItem('sj_ad_showing') === '1'; } catch (e) {} if (shown) { try { swallow(AdMob.resumeBanner()); } catch (e) {} if (sh) body.classList.add('ads-on'); } }
       function sync() { if (immersive) return; if (overlayOpen()) pause(); else resume(); }
       function syncSoon() { clearTimeout(t); t = setTimeout(sync, 50); }
       if (K) { K.adPause = pause; K.adResume = function () { setTimeout(sync, 0); }; }
@@ -846,31 +929,59 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
         function prep() { try { AdMob.prepareInterstitial && AdMob.prepareInterstitial({ adId: TEST_INTERSTITIAL, isTesting: INTERSTITIAL_TESTING }).catch(function () {}); } catch (e) {} }
         if (K) {
           K._prepInterstitial = prep;
-          K.maybeInterstitial = function () {
+          /* ===== INTERSTITIAL POLICY — AdMob-safe + tunable =====
+             Shown ONLY at a DELIBERATE transition the user starts (tapping the bottom nav or an
+             in-app link) — a moment the user already expects a new screen, so a full-screen ad
+             can NEVER land under an in-progress content tap. NEVER on a timer, NEVER on app
+             launch/return (both caused the "my tap opened the advertiser" bug). Capped TWO ways
+             at once: a minimum TIME gap AND a minimum number of NAVIGATIONS between ads — so it
+             runs regularly at natural breakpoints without ever feeling spammy. An export makes
+             the very next navigation eligible immediately. Tune the four values below (also
+             reachable at runtime via window.SnapJarKit._intCfg). */
+          var INT_CFG = K._intCfg = {
+            enabled: true,
+            minGapMs: 70000,   // hard floor — never two interstitials closer than ~70s
+            everyNNav: 3,      // routine cadence — at most one per N deliberate navigations
+            onExport: true     // an export makes the NEXT navigation eligible right away
+          };
+          K.maybeInterstitial = function (force) {
             try {
-              var now = +new Date(), last = +(localStorage.getItem('sj_int_ts') || 0), n = (+(localStorage.getItem('sj_int_n') || 0)) + 1;
-              localStorage.setItem('sj_int_n', n);
-              if (n % 3 !== 0 || now - last < 120000) return;
+              if (!INT_CFG.enabled && !force) return;
+              var now = +new Date(), last = +(localStorage.getItem('sj_int_ts') || 0);
+              if (!force && (now - last) < INT_CFG.minGapMs) return;   // global frequency cap — ALWAYS enforced
+              K._intDue = false;
               localStorage.setItem('sj_int_ts', now);
               AdMob.showInterstitial && AdMob.showInterstitial().then(prep).catch(prep);
             } catch (e) {}
           };
+          /* Count REAL in-app navigations (persisted in localStorage — Astro is MPA, so the
+             script reloads every page and an in-memory counter would reset). At each deliberate
+             nav, show an interstitial if the routine cadence is hit OR an export is due. Only
+             in-app anchor links count → the Scan button (opens a sheet, doesn't navigate) and
+             other buttons NEVER trigger a full-screen ad. */
+          document.addEventListener('click', function (e) {
+            try {
+              var t = e.target; if (!t || !t.closest) return;
+              if (!t.closest('a[href^="/"]')) return;                 // a genuine in-app navigation
+              var n = (+(localStorage.getItem('sj_nav_n') || 0)) + 1; localStorage.setItem('sj_nav_n', n);
+              var eligible = (INT_CFG.onExport && K._intDue) || (INT_CFG.enabled && (n % INT_CFG.everyNNav === 0));
+              if (eligible) setTimeout(function () { K.maybeInterstitial(); }, 0);  // still enforces minGapMs inside
+            } catch (e) {}
+          }, true);
         }
-        /* EXTRA interstitial at a natural high-fill moment: when the user RE-OPENS the app
-           (foreground). Throttled inside maybeInterstitial so it never spams. */
-        try { var _App = K.plugin('App'); if (_App && _App.addListener) _App.addListener('appStateChange', function (s) { if (s && s.isActive && K && K.maybeInterstitial) setTimeout(K.maybeInterstitial, 700); }); } catch (e) {}
         prep();
         if (immersive) { try { swallow(AdMob.removeBanner()); } catch (e) {} setAdH(0); return; }
         /* The native banner PERSISTS across page navigations, but on a new page showBanner()
            may reject ("already shown") → don't tear down the reserved space. Once the ad has
            shown even once (flag), reserve the top space IMMEDIATELY on every page so the
            header never overlaps the ad during navigation. */
-        try { if (localStorage.getItem('sj_ads_on') === '1') body.classList.add('ads-on'); } catch (e) {}
+        /* (top strip is reserved at init only when a banner is showing THIS session — see
+           reservedH()/adShowing above — so a cold launch with no fill shows no empty gap) */
         function showAd() {
           /* TOP_CENTER, margin 0 → the banner lives at the very TOP (below the status bar).
              The bottom nav is therefore NEVER touched (opposite end of the screen). */
           try { swallow(AdMob.showBanner({ adId: TEST_BANNER, adSize: 'LARGE_BANNER', position: 'TOP_CENTER', margin: 0, isTesting: BANNER_TESTING })
-            .then(function () { shown = true; try { localStorage.setItem('sj_ads_on', '1'); } catch (e) {} if (overlayOpen()) { paused = true; swallow(AdMob.hideBanner()); } else body.classList.add('ads-on'); })
+            .then(function () { shown = true; if (overlayOpen()) { paused = true; swallow(AdMob.hideBanner()); } /* reserve happens on bannerAdLoaded (actual fill) → no empty gap */ })
             .catch(function () { /* keep the reserved space — the banner usually persists from a prior page */ })); } catch (e) {}
         }
         /* FOLDABLE/ROTATE: when the display geometry changes (fold↔unfold, rotate), the
@@ -904,6 +1015,33 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
           showAd();
         };
         showAd();
+        /* ===== AUTO-REFRESH — DISPLAY (banner) ads ONLY =====
+           Active users open few screens, so ad REQUESTS stay low. Every 45s we request a
+           FRESH banner creative into the SAME reserved strip. This is the safe way to lift
+           requests/impressions:
+             • Display-only — it NEVER triggers an interstitial (no full-screen interrupt).
+             • NEVER reloads the page — only the native banner creative swaps, so the user's
+               scroll, inputs, PDF reading position, edits and notes are 100% preserved.
+             • The reserved strip (--ad-h / .ads-on) stays put, so there is NO layout shift.
+           Skipped while the app is backgrounded, a sheet/modal/overlay is open, or the in-
+           content MREC mode is active — so we never refresh under an overlay or off-screen.
+           It DOES re-request even if the previous request didn't fill: each cycle is a fresh
+           fill chance, which is exactly how we lift requests + match rate. 45s respects
+           AdMob's 30–120s refresh policy. NOTE: leave "auto-refresh" OFF in the AdMob console
+           for this unit — the app drives the refresh here, so enabling both would double-refresh. */
+        var BANNER_CFG = K._bannerCfg = { enabled: true, refreshMs: 45000 };  // tunable (also via window.SnapJarKit._bannerCfg)
+        setInterval(function () {
+          if (!BANNER_CFG.enabled) return;                              // master switch for the auto-requester
+          if (immersive) return;
+          try { if (document.hidden) return; } catch (e) {}            // app in background → don't waste requests
+          if (paused || overlayOpen()) return;                          // a sheet/modal is open → don't refresh under it
+          if (body.classList.contains('mrec-on')) return;               // MREC mode has its own ad
+          /* Re-request EVERY cycle, even if the last request didn't fill — each new request
+             is a fresh chance to fill, which is how we lift requests + match rate. */
+          try { swallow(AdMob.removeBanner()); } catch (e) {}
+          shown = false;                                                // let showAd() re-request a new creative
+          showAd();                                                     // new ad → same reserved strip → no shift, no work loss
+        }, BANNER_CFG.refreshMs);
       }).catch(function () {});
     })();
   </script>}
