@@ -261,9 +261,9 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
           K.toast('Saved to your device', 'ok');
         },
         _isNative: function () { try { return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()); } catch (e) { return false; } },
-        /* APP: take over a download → save to Documents/SnapJar (a known place) AND add
-           it to My Files (Recent), so files are never "lost" and EVERY tool's output
-           shows up in Recent. Returns the blob to the recents store with the right kind. */
+        /* APP: take over a download → save to APP-PRIVATE storage AND add it to My Files (Recent),
+           so files are never "lost" and EVERY tool's output shows up in Recent — without exposing
+           the user's documents to other apps (privacy). Export leaves the device only via Share. */
         saveDownload: function (blob, name, opts) {
           opts = opts || {};
           name = (name || 'file').replace(/[\\/]/g, '_');
@@ -275,7 +275,10 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
             if (kind === 'image') return K._imgThumb(blob).then(function (thumb) { return window.SJRecents.add({ name: name, kind: kind, blob: blob, thumb: thumb }); });
             return window.SJRecents.add({ name: name, kind: kind, blob: blob });
           }
-          // 2) write to Documents/SnapJar and resolve its file uri
+          // 2) write to APP-PRIVATE storage (Directory.Data → /data/data/<app>/files/SnapJar) and
+          //    resolve its file uri. PRIVACY: NOT shared Documents — other apps / MediaStore / the
+          //    Files browser must never be able to read the user's documents. Files stay reachable
+          //    in-app via My Files (IndexedDB) and leave the device ONLY on an explicit Share/export.
           function saveFile() {
             var Fs = K.plugin('Filesystem');
             if (!Fs || !Fs.writeFile) return Promise.resolve(null);
@@ -283,8 +286,8 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
               var r = new FileReader();
               r.onload = function () {
                 var b64 = String(r.result).split(',')[1] || '';
-                Fs.writeFile({ path: 'SnapJar/' + name, data: b64, directory: 'DOCUMENTS', recursive: true })
-                  .then(function () { return (Fs.getUri ? Fs.getUri({ path: 'SnapJar/' + name, directory: 'DOCUMENTS' }).then(function (u) { return u && u.uri; }).catch(function () { return null; }) : null); })
+                Fs.writeFile({ path: 'SnapJar/' + name, data: b64, directory: 'DATA', recursive: true })
+                  .then(function () { return (Fs.getUri ? Fs.getUri({ path: 'SnapJar/' + name, directory: 'DATA' }).then(function (u) { return u && u.uri; }).catch(function () { return null; }) : null); })
                   .then(resolve).catch(function () { resolve(null); });
               };
               r.onerror = function () { resolve(null); };
@@ -293,7 +296,7 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
           }
           return Promise.all([addRecent().catch(function () { return null; }), saveFile()]).then(function (out) {
             var recentId = out[0], uri = out[1];
-            K.toast(uri ? 'Saved to Files › Documents › SnapJar — also in Recent' : 'Saved — find it in Recent', 'ok', 3800);
+            K.toast('Saved to My Files — private to you', 'ok', 3600);
             if (!opts.skipRecent) {
               K._notifySaved(name, kind, recentId, uri);
               // mark an interstitial as DUE — it shows at the user's NEXT deliberate navigation
@@ -316,14 +319,66 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
               var Fs = K.plugin('Filesystem'), Sh = K.plugin('Share');
               if (Fs && Fs.writeFile && Sh && Sh.share) {
                 var b64 = await new Promise(function (res, rej) { var r = new FileReader(); r.onload = function () { res(String(r.result).split(',')[1] || ''); }; r.onerror = rej; r.readAsDataURL(blob); });
-                await Fs.writeFile({ path: name, data: b64, directory: 'CACHE', recursive: true });
-                var u = await Fs.getUri({ path: name, directory: 'CACHE' });
+                var sp = 'shares/' + name;   // dedicated subdir matching the narrowed FileProvider scope
+                await Fs.writeFile({ path: sp, data: b64, directory: 'CACHE', recursive: true });
+                var u = await Fs.getUri({ path: sp, directory: 'CACHE' });
                 await Sh.share({ title: title, url: u.uri, files: [u.uri] });
+                // delete the plaintext share temp after the recipient has had time to read it
+                try { setTimeout(function () { Fs.deleteFile && Fs.deleteFile({ path: sp, directory: 'CACHE' }).catch(function () {}); }, 60000); } catch (e) {}
                 return true;
               }
             } catch (e) { if (e && /cancel|abort|dismiss/i.test((e.message || '') + '')) return true; }
             K.toast('Sharing isn’t available on this device', 'info'); return false;
           })();
+        },
+        _mimeFor: function (name) {
+          var e = (String(name || '').split('.').pop() || '').toLowerCase();
+          var m = { pdf: 'application/pdf', png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', gif: 'image/gif', svg: 'image/svg+xml', ico: 'image/x-icon', bmp: 'image/bmp', heic: 'image/heic',
+            docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation', csv: 'text/csv', txt: 'text/plain', zip: 'application/zip' };
+          return m[e] || 'application/octet-stream';
+        },
+        /* write a blob to an app-private temp and return its file:// uri for native hand-off */
+        _tempUri: function (blob, name) {
+          var Fs = K.plugin('Filesystem'); if (!Fs || !Fs.writeFile) return Promise.resolve(null);
+          var p = 'handoff/' + name;
+          return new Promise(function (resolve) {
+            var r = new FileReader();
+            r.onload = function () {
+              var b64 = String(r.result).split(',')[1] || '';
+              Fs.writeFile({ path: p, data: b64, directory: 'DATA', recursive: true })
+                .then(function () { return Fs.getUri({ path: p, directory: 'DATA' }); })
+                .then(function (u) { resolve({ uri: u && u.uri, path: p }); })
+                .catch(function () { resolve(null); });
+            };
+            r.onerror = function () { resolve(null); };
+            r.readAsDataURL(blob);
+          });
+        },
+        _cleanHandoff: function (p) { try { var Fs = K.plugin('Filesystem'); if (Fs && Fs.deleteFile) setTimeout(function () { Fs.deleteFile({ path: p, directory: 'DATA' }).catch(function () {}); }, 90000); } catch (e) {} },
+        /* OPEN an app-private file in another app via a temporary system grant (ACTION_VIEW).
+           Web / no-plugin → falls back to the Share sheet. */
+        openExternal: function (blob, name) {
+          name = (name || 'file').replace(/[\\/]/g, '_');
+          var FA = K.plugin('FileActions');
+          if (!FA || !FA.openWith) return K.shareFile(blob, name);
+          return K._tempUri(blob, name).then(function (t) {
+            if (!t || !t.uri) return K.shareFile(blob, name);
+            return FA.openWith({ uri: t.uri, name: name, mime: K._mimeFor(name) })
+              .then(function () { K._cleanHandoff(t.path); return true; })
+              .catch(function () { K._cleanHandoff(t.path); return K.shareFile(blob, name); });
+          });
+        },
+        /* EXPORT an app-private file to a user-chosen location via the OS picker (SAF). */
+        exportFile: function (blob, name) {
+          name = (name || 'file').replace(/[\\/]/g, '_');
+          var FA = K.plugin('FileActions');
+          if (!FA || !FA.saveToDevice) return K.shareFile(blob, name);
+          return K._tempUri(blob, name).then(function (t) {
+            if (!t || !t.uri) return K.shareFile(blob, name);
+            return FA.saveToDevice({ uri: t.uri, name: name, mime: K._mimeFor(name) })
+              .then(function () { K._cleanHandoff(t.path); K.toast('Saved to your chosen location', 'ok'); return true; })
+              .catch(function (e) { K._cleanHandoff(t.path); if (!/cancel/i.test(((e && e.message) || '') + '')) K.toast('Export canceled', 'info'); return false; });
+          });
         },
         /* Fire a real OS notification for a saved file; tapping it opens the file in SnapJar. */
         _notifySaved: function (name, kind, recentId, uri) {
@@ -335,9 +390,10 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
             LN.schedule({ notifications: [{
               id: id,
               title: 'Saved to SnapJar',
-              body: name + ' — tap to open',
+              body: 'Your file is ready — tap to open',   // PRIVACY: don't put the (possibly sensitive) filename on the lock screen / to notification-listener apps
               smallIcon: 'ic_stat_snapjar',
               iconColor: '#5B5BD6',
+              visibility: 0,                               // VISIBILITY_PRIVATE — hide content on a locked screen
               extra: { recentId: recentId || null, kind: kind, uri: uri || null, name: name }
             }] }).catch(function () {});
           });
@@ -438,27 +494,72 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
           document.addEventListener('change', function (e) {
             var inp = e.target;
             if (!inp || inp.type !== 'file' || !inp.files || !inp.files.length) return;
-            var big = 0, empty = 0, wrong = 0, n = inp.files.length, ex = K._acceptExts(inp.getAttribute('accept'));
-            for (var i = 0; i < n; i++) {
-              var f = inp.files[i];
-              if (f.size > 35 * 1024 * 1024) big++;
-              if (f.size === 0) empty++;
-              if (ex.length) { var fe = (f.name.split('.').pop() || '').toLowerCase(); if (fe && ex.indexOf(fe) < 0) wrong++; }
-            }
-            // root-level guards: these break every tool the same way — catch once, here
-            if (empty) K.toast(empty === n ? 'That file is empty — please choose another.' : 'Some files are empty and will be skipped.', 'warn', 3600);
-            else if (wrong) K.toast('That looks like the wrong file type for this tool — please pick ' + K._acceptLabel(inp.getAttribute('accept')) + '.', 'warn', 4000);
-            else if (big) K.toast('Large file — this can take a few seconds on your device', 'work', 3400);
-            // corrupt-PDF catch (root): a .pdf that isn't really a PDF fails silently in many tools
-            if (!empty && !wrong) for (var k = 0; k < n; k++) (function (f) {
-              if (f.size > 0 && /\.pdf$/i.test(f.name || '')) {
-                f.slice(0, 5).arrayBuffer().then(function (b) {
-                  var s = ''; new Uint8Array(b).forEach(function (c) { s += String.fromCharCode(c); });
-                  if (s.indexOf('%PDF') !== 0) K.toast('This PDF looks corrupt or isn’t a real PDF — try another file.', 'warn', 4200);
-                }).catch(function () {});
-              }
-            })(inp.files[k]);
+            K._validateFiles(inp.files, K._acceptExts(inp.getAttribute('accept')), K._acceptLabel(inp.getAttribute('accept')));
           }, true);
+        },
+        /* Shared file validator (root-level): one plain-language gate for BOTH the file-input
+           change path AND drag-drop. Non-blocking — toasts what/why so "people behaving like
+           people" cases (empty, wrong-type, corrupt PDF, huge) fail kindly, not silently. */
+        _validateFiles: function (files, ex, label) {
+          var K = window.SnapJarKit; if (!files || !files.length) return;
+          var big = 0, empty = 0, wrong = 0, n = files.length;
+          for (var i = 0; i < n; i++) {
+            var f = files[i];
+            if (f.size > 35 * 1024 * 1024) big++;
+            if (f.size === 0) empty++;
+            if (ex && ex.length) { var fe = (f.name.split('.').pop() || '').toLowerCase(); if (fe && ex.indexOf(fe) < 0) wrong++; }
+          }
+          if (empty) K.toast(empty === n ? 'That file is empty — please choose another.' : 'Some files are empty and will be skipped.', 'warn', 3600);
+          else if (wrong) K.toast('That looks like the wrong file type for this tool — please pick ' + (label || 'a supported file') + '.', 'warn', 4000);
+          else if (big) K.toast('Large file — this can take a few seconds on your device', 'work', 3400);
+          if (!empty && !wrong) for (var k = 0; k < n; k++) (function (f) {
+            if (f.size > 0 && /\.pdf$/i.test(f.name || '')) {
+              f.slice(0, 5).arrayBuffer().then(function (b) {
+                var s = ''; new Uint8Array(b).forEach(function (c) { s += String.fromCharCode(c); });
+                if (s.indexOf('%PDF') !== 0) K.toast('This PDF looks corrupt or isn’t a real PDF — try another file.', 'warn', 4200);
+              }).catch(function () {});
+            }
+          })(files[k]);
+        },
+        /* SECURITY: allowlist HTML sanitizer. The WebView runs at app-origin with the Capacitor
+           bridge + IndexedDB + Filesystem, so ANY untrusted HTML reaching innerHTML is a path to
+           reading/exfiltrating user files. Use this for ALL file-derived HTML (mammoth .docx,
+           xlsx sheet_to_html, pasted content). Drops scripts/handlers/dangerous tags, unwraps
+           unknown tags (keeps text), and only allows http(s)/mailto/tel/# hrefs + data:image src. */
+        sanitizeHtml: function (html) {
+          try {
+            var docp = new DOMParser().parseFromString('<div id="__sjroot">' + (html || '') + '</div>', 'text/html');
+            var root = docp.getElementById('__sjroot');
+            var ALLOW = { A:1,B:1,STRONG:1,I:1,EM:1,U:1,S:1,P:1,BR:1,UL:1,OL:1,LI:1,H1:1,H2:1,H3:1,H4:1,H5:1,H6:1,BLOCKQUOTE:1,PRE:1,CODE:1,SPAN:1,DIV:1,TABLE:1,THEAD:1,TBODY:1,TFOOT:1,TR:1,TD:1,TH:1,CAPTION:1,COLGROUP:1,COL:1,IMG:1,HR:1,SUB:1,SUP:1,SMALL:1 };
+            var DROP = /^(SCRIPT|STYLE|IFRAME|OBJECT|EMBED|LINK|META|FORM|BUTTON|INPUT|TEXTAREA|SELECT|OPTION|SVG|MATH|BASE|NOSCRIPT|TITLE|HEAD|AUDIO|VIDEO|SOURCE|TRACK|APPLET|FRAME|FRAMESET|TEMPLATE)$/;
+            function clean(node){
+              var kids = Array.prototype.slice.call(node.childNodes);
+              for (var i = 0; i < kids.length; i++){
+                var n = kids[i];
+                if (n.nodeType === 8){ n.parentNode.removeChild(n); continue; }   // comments
+                if (n.nodeType !== 1) continue;                                    // keep text
+                var tag = n.tagName;
+                if (DROP.test(tag)){ n.parentNode.removeChild(n); continue; }      // dangerous → delete subtree
+                if (!ALLOW[tag]){                                                  // unknown → unwrap (keep children/text)
+                  while (n.firstChild) node.insertBefore(n.firstChild, n);
+                  node.removeChild(n); i--; continue;
+                }
+                // strip every attribute except a tiny safe allowlist
+                var attrs = Array.prototype.slice.call(n.attributes);
+                for (var a = 0; a < attrs.length; a++){
+                  var name = attrs[a].name.toLowerCase(), val = (attrs[a].value || '').replace(/[\u0000-\u0020]+/g, '');
+                  if (name === 'href' && /^(https?:|mailto:|tel:|#)/i.test(val)) continue;
+                  if (name === 'src' && /^data:image\//i.test(val)) continue;       // mammoth embeds images as data:image
+                  if (name === 'colspan' || name === 'rowspan' || name === 'alt') continue;
+                  n.removeAttribute(attrs[a].name);                                 // on*, style, xlink:href, formaction, src http, etc. → gone
+                }
+                if (tag === 'A'){ n.setAttribute('rel', 'noopener noreferrer nofollow'); }
+                clean(n);
+              }
+            }
+            clean(root);
+            return root.innerHTML;
+          } catch (e) { return ''; }
         },
         /* Shared input-extremes validator (UX audit §3 + §6): one plain-language gate every
            tool can call so "people behaving like people" cases fail kindly, not with a crash.
@@ -553,7 +654,7 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
     <span class="pi">Free</span>
     <span class="pi">No signup</span>
     <span class="pi">No upload</span>
-    <span class="pi strong">Your data never leaves your device</span>
+    <span class="pi strong">Your files never leave your device</span>
   </div>
   <nav><div class="nav-in">
     <a class="brand" href="/"><span class="logo">⚡</span> SnapJar</a>
@@ -796,6 +897,34 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
        Reuses each sheet's own backdrop-close so behaviour stays consistent. */
     (function () {
       var CARDS = '.scan-card,.pr-sheet-card,.sjcp-card,.sjsel-card,.lib-sheet-card,.app-modal-card,.sj-ask-card';
+      /* a11y FOCUS-TRAP: keep Tab within the open sheet/dialog card (root-level, covers every overlay). */
+      function _vis(el){ return !!(el.getClientRects && el.getClientRects().length); }
+      function _openCard(){ var cs = document.querySelectorAll(CARDS); for (var i = 0; i < cs.length; i++) { if (_vis(cs[i])) return cs[i]; } return null; }
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Tab') return;
+        var card = _openCard(); if (!card) return;
+        var f = card.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])');
+        f = Array.prototype.filter.call(f, _vis); if (!f.length) return;
+        var first = f[0], last = f[f.length - 1], a = document.activeElement;
+        if (e.shiftKey && (a === first || !card.contains(a))) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && (a === last || !card.contains(a))) { e.preventDefault(); first.focus(); }
+      }, true);
+      /* systemic DRAG-DROP validation (the file-input change path is already validated): empty
+         drops are hard-blocked; wrong-type / corrupt-PDF / huge are toasted via the same shared
+         validator so dropped files get the exact same plain-language guidance as picked files. */
+      document.addEventListener('drop', function (e) {
+        try {
+          var dt = e.dataTransfer; if (!dt || !dt.files || !dt.files.length) return;
+          var files = dt.files, K = window.SnapJarKit;
+          for (var i = 0; i < files.length; i++) { if (files[i].size === 0) { e.preventDefault(); e.stopImmediatePropagation(); if (K) K.toast('That file is empty — nothing to open', 'err'); return; } }
+          if (!K) return;
+          // drop zones aren't file inputs; borrow the accepted types from the page's file input
+          var inp = document.querySelector('input[type=file][accept]');
+          var ex = inp ? K._acceptExts(inp.getAttribute('accept')) : [];
+          var lbl = inp ? K._acceptLabel(inp.getAttribute('accept')) : '';
+          K._validateFiles(files, ex, lbl);
+        } catch (_) {}
+      }, true);
       var d = null;
       document.addEventListener('pointerdown', function (e) {
         if (!e.target.closest) return;
@@ -837,7 +966,7 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
          (com.google.android.gms.ads.APPLICATION_ID). Keep ADS_TESTING = true while developing
          — NEVER show real ads on your own device (clicking them = AdMob ban). Register your
          phone as a test device in AdMob if you must test real units. */
-      var ADS_TESTING = false; // true = ALWAYS test ads (safe while developing); false = real ads where IDs below are set
+      var ADS_TESTING = true; // INTERNAL TEST BUILD → always-on Google test ads (safe to tap). FLIP TO false for the public/Play release (real ads, once the AdMob app is approved).
       // Paste REAL ad-unit IDs from admob.google.com. Leave '' to keep THAT placement on Google TEST ads.
       var REAL_BANNER = 'ca-app-pub-4351869860119610/5896419968';        // ✓ live banner unit (also serves the MREC size)
       var REAL_INTERSTITIAL = 'ca-app-pub-4351869860119610/6251643185';  // ✓ live interstitial unit
@@ -846,6 +975,13 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
       var TEST_INTERSTITIAL = _realI ? REAL_INTERSTITIAL : 'ca-app-pub-3940256099942544/1033173712';
       var BANNER_TESTING = !_realB, INTERSTITIAL_TESTING = !_realI; // isTesting per placement (real unit → false → real ads)
       var immersive = false; /* the PDF reader now shows a compact top ad; the editor/writer/scan hide it via overlay detection */
+      /* CONTEXTUAL TARGETING: send finance keywords on the calculator pages + the page's real
+         public canonical URL with every ad request. This nudges Google's auction toward finance
+         advertisers (better RELEVANCE/eCPM). NOTE: it does NOT change FILL — how often ads show
+         is driven by publish status + the user's own ad profile, not these signals. */
+      var FIN_KW = ['loan','personal loan','home loan','car loan','business loan','mortgage','EMI','interest rate','credit card','SIP','mutual fund','investment','insurance','fixed deposit','recurring deposit','savings','income tax','retirement','banking','finance','refinance','credit score','demat'];
+      function adKeywords() { try { return /\/calculators(\/|$)/.test(location.pathname) ? FIN_KW : null; } catch (e) { return null; } }
+      function adContentUrl() { try { var c = document.querySelector('link[rel="canonical"]'); return (c && c.href) ? c.href : null; } catch (e) { return null; } }
       var root = document.documentElement, body = document.body;
       function setAdH(px) { root.style.setProperty('--ad-h', (px > 0 ? px : 0) + 'px'); }
       /* Reserve the top ad space from the VERY FIRST frame on every page. The native banner
@@ -865,8 +1001,13 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
          never overlaps a banner still showing from the previous page) but resets on a fresh
          app launch (so a cold start with no ad fill shows NO white gap). */
       function reservedH() { try { var s = +(localStorage.getItem('sj_adh') || 0); return (s >= 100 && s <= 120) ? s : 100; } catch (e) { return 100; } }
-      var adShowing = false; try { adShowing = sessionStorage.getItem('sj_ad_showing') === '1'; } catch (e) {}
-      if (immersive || !adShowing) { setAdH(0); }
+      /* STABLE reserved strip: on every non-immersive app page reserve the ad zone from the FIRST
+         paint and KEEP it for the whole session. The native banner is an overlay that floats in/out
+         of this fixed strip — so the banner loading, refreshing, hiding for a sheet, or failing to
+         fill NEVER changes content height under the user (that height change + smooth-scroll was the
+         "scroll to the bottom and the page jumps back up" bug). The strip is app-coloured (app.css
+         ::before backdrop), so an unfilled strip is a clean band, not a white gap. */
+      if (immersive) { setAdH(0); }
       else { setAdH(reservedH()); body.classList.add('ads-on'); }
       function onSize(info) { var h = info && (info.height != null ? info.height : (info.size && info.size.height)); if (h && h > 0) rememberAdH(h); }
       /* Has a real ad EVER filled this slot? Persisted so it survives page navigations
@@ -882,7 +1023,7 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
         AdMob.addListener('bannerAdLoaded', function () { if (immersive) return; everFilled = true; try { localStorage.setItem('sj_ad_filled', '1'); sessionStorage.setItem('sj_ad_showing', '1'); } catch (e) {} setAdH(reservedH()); try { body.classList.add('ads-on'); } catch (e) {} });
         /* no fill (or error): if the slot has filled before, KEEP the reserved strip stable
            (the banner refills into it — no flicker). Only collapse if it has never filled. */
-        AdMob.addListener('bannerAdFailedToLoad', function () { try { if (sessionStorage.getItem('sj_ad_showing') === '1') return; } catch (e) {} setAdH(0); try { body.classList.remove('ads-on'); } catch (e) {} });
+        AdMob.addListener('bannerAdFailedToLoad', function () { /* keep the reserved strip stable — collapsing it would shift content under the user (scroll jump). The strip is app-coloured when empty. */ });
       } } catch (e) {}
       /* Measure the TRUE top of the nav region — including the raised Scan button, which
          sticks up above the bar — and convert to the banner's physical-px margin so the
@@ -901,8 +1042,10 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
       function overlayOpen() { try { return !!document.querySelector(OVERLAY_SEL); } catch (e) { return false; } }
       var shown = false, t, paused = false;
       function swallow(p) { if (p && typeof p.catch === 'function') p.catch(function () {}); }  // hide/resume/removeBanner reject if no banner — never throw
-      function pause() { if (paused) return; paused = true; if (shown) { try { swallow(AdMob.hideBanner()); } catch (e) {} } body.classList.remove('ads-on'); }
-      function resume() { if (!paused || overlayOpen()) return; paused = false; var sh = false; try { sh = sessionStorage.getItem('sj_ad_showing') === '1'; } catch (e) {} if (shown) { try { swallow(AdMob.resumeBanner()); } catch (e) {} if (sh) body.classList.add('ads-on'); } }
+      /* pause/resume hide & show the NATIVE banner overlay only — they do NOT touch the reserved
+         CSS strip (ads-on), so opening/closing a sheet never changes content height / scroll. */
+      function pause() { if (paused) return; paused = true; if (shown) { try { swallow(AdMob.hideBanner()); } catch (e) {} } }
+      function resume() { if (!paused || overlayOpen()) return; paused = false; if (shown) { try { swallow(AdMob.resumeBanner()); } catch (e) {} } }
       function sync() { if (immersive) return; if (overlayOpen()) pause(); else resume(); }
       function syncSoon() { clearTimeout(t); t = setTimeout(sync, 50); }
       if (K) { K.adPause = pause; K.adResume = function () { setTimeout(sync, 0); }; }
@@ -917,18 +1060,32 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
          outside the EEA/UK/California a form isn't required and this resolves instantly; for
          those who need it, the consent form is shown. Without this, ad fill is blocked/limited
          in those regions. Set up the consent form once in the AdMob console (Privacy & messaging). */
+      /* npaMode = request NON-personalized ads when GDPR consent is required but NOT obtained,
+         or when the UMP consent flow errors. Default-safe: if we can't confirm consent, we do
+         NOT serve personalized ads (no tracking-grade profiling without a lawful basis). */
+      var npaMode = false;
       function _consent() {
         try {
           if (AdMob.requestConsentInfo) {
             return AdMob.requestConsentInfo({ tagForUnderAgeOfConsent: false }).then(function (info) {
-              if (info && info.isConsentFormAvailable && info.status === 'REQUIRED' && AdMob.showConsentForm) return AdMob.showConsentForm().catch(function () {});
-            }).catch(function () {});
+              var st = info && info.status;
+              if (st === 'REQUIRED' && info.isConsentFormAvailable && AdMob.showConsentForm) {
+                return AdMob.showConsentForm().then(function () {
+                  // re-check after the form — only personalize if the user explicitly consented
+                  return AdMob.requestConsentInfo({ tagForUnderAgeOfConsent: false })
+                    .then(function (i2) { npaMode = !(i2 && i2.status === 'OBTAINED'); })
+                    .catch(function () { npaMode = true; });
+                }).catch(function () { npaMode = true; });
+              }
+              if (st === 'REQUIRED') npaMode = true;   // consent required but no form → non-personalized only
+              // NOT_REQUIRED / OBTAINED → personalized allowed (npaMode stays false)
+            }).catch(function () { npaMode = true; });  // UMP failed → safest is non-personalized
           }
-        } catch (e) {}
+        } catch (e) { npaMode = true; }
         return Promise.resolve();
       }
       _consent().then(function () { return AdMob.initialize({ initializeForTesting: ADS_TESTING }); }).then(function () {
-        function prep() { try { AdMob.prepareInterstitial && AdMob.prepareInterstitial({ adId: TEST_INTERSTITIAL, isTesting: INTERSTITIAL_TESTING }).catch(function () {}); } catch (e) {} }
+        function prep() { try { AdMob.prepareInterstitial && AdMob.prepareInterstitial({ adId: TEST_INTERSTITIAL, isTesting: INTERSTITIAL_TESTING, npa: npaMode }).catch(function () {}); } catch (e) {} }
         if (K) {
           K._prepInterstitial = prep;
           /* ===== INTERSTITIAL POLICY — AdMob-safe + tunable =====
@@ -985,9 +1142,27 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
             var REAL_APP_OPEN = 'ca-app-pub-4351869860119610/9389012222';   // ✓ live App Open unit
             var APP_OPEN_ID = (!ADS_TESTING && REAL_APP_OPEN) ? REAL_APP_OPEN : 'ca-app-pub-3940256099942544/9257395921';
             var aoReady = false, aoWasBg = false, AO_GAP_MS = 60000;
-            function aoLoad() { try { AppOpen.load({ adId: APP_OPEN_ID }); } catch (e) {} }
+            // show ONE app-open ad on cold launch too (the user expects an ad at opening) — once per
+            // app session so page navigations don't re-trigger it.
+            var aoColdPending = false; try { aoColdPending = !sessionStorage.getItem('sj_ao_cold'); } catch (e) {}
+            function aoShowCold() {
+              if (!aoColdPending || !aoReady) return;
+              // only when the app is truly foreground + interactive (avoids AdMob's "background ad" flag)
+              if (document.visibilityState !== 'visible') return;
+              aoColdPending = false;
+              try { sessionStorage.setItem('sj_ao_cold', '1'); } catch (e) {}
+              setTimeout(function () {
+                try {
+                  if (document.visibilityState !== 'visible' || overlayOpen()) return;
+                  var now = +new Date(), lastFs = Math.max(+(localStorage.getItem('sj_ao_ts') || 0), +(localStorage.getItem('sj_int_ts') || 0));
+                  if (now - lastFs < AO_GAP_MS) return;
+                  localStorage.setItem('sj_ao_ts', now); AppOpen.show();
+                } catch (e) {}
+              }, 700);
+            }
+            function aoLoad() { try { AppOpen.load({ adId: APP_OPEN_ID, keywords: adKeywords(), contentUrl: adContentUrl() }); } catch (e) {} }
             if (AppOpen.addListener) {
-              AppOpen.addListener('appOpenLoaded', function () { aoReady = true; });
+              AppOpen.addListener('appOpenLoaded', function () { aoReady = true; aoShowCold(); });
               AppOpen.addListener('appOpenFailedToLoad', function () { aoReady = false; });
               AppOpen.addListener('appOpenDismissed', function () { aoReady = false; aoLoad(); });   // preload the next
               AppOpen.addListener('appOpenFailedToShow', function () { aoReady = false; aoLoad(); });
@@ -1021,7 +1196,7 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
         function showAd() {
           /* TOP_CENTER, margin 0 → the banner lives at the very TOP (below the status bar).
              The bottom nav is therefore NEVER touched (opposite end of the screen). */
-          try { swallow(AdMob.showBanner({ adId: TEST_BANNER, adSize: 'LARGE_BANNER', position: 'TOP_CENTER', margin: 0, isTesting: BANNER_TESTING })
+          try { swallow(AdMob.showBanner({ adId: TEST_BANNER, adSize: 'LARGE_BANNER', position: 'TOP_CENTER', margin: 0, isTesting: BANNER_TESTING, npa: npaMode, keywords: adKeywords(), contentUrl: adContentUrl() })
             .then(function () { shown = true; if (overlayOpen()) { paused = true; swallow(AdMob.hideBanner()); } /* reserve happens on bannerAdLoaded (actual fill) → no empty gap */ })
             .catch(function () { /* keep the reserved space — the banner usually persists from a prior page */ })); } catch (e) {}
         }
@@ -1030,7 +1205,7 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
            Re-place it with a freshly-measured margin. Width change distinguishes a
            fold/rotate from the keyboard (handled separately above). */
         var lastW = window.innerWidth, lastH = window.innerHeight, rzT;
-        function reposition() { if (immersive) return; try { swallow(AdMob.removeBanner()); } catch (e) {} shown = false; paused = false; body.classList.remove('ads-on'); showAd(); }
+        function reposition() { if (immersive) return; try { swallow(AdMob.removeBanner()); } catch (e) {} shown = false; paused = false; showAd(); }  /* keep ads-on; only re-place the native overlay */
         function onResize() {
           var w = window.innerWidth;
           if (Math.abs(w - lastW) < 40) return; // ONLY reposition on WIDTH change (fold/rotate) — not height (keyboard or the ad's own resize), which caused the banner to re-place itself badly
@@ -1045,7 +1220,7 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
         K.adMrec = function () {
           try { swallow(AdMob.removeBanner()); } catch (e) {}
           shown = false; paused = false; body.classList.remove('ads-on'); body.classList.add('mrec-on'); setAdH(0);
-          try { swallow(AdMob.showBanner({ adId: TEST_BANNER, adSize: 'MEDIUM_RECTANGLE', position: 'CENTER', margin: 0, isTesting: BANNER_TESTING })); } catch (e) {}
+          try { swallow(AdMob.showBanner({ adId: TEST_BANNER, adSize: 'MEDIUM_RECTANGLE', position: 'CENTER', margin: 0, isTesting: BANNER_TESTING, npa: npaMode })); } catch (e) {}
         };
         K.adRestore = function () {
           if (!body.classList.contains('mrec-on')) return;
@@ -1089,7 +1264,7 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
 
   <section class="trust-strip">
     <div class="wrap trust-in">
-      <div class="trust-lead">🛡️ <b>Built for privacy.</b> Every tool runs entirely on your device — your files and data never reach a server.</div>
+      <div class="trust-lead">🛡️ <b>Built for privacy.</b> Every tool runs entirely on your device — your files never reach a server.</div>
       <div class="trust-badges">
         <span class="tb">🔒 On-device processing</span>
         <span class="tb">🙈 We never see your files</span>
@@ -1103,7 +1278,7 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
     <div class="wrap foot-in">
       <div class="foot-col" style="max-width:280px">
         <a class="brand" href="/" style="margin-bottom:10px"><span class="logo">⚡</span> SnapJar</a>
-        <p style="color:var(--dim)">40+ free calculators, image &amp; PDF tools that run 100% in your browser. No signup, no upload — your data never leaves your device.</p>
+        <p style="color:var(--dim)">40+ free calculators, image &amp; PDF tools that run 100% in your browser. No signup, no upload — your files never leave your device.</p>
         <nav class="foot-legal" aria-label="Legal"><a href="/about">About</a><a href="/privacy-policy">Privacy</a><a href="/terms">Terms</a><a href="#" onclick="return openCookiePrefs()">Cookie settings</a></nav>
       </div>
       <div class="foot-col">

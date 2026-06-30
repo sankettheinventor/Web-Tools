@@ -1,10 +1,14 @@
 package com.snapjar.app;
 
+import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
@@ -36,12 +40,19 @@ public class AppOpenPlugin extends Plugin {
         final String adId = call.getString("adId");
         if (adId == null || adId.length() == 0) { call.reject("adId required"); return; }
         if (ad != null || loading) { call.resolve(); return; }   // already have / fetching one
+        // optional contextual targeting passed from JS (finance keywords + content URL)
+        final List<String> keywords = new ArrayList<>();
+        try { JSArray ks = call.getArray("keywords"); if (ks != null) { for (Object o : ks.toList()) if (o != null) keywords.add(String.valueOf(o)); } } catch (Exception e) {}
+        final String contentUrl = call.getString("contentUrl");
         loading = true;
         final AppOpenPlugin self = this;
         getActivity().runOnUiThread(new Runnable() {
             public void run() {
                 try {
-                    AdRequest req = new AdRequest.Builder().build();
+                    AdRequest.Builder b = new AdRequest.Builder();
+                    for (String k : keywords) if (k != null && k.length() > 0) b.addKeyword(k);
+                    if (contentUrl != null && contentUrl.length() > 0) b.setContentUrl(contentUrl);
+                    AdRequest req = b.build();
                     AppOpenAd.load(getContext(), adId, req, new AppOpenAd.AppOpenAdLoadCallback() {
                         @Override
                         public void onAdLoaded(AppOpenAd loaded) {
