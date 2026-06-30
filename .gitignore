@@ -7,3 +7,9 @@ dist/
 
 # Local dev/test screenshots at repo root
 /*.png
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example

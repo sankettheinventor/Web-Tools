@@ -6,10 +6,12 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview",
-    "postinstall": "patch-package"
+    "preview": "npm run build && wrangler dev",
+    "postinstall": "patch-package",
+    "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "11",
     "@bcyesil/capacitor-plugin-printer": "^0.0.6",
     "@capacitor-community/admob": "^7.2.0",
     "@capacitor-community/text-to-speech": "^8.0.2",
@@ -43,6 +45,7 @@
   },
   "devDependencies": {
     "patch-package": "^8.0.1",
-    "postinstall-postinstall": "^2.1.0"
+    "postinstall-postinstall": "^2.1.0",
+    "wrangler": "^4.105.0"
   }
 }
