@@ -50,8 +50,28 @@ public class TextOcrPlugin extends Plugin {
             recognizer
                 .process(image)
                 .addOnSuccessListener(result -> {
+                    // Reconstruct clean paragraphs: ML Kit's getText() puts a line break after EVERY
+                    // detected line (choppy). Instead join wrapped lines within a block into one
+                    // paragraph (de-hyphenating line-wrap hyphens), and separate blocks with a blank line.
+                    StringBuilder sb = new StringBuilder();
+                    for (com.google.mlkit.vision.text.Text.TextBlock block : result.getTextBlocks()) {
+                        StringBuilder para = new StringBuilder();
+                        for (com.google.mlkit.vision.text.Text.Line line : block.getLines()) {
+                            String lt = line.getText() == null ? "" : line.getText().trim();
+                            if (lt.length() == 0) continue;
+                            if (para.length() > 0) {
+                                if (para.charAt(para.length() - 1) == '-') para.setLength(para.length() - 1); // join hyphenated word
+                                else para.append(' ');
+                            }
+                            para.append(lt);
+                        }
+                        if (para.length() == 0) continue;
+                        if (sb.length() > 0) sb.append("\n\n");
+                        sb.append(para);
+                    }
+                    String text = sb.length() > 0 ? sb.toString() : result.getText();
                     JSObject o = new JSObject();
-                    o.put("text", result.getText());
+                    o.put("text", text);
                     call.resolve(o);
                 })
                 .addOnFailureListener(e -> call.reject(e.getMessage() == null ? "OCR failed" : e.getMessage()));
