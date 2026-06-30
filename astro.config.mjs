@@ -2,6 +2,8 @@ import { defineConfig } from 'astro/config';
 import fs from 'node:fs';
 import path from 'node:path';
 
+import cloudflare from "@astrojs/cloudflare";
+
 // Update `site` to your real domain when you have one — powers sitemap + canonical URLs.
 // APP build → 'file' (/tools/x.html): Capacitor's WebView asset server resolves these
 // directly. (Directory/index.html paths fall back to the root index, so every tool
@@ -32,4 +34,6 @@ export default defineConfig({
   site: 'https://snapjar.sankettoraskar-business.workers.dev',
   build: { format: isApp ? 'file' : 'directory' },
   integrations: isApp ? [stripFromApp] : [],
+  output: "hybrid",
+  adapter: cloudflare()
 });
