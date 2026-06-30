@@ -105,7 +105,7 @@ const description = 'Scan text from any document, book, screen or sign and turn 
           var res = await DS.scanDocument({ resultFormats: 'JPEG', galleryImportAllowed: true, scannerMode: 'FULL', pageLimit: 10 });
           var uris = (res && res.scannedImages) || [];
           if (!uris.length){ showLand(); return; }          // backed out — not a failure
-          await ocrAll(uris.map(function (u){ return (Cap && Cap.convertFileSrc) ? Cap.convertFileSrc(u) : u; }));
+          await ocrAll(uris);   // raw native URIs → native ML Kit OCR (convertFileSrc is only used by the tesseract web fallback)
         } catch (e){
           var msg = (e && (e.message || e)) + '';
           if (/cancel|dismiss|back|user/i.test(msg)){ showLand(); return; }
@@ -120,19 +120,28 @@ const description = 'Scan text from any document, book, screen or sign and turn 
       $('txGalBtn').addEventListener('click', function (){ var i = $('txGal'); i.value = ''; i.click(); });
       $('txGal').addEventListener('change', async function (e){ var fs = e.target.files; if (!fs || !fs.length){ return; } await ocrAll(Array.prototype.slice.call(fs)); });
 
-      /* ---- OCR (tesseract.js, offline) ---- */
+      /* ---- OCR: native ML Kit in the app (fast/offline/reliable), tesseract.js only as a web fallback ---- */
       var _worker = null;
-      async function worker(){ if (_worker) return _worker; var T = await import('tesseract.js'); var cw = T.createWorker || (T.default && T.default.createWorker);
-        // workerBlobURL:false → load worker.min.js DIRECTLY (a blob: worker can be blocked by the
-        // Capacitor WebView's CSP, which silently breaks OCR). All assets are local/offline.
+      async function tessWorker(){ if (_worker) return _worker; var T = await import('tesseract.js'); var cw = T.createWorker || (T.default && T.default.createWorker);
         _worker = await cw('eng', 1, { workerPath: '/assets/tesseract/worker.min.js', langPath: '/assets/tesseract', corePath: '/assets/tesseract', workerBlobURL: false }); return _worker; }
+      function fileToB64(file){ return new Promise(function (res, rej){ var r = new FileReader(); r.onload = function (){ res(String(r.result)); }; r.onerror = function (){ rej(new Error('read failed')); }; r.readAsDataURL(file); }); }
+      async function ocrOne(src, OCR){
+        if (OCR){                                            // native ML Kit
+          if (typeof src === 'string'){ var r = await OCR.recognize({ path: src }); return ((r && r.text) || '').trim(); }
+          var b64 = await fileToB64(src);    var r2 = await OCR.recognize({ base64: b64 }); return ((r2 && r2.text) || '').trim();
+        }
+        var w = await tessWorker();                          // tesseract.js fallback (web)
+        var img = (typeof src === 'string') ? ((Cap && Cap.convertFileSrc) ? Cap.convertFileSrc(src) : src) : src;
+        var rr = await w.recognize(img); return ((rr && rr.data && rr.data.text) || '').trim();
+      }
       async function ocrAll(sources){
         busy('Reading text…', sources.length > 1 ? ('Page 1 of ' + sources.length) : '');
+        var OCR = plugin('TextOcr'); OCR = (OCR && OCR.recognize) ? OCR : null;
         try {
-          var w = await worker(), out = [];
+          var out = [];
           for (var i = 0; i < sources.length; i++){
             $('txLoadS').textContent = sources.length > 1 ? ('Page ' + (i + 1) + ' of ' + sources.length) : '';
-            var r = await w.recognize(sources[i]); out.push(((r && r.data && r.data.text) || '').trim());
+            out.push(await ocrOne(sources[i], OCR));
           }
           var text = out.join('\n\n').trim();
           haptic('light');
