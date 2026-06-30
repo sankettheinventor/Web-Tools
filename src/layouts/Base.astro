@@ -78,9 +78,9 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
     (function () {
       try {
         var t = localStorage.getItem('theme');
-        if (!t) t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        if (!t) t = 'light';   // default to the premium white theme on first open; the toggle still persists the user's choice
         document.documentElement.setAttribute('data-theme', t);
-      } catch (e) { document.documentElement.setAttribute('data-theme', 'dark'); }
+      } catch (e) { document.documentElement.setAttribute('data-theme', 'light'); }
     })();
   </script>
   <script is:inline>

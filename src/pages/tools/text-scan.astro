@@ -1,0 +1,187 @@
+---
+import Base from '../../layouts/Base.astro';
+const title = 'Scan to Text (OCR) — SnapJar';
+const description = 'Scan text from any document, book, screen or sign and turn it into editable, copyable text — 100% on your device.';
+---
+<Base title={title} description={description}>
+  <div class="tx-app" id="txApp">
+    <!-- loading + landing / error -->
+    <div class="tx-screen tx-load" id="txLoad">
+      <button class="tx-icon tx-load-x" id="txLoadClose" type="button" aria-label="Close" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      <div class="tx-spin" id="txSpin" aria-hidden="true"></div>
+      <div class="tx-hero-ic" id="txHero" aria-hidden="true" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2"/><path d="M16 4h2a2 2 0 0 1 2 2v2"/><path d="M20 16v2a2 2 0 0 1-2 2h-2"/><path d="M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M7.5 9.5h9"/><path d="M7.5 12.5h9"/><path d="M7.5 15.5h5"/></svg></div>
+      <div class="tx-load-t" id="txLoadT">Opening scanner…</div>
+      <div class="tx-load-s" id="txLoadS"></div>
+      <button class="tx-btn" id="txRetry" type="button" hidden>Scan text</button>
+      <button class="tx-btn tx-btn-ghost" id="txGalBtn" type="button" hidden>Choose from gallery</button>
+    </div>
+
+    <!-- result: editable recognized text -->
+    <div class="tx-screen tx-result" id="txResult" hidden>
+      <div class="tx-top">
+        <button class="tx-icon" id="txClose" type="button" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+        <span class="tx-ttl">Scanned text</span>
+        <button class="tx-icon" id="txAgain2" type="button" aria-label="Scan again"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
+      </div>
+      <div class="tx-hint">Tap to edit and fix anything before you copy or share.</div>
+      <textarea class="tx-text" id="txText" spellcheck="false" aria-label="Recognized text"></textarea>
+      <div class="tx-actions">
+        <button class="tx-act" id="txCopy" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg><span>Copy</span></button>
+        <button class="tx-act" id="txShare" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg><span>Share</span></button>
+        <button class="tx-act tx-act-primary" id="txSave" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v4h4"/></svg><span>Save PDF</span></button>
+      </div>
+    </div>
+    <input id="txGal" type="file" accept="image/*" multiple hidden />
+  </div>
+
+  <style is:global>
+    body.tx-on{ overflow:hidden; }
+    .tx-app{ position:fixed; inset:0; z-index:4000; background:#0c0a14; color:#fff; font-family:'Jakarta',system-ui,sans-serif; -webkit-user-select:none; user-select:none; }
+    .tx-screen{ position:absolute; inset:0; display:flex; flex-direction:column; }
+    .tx-screen[hidden]{ display:none; }
+
+    .tx-load{ align-items:center; justify-content:center; gap:13px; text-align:center; padding:0 34px; }
+    .tx-load-x{ position:absolute; top:calc(12px + env(safe-area-inset-top)); left:16px; }
+    .tx-load-x[hidden]{ display:none; }
+    .tx-hero-ic{ width:92px; height:92px; border-radius:27px; display:grid; place-items:center; margin-bottom:4px; background:linear-gradient(140deg,#8b5cf6,#a78bfa); box-shadow:0 18px 46px -14px #8b5cf6; }
+    .tx-hero-ic[hidden]{ display:none; } .tx-hero-ic svg{ width:44px; height:44px; color:#fff; }
+    .tx-spin{ width:46px; height:46px; border-radius:50%; border:3px solid rgba(255,255,255,.16); border-top-color:#8b7bff; animation:tx-rot .8s linear infinite; }
+    .tx-spin[hidden]{ display:none; } @keyframes tx-rot{ to{ transform:rotate(360deg); } }
+    .tx-load-t{ font-size:18px; font-weight:800; letter-spacing:-.2px; }
+    .tx-load-s{ font-size:13.5px; color:#aea7c5; line-height:1.5; max-width:300px; }
+    .tx-btn{ margin-top:8px; width:100%; max-width:300px; padding:15px; border:0; border-radius:15px; cursor:pointer; background:linear-gradient(135deg,#8b5cf6,#a78bfa); color:#fff; font:inherit; font-weight:800; font-size:16px; box-shadow:0 12px 30px -12px #8b5cf6; }
+    .tx-btn[hidden]{ display:none; } .tx-btn:active{ transform:scale(.97); }
+    .tx-btn-ghost{ background:rgba(255,255,255,.1); box-shadow:none; font-size:15px; padding:13px; margin-top:0; }
+
+    .tx-top{ display:flex; align-items:center; gap:12px; padding:calc(12px + env(safe-area-inset-top)) 16px 10px; flex:0 0 auto; }
+    .tx-ttl{ flex:1; text-align:center; font-size:16px; font-weight:800; }
+    .tx-icon{ width:42px; height:42px; border-radius:50%; border:0; background:rgba(255,255,255,.1); color:#fff; display:grid; place-items:center; cursor:pointer; flex:0 0 auto; }
+    .tx-icon svg{ width:20px; height:20px; } .tx-icon:active{ transform:scale(.92); }
+    .tx-hint{ text-align:center; font-size:12.5px; color:#aea7c5; padding:0 20px 8px; flex:0 0 auto; }
+    .tx-text{ flex:1 1 auto; min-height:0; margin:0 16px; padding:18px; border:1px solid rgba(255,255,255,.12); border-radius:16px;
+      background:rgba(255,255,255,.05); color:#fff; font:inherit; font-size:15.5px; line-height:1.65; resize:none; outline:none; -webkit-user-select:text; user-select:text; white-space:pre-wrap; }
+    .tx-text:focus{ border-color:#8b7bff; }
+    .tx-actions{ display:flex; gap:10px; padding:14px 16px calc(18px + env(safe-area-inset-bottom)); flex:0 0 auto; }
+    .tx-act{ flex:1; display:inline-flex; flex-direction:column; align-items:center; gap:5px; padding:12px 6px; border:0; border-radius:14px; cursor:pointer; background:rgba(255,255,255,.1); color:#fff; font:inherit; font-weight:700; font-size:12px; }
+    .tx-act svg{ width:21px; height:21px; } .tx-act:active{ transform:scale(.96); }
+    .tx-act-primary{ background:linear-gradient(135deg,#ff5e7e,#8b7bff); box-shadow:0 10px 26px -12px #8b7bff; }
+  </style>
+
+  <script>
+    (function () {
+      var $ = function (id){ return document.getElementById(id); };
+      var K = function (){ return window.SnapJarKit; };
+      function toast(m, t){ if (K() && K().toast) K().toast(m, t || 'info'); }
+      function haptic(s){ if (K() && K().haptic) K().haptic(s); }
+      function plugin(n){ return (K() && K().plugin) ? K().plugin(n) : null; }
+
+      var DS = plugin('DocumentScanner'), Cap = window.Capacitor, triedInstall = false;
+      document.body.classList.add('tx-on');
+
+      function boot(){ if (DS && DS.scanDocument) capture(); else showLand(); }
+      function busy(t, s){ show('txLoad'); $('txSpin').hidden = false; $('txHero').hidden = true; $('txLoadClose').hidden = true; $('txRetry').hidden = true; $('txGalBtn').hidden = true; $('txLoadT').textContent = t || 'Working…'; $('txLoadS').textContent = s || ''; }
+      function showLand(){
+        show('txLoad'); $('txSpin').hidden = true; $('txHero').hidden = false; $('txLoadClose').hidden = false;
+        $('txLoadT').textContent = 'Scan text';
+        $('txLoadS').textContent = DS ? 'Point at a page, book, screen or sign — we’ll pull out the text for you.' : 'Pick a photo and we’ll pull out the text.';
+        $('txRetry').hidden = false; $('txRetry').textContent = DS ? 'Open camera' : 'Choose photo';
+        $('txGalBtn').hidden = false;
+      }
+      function showErr(title, sub){ show('txLoad'); $('txSpin').hidden = true; $('txHero').hidden = false; $('txLoadClose').hidden = false; $('txLoadT').textContent = title; $('txLoadS').textContent = sub || ''; $('txRetry').hidden = false; $('txRetry').textContent = 'Try again'; $('txGalBtn').hidden = false; }
+      $('txLoadClose').addEventListener('click', leave);
+
+      /* ---- capture via native scanner (auto-crop), then OCR ---- */
+      async function ensureModule(){
+        try { var a = await DS.isGoogleDocumentScannerModuleAvailable(); if (a && a.available === true) return true; } catch (e) {}
+        busy('Preparing the scanner…', 'One-time setup (a few MB)');
+        return new Promise(function (resolve){ var done = false; function fin(v){ if (!done){ done = true; resolve(v); } }
+          try { DS.addListener('googleDocumentScannerModuleInstallProgress', function (ev){ if (ev && (ev.progress >= 100 || ev.state === 4)) fin(true); else if (ev && ev.state === 5) fin(false); }); } catch (e) {}
+          DS.installGoogleDocumentScannerModule().catch(function (){ fin(false); }); setTimeout(function (){ fin(true); }, 45000);
+        });
+      }
+      async function capture(){
+        busy('Opening scanner…');
+        try {
+          var res = await DS.scanDocument({ resultFormats: 'JPEG', galleryImportAllowed: true, scannerMode: 'FULL', pageLimit: 10 });
+          var uris = (res && res.scannedImages) || [];
+          if (!uris.length){ showLand(); return; }          // backed out — not a failure
+          await ocrAll(uris.map(function (u){ return (Cap && Cap.convertFileSrc) ? Cap.convertFileSrc(u) : u; }));
+        } catch (e){
+          var msg = (e && (e.message || e)) + '';
+          if (/cancel|dismiss|back|user/i.test(msg)){ showLand(); return; }
+          if (!triedInstall && /module|unavailable|not available|install/i.test(msg)){ triedInstall = true; if (await ensureModule()) return capture(); }
+          if (/permission|denied|camera|not allowed/i.test(msg)) showErr('Camera access is off', 'Turn on camera access for SnapJar in Settings, or pick a photo from your gallery.');
+          else showErr('Couldn’t start the scanner', 'Give it another try, or pick a photo from your gallery.');
+        }
+      }
+
+      /* ---- gallery fallback ---- */
+      $('txRetry').addEventListener('click', function (){ haptic('light'); if (DS) capture(); else { var i = $('txGal'); i.value = ''; i.click(); } });
+      $('txGalBtn').addEventListener('click', function (){ var i = $('txGal'); i.value = ''; i.click(); });
+      $('txGal').addEventListener('change', async function (e){ var fs = e.target.files; if (!fs || !fs.length){ return; } await ocrAll(Array.prototype.slice.call(fs)); });
+
+      /* ---- OCR (tesseract.js, offline) ---- */
+      var _worker = null;
+      async function worker(){ if (_worker) return _worker; var T = await import('tesseract.js'); var cw = T.createWorker || (T.default && T.default.createWorker);
+        // workerBlobURL:false → load worker.min.js DIRECTLY (a blob: worker can be blocked by the
+        // Capacitor WebView's CSP, which silently breaks OCR). All assets are local/offline.
+        _worker = await cw('eng', 1, { workerPath: '/assets/tesseract/worker.min.js', langPath: '/assets/tesseract', corePath: '/assets/tesseract', workerBlobURL: false }); return _worker; }
+      async function ocrAll(sources){
+        busy('Reading text…', sources.length > 1 ? ('Page 1 of ' + sources.length) : '');
+        try {
+          var w = await worker(), out = [];
+          for (var i = 0; i < sources.length; i++){
+            $('txLoadS').textContent = sources.length > 1 ? ('Page ' + (i + 1) + ' of ' + sources.length) : '';
+            var r = await w.recognize(sources[i]); out.push(((r && r.data && r.data.text) || '').trim());
+          }
+          var text = out.join('\n\n').trim();
+          haptic('light');
+          if (!text){ showErr('No text found', 'Try a sharper, well-lit photo with the text filling the frame.'); return; }
+          $('txText').value = text; show('txResult');
+        } catch (e){ var em = ((e && (e.message || e)) + '').slice(0, 140); showErr('Couldn’t read the text', em || 'Please try again with a clearer photo.'); }
+      }
+
+      /* ---- result actions ---- */
+      function curText(){ return $('txText').value || ''; }
+      $('txCopy').addEventListener('click', function (){ var t = curText(); if (K() && K().copy) K().copy(t); else { try { navigator.clipboard.writeText(t); } catch (e) {} } toast('Copied', 'ok'); });
+      $('txShare').addEventListener('click', function (){
+        var t = curText();
+        try { if (navigator.share){ navigator.share({ text: t, title: 'Scanned text' }); return; } } catch (e) {}
+        if (K() && K().copy){ K().copy(t); toast('Copied — paste it anywhere', 'ok'); }
+      });
+      $('txSave').addEventListener('click', savePdf);
+      $('txAgain2').addEventListener('click', function (){ if (DS) capture(); else { var i = $('txGal'); i.value = ''; i.click(); } });
+      $('txClose').addEventListener('click', leave);
+
+      async function savePdf(){
+        var text = curText(); if (!text.trim()){ toast('Nothing to save', 'info'); return; }
+        busy('Building PDF…');
+        try {
+          var lib = await import('pdf-lib'); var PDFDocument = lib.PDFDocument, StandardFonts = lib.StandardFonts, rgb = lib.rgb;
+          var pdf = await PDFDocument.create(), font = await pdf.embedFont(StandardFonts.Helvetica);
+          var W = 595, H = 842, M = 56, size = 12, lh = 17, maxW = W - M * 2;
+          var page = pdf.addPage([W, H]), y = H - M;
+          function wrap(line){ var words = line.split(/\s+/), cur = ''; var rows = [];
+            for (var i = 0; i < words.length; i++){ var t = cur ? cur + ' ' + words[i] : words[i];
+              if (font.widthOfTextAtSize(t, size) > maxW && cur){ rows.push(cur); cur = words[i]; } else cur = t; }
+            if (cur) rows.push(cur); return rows.length ? rows : ['']; }
+          text.split(/\n/).forEach(function (line){
+            wrap(line).forEach(function (row){
+              if (y < M){ page = pdf.addPage([W, H]); y = H - M; }
+              page.drawText(row, { x: M, y: y - size, size: size, font: font, color: rgb(0.1, 0.1, 0.12) }); y -= lh;
+            });
+          });
+          var out = await pdf.save(), blob = new Blob([out], { type: 'application/pdf' });
+          var nm = 'Scanned text ' + new Date().toISOString().slice(0, 10) + '.pdf';
+          if (window.SJRecents){ var id = await window.SJRecents.add({ name: nm, kind: 'pdf', blob: blob }); if (id){ leave(true); location.href = '/tools/pdf-studio.html?recent=' + id; return; } }
+          if (K() && K().saveDownload) K().saveDownload(blob, nm); leave();
+        } catch (e){ toast('Could not build the PDF', 'err'); show('txResult'); }
+      }
+
+      function show(id){ ['txLoad', 'txResult'].forEach(function (s){ $(s).hidden = s !== id; }); }
+      function leave(noNav){ document.body.classList.remove('tx-on'); if (noNav !== true) location.href = '/'; }
+      try { var App = plugin('App'); if (App && App.addListener) App.addListener('backButton', function (){ if (!document.body.classList.contains('tx-on')) return; if (!$('txResult').hidden){ showLand(); return; } leave(); }); } catch (e) {}
+      boot();
+    })();
+  </script>
+</Base>
