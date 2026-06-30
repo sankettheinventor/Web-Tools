@@ -133,7 +133,7 @@ const howSteps = [
       function hideLoupe(){loupe.hidden=true;}
       function sample(clientX,clientY){var p=toPixel(clientX,clientY);if(!p)return;var d=ctx.getImageData(p.x,p.y,1,1).data;setColor(d[0],d[1],d[2]);showLoupe(clientX,clientY,p);}
 
-      function load(f){var im=new Image();im.onload=function(){var fit=window.SnapJarKit.fitDims(im.naturalWidth,im.naturalHeight);cv.width=fit.w;cv.height=fit.h;ctx=cv.getContext('2d');ctx.drawImage(im,0,0,fit.w,fit.h);$('drop').hidden=true;$('editor').hidden=false;scale=1;tx=0;ty=0;clampPan();applyT();};im.onerror=function(){$('drop').querySelector('.drop-t').textContent='Could not open this image — it may be corrupt or unsupported.';};im.src=window.SnapJarKit.track(f);}
+      function load(f){var im=new Image();im.onload=function(){var fit=window.SnapJarKit.fitDims(im.naturalWidth,im.naturalHeight);cv.width=fit.w;cv.height=fit.h;ctx=cv.getContext('2d');ctx.drawImage(im,0,0,fit.w,fit.h);$('drop').hidden=true;$('editor').hidden=false;scale=1;tx=0;ty=0;clampPan();applyT();};im.onerror=function(){if(window.SnapJarKit)window.SnapJarKit.toast('Could not open this image — it may be corrupt or unsupported.','err');};im.src=window.SnapJarKit.track(f);}
 
       /* mouse (desktop) */
       cv.addEventListener('click',function(e){sample(e.clientX,e.clientY);});

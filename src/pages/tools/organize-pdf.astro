@@ -88,8 +88,10 @@ const howSteps = [
           bytes=await file.arrayBuffer();
           var pdf=await pdfjsLib.getDocument({data:bytes.slice(0)}).promise;
           pages=[];
-          for(var n=1;n<=pdf.numPages;n++){
-            $('status').textContent='Processing page '+n+' of '+pdf.numPages+'…';
+          var _np=pdf.numPages, _cap=Math.min(_np,150);
+          if(_np>150 && window.SnapJarKit) window.SnapJarKit.toast('Large PDF — showing the first 150 of '+_np+' pages','info',4500);
+          for(var n=1;n<=_cap;n++){
+            $('status').textContent='Processing page '+n+' of '+_cap+'…';
             var page=await pdf.getPage(n);var vp=page.getViewport({scale:0.5});
             var fit=window.SnapJarKit.fitDims(vp.width,vp.height);
             if(fit.clamped){ vp=page.getViewport({scale:0.5*fit.scale}); }
@@ -115,7 +117,7 @@ const howSteps = [
           var up=mkBtn('↑','Move up',function(){move(i,i-1);});up.disabled=i===0;
           var down=mkBtn('↓','Move down',function(){move(i,i+1);});down.disabled=i===pages.length-1;
           var rot=mkBtn('↻','Rotate 90°',function(){p.rot=(p.rot+90)%360;render();});
-          var del=mkBtn('✕','Remove page',function(){pages.splice(i,1);render();});del.className='del';
+          var del=mkBtn('✕','Remove page',function(){ if(pages.length<=1){ if(window.SnapJarKit) window.SnapJarKit.toast('A PDF needs at least one page','warn'); return; } pages.splice(i,1);render();});del.className='del';
           btns.appendChild(up);btns.appendChild(down);btns.appendChild(rot);btns.appendChild(del);
           cell.appendChild(im);cell.appendChild(num);cell.appendChild(btns);
           cell.addEventListener('dragstart',function(e){dragFrom=i;cell.classList.add('dragging');e.dataTransfer.effectAllowed='move';});

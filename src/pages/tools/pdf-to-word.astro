@@ -86,8 +86,10 @@ const howSteps = [
           var pdf=await pdfjsLib.getDocument({data:buf}).promise;
           srcName=(f.name.replace(/\.pdf$/i,'')||'document');
           var out=[], totalChars=0, preview='';
-          for(var p=1;p<=pdf.numPages;p++){
-            status('Extracting text — page '+p+' of '+pdf.numPages+'…');
+          var _np=pdf.numPages, _cap=Math.min(_np,150);
+          if(_np>150 && window.SnapJarKit) window.SnapJarKit.toast('Large PDF — extracting the first 150 of '+_np+' pages','info',4500);
+          for(var p=1;p<=_cap;p++){
+            status('Extracting text — page '+p+' of '+_cap+'…');
             var page=await pdf.getPage(p);
             var tc=await page.getTextContent();
             var lines=pageToLines(tc.items);

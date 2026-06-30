@@ -92,8 +92,8 @@ const howSteps = [
       $('in').addEventListener('input',run);
       $('upload').onclick=function(){$('file').click();};
       $('file').onchange=function(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(){$('in').value=r.result;run();};r.readAsText(f);};
-      $('copy').onclick=function(){$('out').select();try{document.execCommand('copy');}catch(e){}};
-      $('dl').onclick=function(){var blob=new Blob([$('out').value],{type:'image/svg+xml'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='optimized.svg';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);};
+      $('copy').onclick=function(){var v=$('out').value;if(!v){if(window.SnapJarKit)window.SnapJarKit.toast('Nothing to copy yet — optimize an SVG first','warn');return;}if(window.SnapJarKit){window.SnapJarKit.copy(v,'SVG copied');}else{$('out').select();try{document.execCommand('copy');}catch(e){}}};
+      $('dl').onclick=function(){var v=$('out').value;if(!v){if(window.SnapJarKit)window.SnapJarKit.toast('Nothing to download yet — optimize an SVG first','warn');return;}var blob=new Blob([v],{type:'image/svg+xml'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='optimized.svg';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);};
       run();
     })();
   </script>

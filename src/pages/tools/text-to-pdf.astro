@@ -58,11 +58,12 @@ const howSteps = [
           var doc=new jsPDF({unit:'pt',format:$('size').value});
           var fs=parseInt($('fs').value,10);doc.setFontSize(fs);
           var pw=doc.internal.pageSize.getWidth(),ph=doc.internal.pageSize.getHeight(),m=48,lh=fs*1.45;
-          var lines=doc.splitTextToSize($('t').value||' ',pw-m*2);
+          if(!($('t').value||'').trim()){ if(window.SnapJarKit) window.SnapJarKit.toast('Type or paste some text first','warn'); return; }
+          var lines=doc.splitTextToSize($('t').value,pw-m*2);
           var y=m;
           lines.forEach(function(ln){ if(y>ph-m){doc.addPage();y=m;} doc.text(ln,m,y); y+=lh; });
           doc.save('document.pdf');
-          if(window.SnapJarKit) window.SnapJarKit.toast('PDF ready — saved to your device','ok');
+          // saved-to-Files toast fires automatically via the anchor-click interception (avoids a double toast)
         }catch(err){
           if(window.SnapJarKit) window.SnapJarKit.toast('Could not generate the PDF — try shorter or simpler text','err');
           else alert('Could not generate the PDF — please try again with shorter or simpler text.');

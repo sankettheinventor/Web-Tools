@@ -82,7 +82,7 @@ const howSteps = [
           html=(res && res.value || '').trim();
           if(!html){ status('This document looks empty — there’s nothing to convert.','err'); return; }
           srcName=(f.name.replace(/\.docx$/i,'')||'document');
-          $('preview').innerHTML=html;
+          $('preview').innerHTML=(window.SnapJarKit&&window.SnapJarKit.sanitizeHtml)?window.SnapJarKit.sanitizeHtml(html):'';  // SECURITY: .docx HTML is untrusted; fail closed if sanitizer is unavailable
           setReady(true);
           status('Ready — check the preview, then Download PDF.','ok');
         }catch(err){

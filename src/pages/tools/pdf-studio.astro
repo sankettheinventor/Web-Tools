@@ -21,7 +21,7 @@ const faqItems = [
       </div></header>
       <div class="wrap"><div class="tool">
         <div id="prDrop" class="drop" role="button" tabindex="0" aria-label="Open a document">
-          <input id="prFile" type="file" accept="application/pdf,.pdf,.doc,.docx,.xls,.xlsx" hidden />
+          <input id="prFile" type="file" accept="application/pdf,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt,text/csv,text/plain" hidden />
           <input id="prImg" type="file" accept="image/*" multiple hidden />
           <div class="drop-ic">📂</div>
           <p class="drop-t">Open a document</p>
@@ -34,7 +34,7 @@ const faqItems = [
       <div class="pr-sheet" id="prSheet" hidden>
         <div class="pr-sheet-card" role="dialog" aria-modal="true" aria-label="Open a document">
           <div class="pr-sheet-h">Open a document</div>
-          <button class="pr-src" id="srcDoc" type="button"><span class="pr-src-ic">📁</span><span class="pr-src-tx"><b>Open a PDF</b><small>Pick any PDF — incl. Google Drive &amp; Downloads</small></span></button>
+          <button class="pr-src" id="srcDoc" type="button"><span class="pr-src-ic">📁</span><span class="pr-src-tx"><b>Open a document</b><small>PDF, Word, Excel, CSV or text — incl. Drive &amp; Downloads</small></span></button>
           <button class="pr-src" id="srcFolder" type="button"><span class="pr-src-ic">🗂️</span><span class="pr-src-tx"><b>Browse a folder</b><small>Grant a folder and open any PDF inside it</small></span></button>
           <button class="pr-src" id="srcGallery" type="button"><span class="pr-src-ic">🖼️</span><span class="pr-src-tx"><b>Photos → PDF</b><small>Pick images and combine into a PDF</small></span></button>
           <button class="pr-src" id="srcScan" type="button"><span class="pr-src-ic">📷</span><span class="pr-src-tx"><b>Scan document</b><small>Use the camera to scan to PDF</small></span></button>
@@ -85,7 +85,7 @@ const faqItems = [
           <button id="prIn" class="pr-rb" type="button" title="Zoom in" aria-label="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
         </span>
         <span class="pr-spacer"></span>
-        <button id="prShare" class="pr-rb" type="button" title="Share / Save" aria-label="Share or save this PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M12 16V4M8 8l4-4 4 4"/></svg></button>
+        <button id="prShare" class="pr-rb" type="button" title="Share / Save" aria-label="Share or save this PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg></button>
         <button id="prMore" class="pr-rb" type="button" title="More" aria-label="More options"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
       </div>
 
@@ -159,7 +159,7 @@ const faqItems = [
         </div>
       </div>
       <input id="wrImg" type="file" accept="image/*" hidden />
-      <input id="wrOcr" type="file" accept="image/*" hidden />
+      <input id="wrOcr" type="file" accept="image/*" capture="environment" hidden />
 
       <!-- drawing overlay -->
       <div class="wr-draw" id="wrDraw" hidden>
@@ -184,6 +184,24 @@ const faqItems = [
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Native document reader (Word / Excel / PowerPoint / CSV / text) -->
+  <div class="dv" id="docView" hidden>
+    <div class="dv-bar">
+      <button class="dv-icon" id="dvClose" type="button" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      <span class="dv-name" id="dvName">Document</span>
+      <button class="dv-icon" id="dvShare" type="button" aria-label="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg></button>
+    </div>
+    <div class="dv-tabs" id="dvTabs" hidden></div>
+    <div class="dv-scroll" id="dvScroll"><div class="dv-zoom" id="dvZoom"><div class="dv-paper" id="dvPaper"></div></div></div>
+    <div class="dv-foot">
+      <button class="dv-zb" id="dvZoomOut" type="button" aria-label="Zoom out">–</button>
+      <span class="dv-zlbl" id="dvZoomLbl">100%</span>
+      <button class="dv-zb" id="dvZoomIn" type="button" aria-label="Zoom in">+</button>
+      <button class="dv-savepdf" id="dvPdf" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v4h4"/><path d="M9 14l3 3 3-3M12 11v6"/></svg><span>Save as PDF</span></button>
+    </div>
+    <div class="dv-load" id="dvLoad" hidden><div class="dv-spin"></div><span id="dvLoadT">Opening…</span></div>
   </div>
 
   <!-- QR scanner: capture a photo of a QR → decode on-device -->
@@ -224,7 +242,7 @@ const faqItems = [
         <button class="pr-share-x" id="prShareClose" type="button" aria-label="Close">✕</button>
       </div>
       <div class="pr-sa-grid">
-        <button class="pr-sa" id="prShareGo" type="button"><span class="pr-sa-ic sa-share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14V3"/><path d="m8 7 4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></span><span class="pr-sa-l">Share</span></button>
+        <button class="pr-sa" id="prShareGo" type="button"><span class="pr-sa-ic sa-share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg></span><span class="pr-sa-l">Share</span></button>
         <button class="pr-sa" id="prShareFiles" type="button"><span class="pr-sa-ic sa-files"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.5A1.5 1.5 0 0 1 4.5 6h4l2 2.2h7A1.5 1.5 0 0 1 19 9.7v7.8A1.5 1.5 0 0 1 17.5 19h-13A1.5 1.5 0 0 1 3 17.5v-10Z"/></svg></span><span class="pr-sa-l">My Files</span></button>
         <button class="pr-sa" id="prShareSave" type="button"><span class="pr-sa-ic sa-save"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11"/><path d="m8 11 4 4 4-4"/><path d="M5 20h14"/></svg></span><span class="pr-sa-l">Save</span></button>
         <button class="pr-sa" id="prSharePrint" type="button"><span class="pr-sa-ic sa-print"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="4" y="9" width="16" height="8" rx="2"/><path d="M8 15h8v6H8z"/></svg></span><span class="pr-sa-l">Print</span></button>
@@ -326,6 +344,48 @@ const faqItems = [
   <Faq items={faqItems} />
 
   <style is:global>
+    /* ===== Multi-format document viewer (Word / Excel / CSV / text) ===== */
+    .dv{position:fixed;inset:0;z-index:3500;background:var(--bg,#0c0a14);display:flex;flex-direction:column;font-family:'Jakarta',system-ui,sans-serif}
+    .dv[hidden]{display:none}
+    .dv-bar{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;flex:0 0 auto;
+      background:var(--surface,#16121f);border-bottom:1px solid var(--line)}
+    .dv-name{flex:1;min-width:0;font-size:15px;font-weight:800;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .dv-icon{width:40px;height:40px;border-radius:50%;border:0;background:var(--surface2);color:var(--txt);display:grid;place-items:center;cursor:pointer;flex:0 0 auto}
+    .dv-icon svg{width:20px;height:20px} .dv-icon:active{transform:scale(.92)}
+    .dv-tabs{display:flex;gap:8px;overflow-x:auto;padding:8px 14px;flex:0 0 auto;background:var(--surface);border-bottom:1px solid var(--line);-webkit-overflow-scrolling:touch}
+    .dv-tabs[hidden]{display:none}
+    .dv-tab{flex:0 0 auto;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface2);color:var(--dim);font:inherit;font-weight:700;font-size:13px;cursor:pointer}
+    .dv-tab.on{background:var(--brand);border-color:var(--brand);color:#fff}
+    .dv-scroll{flex:1 1 auto;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;background:var(--bg,#0c0a14);padding:16px}
+    .dv-zoom{transform-origin:top center;transition:transform .12s ease;width:fit-content;margin:0 auto}
+    .dv-paper{max-width:820px;width:86vw;margin:0 auto;background:#fff;color:#1a1a1a;border-radius:8px;box-shadow:0 14px 44px -16px rgba(0,0,0,.5);
+      padding:42px 40px;font-size:15px;line-height:1.7;box-sizing:border-box}
+    .dv-foot{display:flex;align-items:center;gap:10px;padding:10px 14px calc(10px + env(safe-area-inset-bottom));flex:0 0 auto;
+      background:var(--surface,#16121f);border-top:1px solid var(--line)}
+    .dv-zb{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--surface2);color:var(--txt);font-size:20px;font-weight:700;cursor:pointer;flex:0 0 auto}
+    .dv-zb:active{transform:scale(.92)}
+    .dv-zlbl{font-size:13px;font-weight:700;color:var(--dim);min-width:42px;text-align:center}
+    .dv-savepdf{margin-left:auto;display:inline-flex;align-items:center;gap:7px;padding:11px 18px;border-radius:12px;border:0;cursor:pointer;
+      background:linear-gradient(135deg,var(--brand2,#ff5e7e),var(--brand,#8b7bff));color:#fff;font:inherit;font-weight:800;font-size:14px}
+    .dv-savepdf svg{width:18px;height:18px} .dv-savepdf:active{transform:scale(.97)}
+    @media(max-width:560px){ .dv-paper{padding:26px 22px;border-radius:6px} }
+    /* injected document content */
+    .dv-paper p{margin:0 0 12px} .dv-paper h1{font-size:24px;margin:0 0 14px;font-weight:800} .dv-paper h2{font-size:20px;margin:18px 0 10px;font-weight:800}
+    .dv-paper h3{font-size:17px;margin:16px 0 8px;font-weight:700} .dv-paper img{max-width:100%;height:auto;border-radius:4px}
+    .dv-paper ul,.dv-paper ol{margin:0 0 12px;padding-left:22px} .dv-paper li{margin:3px 0}
+    .dv-paper a{color:#2563eb;word-break:break-word} .dv-paper strong{font-weight:700}
+    .dv-paper table{border-collapse:collapse;width:100%;font-size:13px;margin:0 0 14px;overflow:auto;display:block}
+    .dv-paper td,.dv-paper th{border:1px solid #dcdce5;padding:7px 10px;text-align:left;white-space:nowrap;vertical-align:top}
+    .dv-paper th,.dv-paper tr:first-child td{background:#f3f3f8;font-weight:700}
+    .dv-paper pre{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Menlo,monospace;font-size:13.5px;margin:0}
+    /* PowerPoint: a padless stage; the library renders each slide as a sized block */
+    .dv-paper-ppt{background:transparent;box-shadow:none;padding:0;width:auto;max-width:none}
+    .dv-paper-ppt section,.dv-paper-ppt .pptx-preview-wrapper>div{margin:0 auto 14px;background:#fff;box-shadow:0 10px 30px -14px rgba(0,0,0,.5);border-radius:6px;overflow:hidden}
+    .dv-load{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:var(--bg,#0c0a14);color:var(--txt);font-weight:700}
+    .dv-load[hidden]{display:none}
+    .dv-spin{width:42px;height:42px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--brand);animation:dv-rot .8s linear infinite}
+    @keyframes dv-rot{to{transform:rotate(360deg)}}
+
     /* In the app, the reader/editor is the whole experience — hide web SEO + FAQ */
     body.is-app #prSeo, body.is-app .faq{display:none !important}
     .pr-open .head{padding:var(--s6) 0 var(--s4)}
@@ -538,7 +598,9 @@ const faqItems = [
     .ed-ellipse{border:2px solid #111;border-radius:50%}
     .ed-del{position:absolute;top:-12px;right:-12px;width:24px;height:24px;border-radius:50%;border:0;background:#ff5470;color:#fff;font-size:13px;line-height:1;cursor:pointer;z-index:6;display:none;align-items:center;justify-content:center}
     .ed-el.sel .ed-del{display:flex}
-    .ed-handle{position:absolute;right:-9px;bottom:-9px;width:18px;height:18px;border-radius:50%;background:var(--brand);border:2px solid #fff;cursor:nwse-resize;z-index:6;display:none}
+    /* big, obvious, touch-friendly resize grip at the corner (premium + grabbable on mobile) */
+    .ed-handle{position:absolute;right:-14px;bottom:-14px;width:30px;height:30px;border-radius:50%;background:var(--brand);border:2.5px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.42);cursor:nwse-resize;z-index:8;display:none;touch-action:none}
+    .ed-handle::after{content:"";position:absolute;right:8px;bottom:8px;width:9px;height:9px;border-right:2.5px solid #fff;border-bottom:2.5px solid #fff;border-radius:0 0 3px 0}
     .ed-el.sel .ed-handle{display:block}
     .ed-hint{position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:7;background:rgba(0,0,0,.78);color:#fff;font-size:12px;font-weight:600;padding:7px 13px;border-radius:20px;pointer-events:none;opacity:0;transition:opacity .2s}
     .ed-hint.show{opacity:1}
@@ -722,7 +784,8 @@ const faqItems = [
       }
 
       /* ============================ READER ============================ */
-      async function openFile(file, recentName){
+      async function openFile(file, recentName, opts){
+        opts = opts || {};
         if (!file) return;
         try { ttsStop(); } catch (e) {} try { if (window.__fsStop) window.__fsStop(); } catch (e) {}
         status('Opening…');
@@ -737,6 +800,7 @@ const faqItems = [
           return;
         }
         indexBuilt = false; textIndex = {}; matches = []; matchIdx = -1; query = '';
+        ocrCache = {}; try { if (_ocrWorker && _ocrWorker.terminate) _ocrWorker.terminate(); } catch (e) {} _ocrWorker = null;
         $('prTot').textContent = doc.numPages;
         setReaderName(curName);
         $('prOpen').hidden = true; $('prSeo').style.display = 'none';
@@ -749,7 +813,7 @@ const faqItems = [
         if (window.SnapJarKit) window.SnapJarKit.toast('Opened ' + shortName(curName) + ' · ' + doc.numPages + ' page' + (doc.numPages === 1 ? '' : 's'), 'ok');
         try { if (!localStorage.getItem('sj_tapread_hint')){ setTimeout(function (){ if (window.SnapJarKit && doc) window.SnapJarKit.toast('Tip: tap any line to start read-aloud from there 🎧', 'info', 5000); }, 1800); localStorage.setItem('sj_tapread_hint', '1'); } } catch (e) {}
         /* save into the on-device library (with a thumbnail) when user-initiated */
-        if (recentName && window.SJRecents) { try { var thumb = await makeThumb(); window.SJRecents.add({ name: recentName, kind: 'pdf', blob: file, thumb: thumb }); } catch (e) {} }
+        if (recentName && !opts.skipRecentAdd && window.SJRecents) { try { var thumb = await makeThumb(); window.SJRecents.add({ name: recentName, kind: 'pdf', blob: file, thumb: thumb }); } catch (e) {} }
       }
       /* a clean, short display name (drops the ugly "-watermarked-compressed" tails for toasts) */
       function shortName(n){ n = String(n || 'Document.pdf'); var base = n.replace(/\.[a-z0-9]+$/i, ''); if (base.length > 28) base = base.slice(0, 27) + '…'; return base + (/\.pdf$/i.test(n) ? '.pdf' : ''); }
@@ -759,15 +823,24 @@ const faqItems = [
       function editedName(n){ var base = String(n || 'Document.pdf').replace(/\.pdf$/i, ''); if (/\(edited\)$/i.test(base)) return base + '.pdf'; return base + ' (edited).pdf'; }
 
       async function layout(keepPage){
+        var host = $('prDoc');
         var want = keepPage ? curPage : 1;
+        // capture the exact reading anchor (page + fraction scrolled into it) BEFORE the rebuild,
+        // so zoom/resize keeps your place instead of snapping to the page top.
+        var anchorN = want, frac = 0;
+        if (keepPage && pageEls[anchorN - 1]){
+          var ael = pageEls[anchorN - 1];
+          frac = (host.scrollTop - ael.offsetTop) / (ael.offsetHeight || 1);
+          if (!isFinite(frac) || frac < 0) frac = 0;
+        }
         var first = await doc.getPage(1);
         var vp1 = first.getViewport({ scale: 1 });
-        var avail = $('prDoc').clientWidth || window.innerWidth || 360;   // never 0 → never blank
+        var avail = host.clientWidth || window.innerWidth || 360;   // never 0 → never blank
         var contW = Math.min(avail, 900) - PAD * 2;
         baseScale = contW / vp1.width;
         if (fitMode) scale = baseScale;
         var phW = Math.round(vp1.width * scale), phH = Math.round(vp1.height * scale);
-        var host = $('prDoc'); host.innerHTML = ''; pageEls = []; state = {};
+        host.innerHTML = ''; pageEls = []; state = {};
         for (var n = 1; n <= doc.numPages; n++){
           var el = document.createElement('div');
           el.className = 'pr-page'; el.dataset.n = String(n);
@@ -776,7 +849,11 @@ const faqItems = [
         }
         observe();
         $('prZoom').textContent = Math.round(scale / baseScale * 100) + '%';
-        if (keepPage && pageEls[want - 1]) pageEls[want - 1].scrollIntoView();
+        if (keepPage && pageEls[anchorN - 1]){
+          var nel = pageEls[anchorN - 1];
+          host.scrollTop = nel.offsetTop + frac * nel.offsetHeight;   // restore the reading position
+          renderPage(anchorN);                                        // paint it now → minimal flash
+        }
         updateInd();
       }
 
@@ -866,10 +943,19 @@ const faqItems = [
 
       async function buildIndex(){
         if (indexBuilt || !doc) return;
+        // first pass: native text layer (fast)
+        var scanned = [];
         for (var n = 1; n <= doc.numPages; n++){
           try { var p = await doc.getPage(n); var tc = await p.getTextContent();
-            textIndex[n] = tc.items.map(function (i){ return i.str; }).join(' ').toLowerCase();
+            var t = tc.items.map(function (i){ return i.str; }).join(' ').toLowerCase();
+            textIndex[n] = t;
+            if (t.replace(/\s/g, '').length < 8) scanned.push(n);   // image-only page
           } catch (e) { textIndex[n] = ''; }
+        }
+        // second pass: OCR the scanned pages so search finds them too (with progress)
+        for (var i = 0; i < scanned.length; i++){
+          $('prMatch').textContent = 'Reading scanned pages… ' + (i + 1) + ' / ' + scanned.length;
+          textIndex[scanned[i]] = (await ocrPage(scanned[i])).toLowerCase();
         }
         indexBuilt = true;
       }
@@ -908,14 +994,127 @@ const faqItems = [
       drop.addEventListener('keydown', function (e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openSheet(); } });
       ['dragover', 'dragenter'].forEach(function (ev){ drop.addEventListener(ev, function (e){ e.preventDefault(); drop.classList.add('drag'); }); });
       ['dragleave', 'drop'].forEach(function (ev){ drop.addEventListener(ev, function (e){ e.preventDefault(); drop.classList.remove('drag'); }); });
-      drop.addEventListener('drop', function (e){ if (e.dataTransfer.files[0]) openFile(e.dataTransfer.files[0]); });
+      drop.addEventListener('drop', function (e){ if (e.dataTransfer.files[0]) routeOpen(e.dataTransfer.files[0]); });
 
       $('srcDoc').onclick = function (){ closeSheet(); file.click(); };
-      file.onchange = function (e){
-        var f = e.target.files[0]; if (!f) return;
-        if (/\.pdf$/i.test(f.name) || f.type === 'application/pdf') openFile(f, f.name);
-        else status('That looks like a ' + ((f.name.split('.').pop() || 'document').toUpperCase()) + ' file. PDF opens now — Word/Excel preview is coming soon.');
+      file.onchange = function (e){ var f = e.target.files[0]; if (f) routeOpen(f); };
+
+      /* route any opened file by type — PDF → reader, Word/Excel/CSV/text → doc viewer */
+      function routeOpen(f){
+        var ext = ((f.name || '').split('.').pop() || '').toLowerCase(), ty = f.type || '';
+        if (/pdf/.test(ext) || ty === 'application/pdf') return openFile(f, f.name);
+        if (/^(docx|doc|xlsx|xls|csv|txt|pptx|ppt)$/.test(ext) || /word|sheet|excel|presentation|csv|text\/plain/.test(ty)) return openDoc(f);
+        status('Unsupported file type — open a PDF, Word, Excel, CSV or text file.');
+      }
+
+      /* ---------- multi-format document viewer ---------- */
+      var dvFile = null;
+      /* Open Word/Excel/CSV/text → render → convert to PDF → open in the FULL reader
+         (zoom, search, read-aloud, share, edit all work because it becomes a real PDF). */
+      /* Native document reader: opens Word as Word, Excel as Excel, PowerPoint as slides —
+         NO conversion. (Convert-to-PDF only happens if the user taps "Save as PDF".) */
+      var dvFile = null, dvScale = 1;
+      function setZoom(z){ dvScale = Math.max(0.6, Math.min(2.6, z)); $('dvZoom').style.transform = 'scale(' + dvScale + ')'; $('dvZoomLbl').textContent = Math.round(dvScale * 100) + '%'; }
+      function openDoc(file){
+        dvFile = file; var name = file.name || 'Document';
+        $('dvName').textContent = name; $('dvTabs').hidden = true; $('dvTabs').innerHTML = ''; $('dvPaper').innerHTML = ''; $('dvPaper').className = 'dv-paper';
+        setZoom(1); $('docView').hidden = false; $('dvLoad').hidden = false; $('dvLoadT').textContent = 'Opening ' + name + '…';
+        if (window.SnapJarKit && SnapJarKit.adPause) SnapJarKit.adPause();
+        (async function (){
+          try {
+            var ext = (name.split('.').pop() || '').toLowerCase(), ty = file.type || '', ab = await file.arrayBuffer();
+            if (ext === 'docx' || ty.indexOf('wordprocessingml') >= 0){
+              var mammoth = await import('mammoth');
+              var res = await mammoth.convertToHtml({ arrayBuffer: ab }, { convertImage: mammoth.images.imgElement(function (im){ return im.read('base64').then(function (b){ return { src: 'data:' + im.contentType + ';base64,' + b }; }); }) });
+              $('dvPaper').innerHTML = res.value ? ((window.SnapJarKit && window.SnapJarKit.sanitizeHtml) ? window.SnapJarKit.sanitizeHtml(res.value) : '<p>(Preview unavailable.)</p>') : '<p>(This document has no visible text.)</p>';  // SECURITY: fail closed
+            } else if (ext === 'doc'){ throw new Error('legacy-doc');
+            } else if (ext === 'xlsx' || ext === 'xls' || ty.indexOf('spreadsheet') >= 0 || ty.indexOf('ms-excel') >= 0){
+              var XLSX = await import('xlsx'); renderSheets(XLSX, XLSX.read(ab, { type: 'array' }));
+            } else if (ext === 'csv'){
+              var X2 = await import('xlsx'); renderSheets(X2, X2.read(new TextDecoder().decode(ab), { type: 'string' }));
+            } else if (ext === 'pptx' || ty.indexOf('presentationml') >= 0){
+              $('dvPaper').className = 'dv-paper dv-paper-ppt';   // slides need a dark, padless stage
+              var pv = await import('pptx-preview');
+              var w = Math.min(($('dvScroll').clientWidth || 360) - 4, 960);
+              // SECURITY: .pptx slide text is untrusted and pptx-preview writes it via innerHTML
+              // (an <img onerror=…> in a slide would run in the app origin → file exfil). Render it
+              // inside a sandboxed iframe with NO allow-scripts, so any injected handler/script is inert
+              // and cannot reach the Capacitor bridge / IndexedDB. allow-same-origin lets us size it.
+              var ifr = document.createElement('iframe');
+              ifr.setAttribute('sandbox', 'allow-same-origin');
+              ifr.style.cssText = 'width:100%;border:0;background:transparent;display:block';
+              ifr.style.height = (Math.round(w * 0.5625) + 60) + 'px';
+              $('dvPaper').appendChild(ifr);
+              var idoc = ifr.contentDocument || (ifr.contentWindow && ifr.contentWindow.document);
+              if (!idoc) throw new Error('unsupported');
+              try { idoc.open(); idoc.write('<!doctype html><html><head><meta charset="utf-8"></head><body style="margin:0"></body></html>'); idoc.close(); } catch (e) {}
+              var prev = pv.init(idoc.body, { width: w, height: Math.round(w * 0.5625) });
+              prev.preview(ab);
+              [600, 1600, 3000].forEach(function (d){ setTimeout(function (){ try { ifr.style.height = (idoc.body.scrollHeight + 12) + 'px'; } catch (e) {} }, d); });
+            } else if (ext === 'ppt'){ throw new Error('legacy-ppt');
+            } else if (ext === 'txt'){
+              var pre = document.createElement('pre'); pre.textContent = new TextDecoder().decode(ab); $('dvPaper').appendChild(pre);
+            } else { throw new Error('unsupported'); }
+            $('dvScroll').scrollTop = 0;
+          } catch (e){
+            var m = (e && e.message) || '';
+            if (m === 'legacy-doc') $('dvPaper').innerHTML = '<p style="color:#888">Old <b>.doc</b> files can’t be previewed — save it as <b>.docx</b>.</p>';
+            else if (m === 'legacy-ppt') $('dvPaper').innerHTML = '<p style="color:#888">Old <b>.ppt</b> files can’t be previewed — save it as <b>.pptx</b>.</p>';
+            else $('dvPaper').innerHTML = '<p style="color:#c0392b">Couldn’t open this file — it may be corrupt or an unsupported format.</p>';
+          }
+          $('dvLoad').hidden = true;
+        })();
+      }
+      function renderSheets(XLSX, wb){
+        var paper = $('dvPaper'), tabs = $('dvTabs'); paper.innerHTML = ''; tabs.innerHTML = '';
+        var names = (wb && wb.SheetNames) || [], panes = [];
+        if (!names.length){ paper.innerHTML = '<p>(Empty workbook.)</p>'; return; }
+        names.forEach(function (sn, i){
+          var _sh = XLSX.utils.sheet_to_html(wb.Sheets[sn], { editable: false });
+          var pane = document.createElement('div'); pane.innerHTML = (window.SnapJarKit && window.SnapJarKit.sanitizeHtml) ? window.SnapJarKit.sanitizeHtml(_sh) : '';  // SECURITY: sanitize untrusted spreadsheet HTML; fail closed
+          pane.hidden = i !== 0; paper.appendChild(pane); panes.push(pane);
+          if (names.length > 1){
+            var tb = document.createElement('button'); tb.className = 'dv-tab' + (i === 0 ? ' on' : ''); tb.type = 'button'; tb.textContent = sn || ('Sheet ' + (i + 1));
+            tb.addEventListener('click', function (){ panes.forEach(function (p, j){ p.hidden = j !== i; }); Array.prototype.forEach.call(tabs.children, function (c, j){ c.classList.toggle('on', j === i); }); $('dvScroll').scrollTop = 0; });
+            tabs.appendChild(tb);
+          }
+        });
+        tabs.hidden = names.length <= 1;
+      }
+      $('dvClose').onclick = function (){ $('docView').hidden = true; $('dvPaper').innerHTML = ''; dvFile = null; if (window.SnapJarKit && SnapJarKit.adResume) SnapJarKit.adResume(); };
+      $('dvZoomIn').onclick = function (){ setZoom(dvScale + 0.15); };
+      $('dvZoomOut').onclick = function (){ setZoom(dvScale - 0.15); };
+      $('dvShare').onclick = function (){ if (dvFile && window.SnapJarKit && SnapJarKit.shareFile) SnapJarKit.shareFile(dvFile, dvFile.name, dvFile.name); };
+      $('dvPdf').onclick = async function (){
+        if ($('dvPaper').className.indexOf('dv-paper-ppt') >= 0){ status('Saving slides as PDF isn’t supported yet — opening as a presentation.'); }
+        $('dvLoad').hidden = false; $('dvLoadT').textContent = 'Creating PDF…';
+        try {
+          var blob = await paperToPdf($('dvPaper'));
+          var nm = ((dvFile && dvFile.name) ? dvFile.name.replace(/\.[^.]+$/, '') : 'Document') + '.pdf';
+          $('docView').hidden = true; $('dvPaper').innerHTML = '';
+          if (window.SnapJarKit && SnapJarKit.saveDownload) SnapJarKit.saveDownload(blob, nm);   // → My Files + notification (findable)
+          openFile(blob, nm);                                                                    // → PDF editor
+        } catch (e){ status('Could not create the PDF.'); }
+        $('dvLoad').hidden = true;
       };
+      /* rasterise the rendered document into a paginated PDF + an invisible text layer (so the
+         reader's search & read-aloud work) */
+      async function paperToPdf(paper){
+        var canvas = await html2canvas(paper, { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false });
+        var pdf = await PDFDocument.create(), font = await pdf.embedFont(StandardFonts.Helvetica);
+        var A4w = 595, pageHpx = Math.floor(canvas.width * (842 / 595)), y = 0;
+        while (y < canvas.height){
+          var sliceH = Math.min(pageHpx, canvas.height - y);
+          var pc = document.createElement('canvas'); pc.width = canvas.width; pc.height = sliceH; pc.getContext('2d').drawImage(canvas, 0, y, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+          var jpg = await pdf.embedJpg(await (await fetch(pc.toDataURL('image/jpeg', 0.92))).arrayBuffer());
+          var ph = A4w * (sliceH / canvas.width), page = pdf.addPage([A4w, ph]); page.drawImage(jpg, { x: 0, y: 0, width: A4w, height: ph }); y += sliceH;
+        }
+        try {
+          var txt = (paper.innerText || '').replace(/ /g, ' ').replace(/\s+/g, ' ').trim().slice(0, 14000);
+          if (txt){ var p0 = pdf.getPage(0); p0.drawText(txt, { x: 4, y: p0.getHeight() - 10, size: 6, font: font, color: rgb(0, 0, 0), opacity: 0, lineHeight: 7, maxWidth: A4w - 8 }); }
+        } catch (e) {}
+        var out = await pdf.save(); return new Blob([out], { type: 'application/pdf' });
+      }
       $('srcGallery').onclick = function (){ closeSheet(); img.click(); };
       img.onchange = async function (e){
         var files = Array.prototype.slice.call(e.target.files || []); if (!files.length) return;
@@ -1011,7 +1210,7 @@ const faqItems = [
         $('prQrOpen').hidden = !/^https?:\/\//i.test(text);
         $('prQrRes').hidden = false;
       }
-      $('prQrOpen').onclick = function (){ var t = $('prQrText').textContent; try { window.open(t, '_system'); } catch (e) { try { window.open(t, '_blank'); } catch (_) {} } };
+      $('prQrOpen').onclick = function (){ var t = $('prQrText').textContent; var ok = false; try { var pu = new URL(t); ok = (pu.protocol === 'http:' || pu.protocol === 'https:'); } catch (e) {} if (!ok){ if (window.SnapJarKit) window.SnapJarKit.toast('This code isn’t a safe web link', 'warn'); return; } try { window.open(t, '_system'); } catch (e) {} };  // never fall back to _blank (would navigate the app WebView)
       $('prQrCopy').onclick = function (){ var t = $('prQrText').textContent; if (window.SnapJarKit) window.SnapJarKit.copy(t).then(function (){ window.SnapJarKit.toast('Copied', 'ok'); }); };
       $('prQrAgain').onclick = function (){ $('prQrRes').hidden = true; startQr(); };
       $('prQrClose').onclick = function (){ $('prQrRes').hidden = true; };
@@ -1134,13 +1333,9 @@ const faqItems = [
         try { var t = await makeThumb(); if (t) img.src = t; } catch (e) {}
       };
       function shareBlob(){ return new Blob([lastBytes], { type: 'application/pdf' }); }
-      $('prShareGo').onclick = async function (){
+      $('prShareGo').onclick = function (){
         $('prShareSheet').hidden = true;
-        var f = new File([shareBlob()], (curName || 'snapjar.pdf'), { type: 'application/pdf' });
-        try { if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], title: (curName || 'PDF') }); return; } } catch (e) {}
-        var S = window.SnapJarKit && window.SnapJarKit.plugin ? window.SnapJarKit.plugin('Share') : null;
-        if (S) { try { await S.share({ title: (curName || 'PDF'), files: [] }); } catch (e) {} }
-        else if (window.SnapJarKit) window.SnapJarKit.toast('Sharing is available in the SnapJar app', 'info');
+        if (window.SnapJarKit && window.SnapJarKit.shareFile) window.SnapJarKit.shareFile(shareBlob(), (curName || 'snapjar.pdf'), (curName || 'PDF'));
       };
       $('prShareSave').onclick = function (){
         $('prShareSheet').hidden = true;
@@ -1154,13 +1349,15 @@ const faqItems = [
         $('prShareSheet').hidden = true;
         var P = window.SnapJarKit && window.SnapJarKit.plugin ? window.SnapJarKit.plugin('Printer') : null;
         try {
-          if (P && P.print) { var url = URL.createObjectURL(shareBlob()); await P.print({ url: url, name: (curName || 'SnapJar.pdf') }); }
-          else window.print();
+          if (P && P.print) {
+            var b64 = await new Promise(function (res, rej){ var r = new FileReader(); r.onload = function (){ res(String(r.result).split(',')[1] || ''); }; r.onerror = rej; r.readAsDataURL(shareBlob()); });
+            await P.print({ content: 'base64:' + b64, name: (curName || 'SnapJar.pdf') });   // plugin wants `content`, not `url`
+          } else window.print();
         } catch (e) { try { window.print(); } catch (_) {} }
       };
       $('prShareClose').onclick = function (){ $('prShareSheet').hidden = true; };
       $('prShareSheet').onclick = function (e){ if (e.target === $('prShareSheet')) $('prShareSheet').hidden = true; };
-      $('prOpenNew').onclick = function (){ try { ttsStop(); } catch (e) {} try { if (window.__fsStop) window.__fsStop(); } catch (e) {} $('prMain').hidden = true; $('prOpen').hidden = false; $('prSeo').style.display = ''; var f = document.querySelector('.faq'); if (f) f.style.display = ''; file.value = ''; status(''); };
+      $('prOpenNew').onclick = function (){ try { ttsStop(); } catch (e) {} try { if (window.__fsStop) window.__fsStop(); } catch (e) {} $('prMain').hidden = true; $('prOpen').hidden = false; $('prSeo').style.display = ''; var f = document.querySelector('.faq'); if (f) f.style.display = ''; file.value = ''; status(''); try { if (window.SnapJarKit && SnapJarKit.adTaskExit) SnapJarKit.adTaskExit(); } catch (e) {} /* interstitial seam: closed the document (exit reader) */ };
       /* premium page navigator: a grid of live page thumbnails to jump anywhere */
       function openThumbs(){
         if (!doc) return;
@@ -1256,6 +1453,7 @@ const faqItems = [
         ED.on = false; $('prEdit').hidden = true;
         if (doc) { $('prMain').hidden = false; }
         else { $('prOpen').hidden = false; $('prSeo').style.display = ''; var f = document.querySelector('.faq'); if (f) f.style.display = ''; }
+        try { if (window.SnapJarKit && SnapJarKit.adTaskExit) SnapJarKit.adTaskExit(); } catch (e) {}  // interstitial seam: exit editor
       }
 
       function edLayout(){
@@ -1268,8 +1466,9 @@ const faqItems = [
         ED.pages.forEach(function (pg, i){
           var el = document.createElement('div');
           el.className = 'pr-page'; el.dataset.i = String(i);
-          el.style.width = Math.round(pg.w * ED.scale) + 'px';
-          el.style.height = Math.round(pg.h * ED.scale) + 'px';
+          var _rot = (((pg.rotate || 0) % 360) + 360) % 360, _sw = (_rot === 90 || _rot === 270);
+          el.style.width = Math.round((_sw ? pg.h : pg.w) * ED.scale) + 'px';
+          el.style.height = Math.round((_sw ? pg.w : pg.h) * ED.scale) + 'px';
           var layer = document.createElement('div'); layer.className = 'ed-layer';
           el.appendChild(layer);
           host.appendChild(el); ED.pageEls.push(el);
@@ -1294,7 +1493,9 @@ const faqItems = [
       async function edRenderBase(i){
         var pg = ED.pages[i], el = ED.pageEls[i];
         if (!pg || !el || el._based) return; el._based = true;
-        var W = Math.round(pg.w * ED.scale), H = Math.round(pg.h * ED.scale);
+        var rot = (((pg.rotate || 0) % 360) + 360) % 360, sw = (rot === 90 || rot === 270);
+        var oW = pg.w * ED.scale, oH = pg.h * ED.scale;
+        var W = Math.round((sw ? pg.h : pg.w) * ED.scale), H = Math.round((sw ? pg.w : pg.h) * ED.scale);
         // Backing store at device density (floor 2× / cap 4×) for crisp editing; CSS size stays W×H.
         var dpr = Math.min(Math.max(window.devicePixelRatio || 1, 2), 4);
         var ef = window.SnapJarKit ? window.SnapJarKit.fitDims(W * dpr, H * dpr) : { scale: 1, clamped: false };
@@ -1310,11 +1511,11 @@ const faqItems = [
         try {
           if (pg.kind === 'src' && doc){
             var page = await doc.getPage(pg.srcIndex + 1);
-            var vp = page.getViewport({ scale: ED.scale });
+            var vp = page.getViewport({ scale: ED.scale, rotation: rot });   // pdf.js rotates the viewport for us
             // ctx is already scaled by es (logical→backing); pdf.js multiplies onto it.
             await page.render({ canvasContext: ctx, viewport: vp }).promise;
           } else if (pg.kind === 'image' && pg.imgData){
-            await new Promise(function (res){ var im = new Image(); im.onload = function (){ ctx.drawImage(im, 0, 0, W, H); res(); }; im.onerror = res; im.src = pg.imgData; });
+            await new Promise(function (res){ var im = new Image(); im.onload = function (){ if (rot){ ctx.save(); ctx.translate(W/2, H/2); ctx.rotate(rot*Math.PI/180); ctx.drawImage(im, -oW/2, -oH/2, oW, oH); ctx.restore(); } else { ctx.drawImage(im, 0, 0, W, H); } res(); }; im.onerror = res; im.src = pg.imgData; });
           }
         } catch (e) {}
       }
@@ -1361,16 +1562,20 @@ const faqItems = [
         if (e.type === 'text' || e.type === 'title') d.style.height = 'auto'; else d.style.height = (e.h * ED.scale) + 'px';
       }
       function attachDrag(d, e, handle){
-        var mode = null, sx = 0, sy = 0, ox = 0, oy = 0, ow = 0, oh = 0;
+        var mode = null, sx = 0, sy = 0, ox = 0, oy = 0, ow = 0, oh = 0, downX = 0, downY = 0, moved = false, downT = 0;
         function down(ev, m){
           if (d.contentEditable === 'true') return;       // editing text: let caret work
           ev.preventDefault(); selectEl(e); mode = m;
-          var p = pt(ev); sx = p.x; sy = p.y; ox = e.x; oy = e.y; ow = e.w; oh = e.h;
+          var p = pt(ev); sx = p.x; sy = p.y; downX = p.x; downY = p.y; moved = false; downT = Date.now();
+          ox = e.x; oy = e.y; ow = e.w; oh = e.h;
           d.setPointerCapture && d.setPointerCapture(ev.pointerId);
           window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
         }
         function move(ev){
-          var p = pt(ev), dx = (p.x - sx) / ED.scale, dy = (p.y - sy) / ED.scale, pg = ED.pages[ED.cur];
+          var p = pt(ev);
+          if (!moved && Math.abs(p.x - downX) < 6 && Math.abs(p.y - downY) < 6) return;   // jitter under 6px → still a tap
+          moved = true;
+          var dx = (p.x - sx) / ED.scale, dy = (p.y - sy) / ED.scale, pg = ED.pages[ED.cur];
           if (mode === 'move'){
             e.x = Math.max(0, Math.min(ox + dx, pg.w - 8));
             e.y = Math.max(0, Math.min(oy + dy, pg.h - 8));
@@ -1379,15 +1584,17 @@ const faqItems = [
           }
           positionEl(d, e);
         }
-        function up(ev){ mode = null; window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); }
+        function up(ev){
+          window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up);
+          // a tap (no real drag) on a text/title box → edit it. Drag still moves; resize handle still resizes.
+          var wasTap = !moved && mode === 'move' && (Date.now() - downT) < 500;
+          mode = null;
+          if (wasTap && (e.type === 'text' || e.type === 'title') && d.contentEditable !== 'true') startTextEdit(d, e);
+        }
         function pt(ev){ return { x: ev.clientX, y: ev.clientY }; }
         d.addEventListener('pointerdown', function (ev){ if (ev.target === handle) return; down(ev, 'move'); });
         handle.addEventListener('pointerdown', function (ev){ ev.stopPropagation(); down(ev, 'resize'); });
-        if (e.type === 'text' || e.type === 'title'){
-          d.addEventListener('dblclick', function (){ startTextEdit(d, e); });
-          // second tap when already selected → edit
-          d.addEventListener('click', function (){ if (ED.sel === e && d.contentEditable !== 'true') startTextEdit(d, e); });
-        }
+        if (e.type === 'text' || e.type === 'title') d.addEventListener('dblclick', function (){ startTextEdit(d, e); });  // desktop redundancy
       }
       function startTextEdit(d, e){
         d.contentEditable = 'true'; d.focus();
@@ -1439,7 +1646,7 @@ const faqItems = [
           if (ED.pages.length <= 1){ hint('A PDF needs at least one page'); return; }
           ED.pages.splice(ED.cur, 1); ED.cur = Math.max(0, ED.cur - 1); edLayout(); hint('Page deleted');
         } else if (tool === 'rotate'){
-          var pg = ED.pages[ED.cur]; pg.rotate = ((pg.rotate || 0) + 90) % 360; hint('Rotated — applied on export');
+          var pg = ED.pages[ED.cur]; pg.rotate = ((pg.rotate || 0) + 90) % 360; edLayout(); hint('Rotated ' + pg.rotate + '°');
         } else if (tool === 'image'){
           edImgInput.dataset.kind = tool; edImgInput.value = ''; edImgInput.click();
         } else if (tool === 'sign'){
@@ -1674,27 +1881,36 @@ const faqItems = [
       }
       async function buildWritePdf(title, paras){
         var out = await PDFDocument.create();
-        var font = await out.embedFont(StandardFonts.Helvetica);
-        var bold = await out.embedFont(StandardFonts.HelveticaBold);
-        var ital = await out.embedFont(StandardFonts.HelveticaOblique);
-        var W = 595, H = 842, M = 64, bodySize = [12, 13.5, 15][wrSize] || 12, lh = bodySize * 1.55;
+        // honor the document's chosen style (font family / size / weight / colour / alignment /
+        // line spacing) so the text-only fallback isn't a jarring downgrade from the WYSIWYG export.
+        var fam = wrStyle.font, isSerif = fam === 'serif', isMono = fam === 'mono';
+        var reg = isSerif ? StandardFonts.TimesRoman : isMono ? StandardFonts.Courier : StandardFonts.Helvetica;
+        var bld = isSerif ? StandardFonts.TimesRomanBold : isMono ? StandardFonts.CourierBold : StandardFonts.HelveticaBold;
+        var itl = isSerif ? StandardFonts.TimesRomanItalic : isMono ? StandardFonts.CourierOblique : StandardFonts.HelveticaOblique;
+        var font = await out.embedFont(reg), bold = await out.embedFont(bld), ital = await out.embedFont(itl);
+        var bodyFont = (wrStyle.weight >= 600) ? bold : font;
+        function hx(h){ h = String(h || '#15131c').replace('#', ''); if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2]; var n = parseInt(h, 16); if (!isFinite(n)) n = 0x15131c; return rgb(((n>>16)&255)/255, ((n>>8)&255)/255, (n&255)/255); }
+        var col = hx(wrStyle.color);
+        var align = wrStyle.align || 'left';
+        var W = 595, H = 842, M = 64, bodySize = Math.max(8, Math.min(40, wrStyle.size || 16)), lh = bodySize * (wrStyle.line || 1.55);
         var page = out.addPage([W, H]), y = H - M;
         function ensure(sp){ if (y - sp < M) { page = out.addPage([W, H]); y = H - M; } }
+        function ax(f, size, text, x, maxW){ if (align === 'center') return x + (maxW - f.widthOfTextAtSize(text, size)) / 2; if (align === 'right') return x + (maxW - f.widthOfTextAtSize(text, size)); return x; }
         function wrap(text, f, size, x, maxW, color, lineH){
           var words = String(text).split(/\s+/), line = '';
           for (var i = 0; i < words.length; i++){
             var test = line ? line + ' ' + words[i] : words[i];
-            if (f.widthOfTextAtSize(test, size) > maxW && line){ ensure(lineH); page.drawText(line, { x: x, y: y - size, size: size, font: f, color: color }); y -= lineH; line = words[i]; }
+            if (f.widthOfTextAtSize(test, size) > maxW && line){ ensure(lineH); page.drawText(line, { x: ax(f, size, line, x, maxW), y: y - size, size: size, font: f, color: color }); y -= lineH; line = words[i]; }
             else line = test;
           }
-          if (line){ ensure(lineH); page.drawText(line, { x: x, y: y - size, size: size, font: f, color: color }); y -= lineH; }
+          if (line){ ensure(lineH); page.drawText(line, { x: ax(f, size, line, x, maxW), y: y - size, size: size, font: f, color: color }); y -= lineH; }
         }
-        if (title){ wrap(title, bold, 22, M, W - 2 * M, rgb(0.07, 0.06, 0.10), 28); y -= 12; }
+        if (title){ var ts = Math.max(bodySize + 6, 20); wrap(title, bold, ts, M, W - 2 * M, col, ts * 1.3); y -= 12; }
         paras.forEach(function (p){
           if (!p.text){ y -= lh * 0.6; return; }
           if (p.quote){ var top = y; wrap(p.text, ital, bodySize, M + 18, W - 2 * M - 18, rgb(0.34, 0.32, 0.40), lh);
             try { page.drawRectangle({ x: M + 4, y: y, width: 3, height: Math.max(0, top - y), color: rgb(0.49, 0.36, 1) }); } catch (e) {}
-          } else { wrap(p.text, font, bodySize, M, W - 2 * M, rgb(0.12, 0.11, 0.16), lh); }
+          } else { wrap(p.text, bodyFont, bodySize, M, W - 2 * M, col, lh); }
           y -= lh * 0.5;
         });
         return await out.save();
@@ -1747,7 +1963,7 @@ const faqItems = [
         }
         if (window.SnapJarKit) window.SnapJarKit.toast('Creating your PDF…', 'work', 9000);
         try {
-          var bytes; try { bytes = await exportRich(); } catch (e) { bytes = await buildWritePdf(title, wrBlocks()); }
+          var bytes; try { bytes = await exportRich(); } catch (e) { if (window.SnapJarKit) window.SnapJarKit.toast('Saved as styled text — images/tables couldn’t be rendered on this device', 'info', 4500); bytes = await buildWritePdf(title, wrBlocks()); }
           var blob = new Blob([bytes], { type: 'application/pdf' });
           exitWrite();
           await openFile(blob, name + '.pdf');   // openFile shows the "Opened …" success toast
@@ -1870,7 +2086,43 @@ const faqItems = [
         if (first){ try { first.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {} }
         $('ttsNow').textContent = u.text;
       }
-      function ttsLoadPage(n){ return ensureRendered(n).then(function (tl){ TTS.units = ttsBuildUnits(tl); return TTS.units.length; }); }
+      /* ---------- OCR for scanned / image-only PDFs (offline, tesseract.js) ----------
+         A scanned book has no text layer, so search & read-aloud find nothing. We render
+         each page at OCR resolution and recognise the text, caching it per page. */
+      var _ocrWorker = null, ocrCache = {};
+      async function ocrWorker(){
+        if (_ocrWorker) return _ocrWorker;
+        var T = await import('tesseract.js');
+        var createWorker = T.createWorker || (T.default && T.default.createWorker);
+        _ocrWorker = await createWorker('eng', 1, { workerPath: '/assets/tesseract/worker.min.js', langPath: '/assets/tesseract', corePath: '/assets/tesseract' });
+        return _ocrWorker;
+      }
+      async function ocrPage(n){
+        if (ocrCache[n] != null) return ocrCache[n];
+        try {
+          var page = await doc.getPage(n), vp1 = page.getViewport({ scale: 1 });
+          var scale = Math.min(2200 / vp1.width, 3), vp = page.getViewport({ scale: scale });
+          var c = document.createElement('canvas'); c.width = Math.round(vp.width); c.height = Math.round(vp.height);
+          await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+          var w = await ocrWorker(), res = await w.recognize(c);
+          ocrCache[n] = (res && res.data && res.data.text) || ''; return ocrCache[n];
+        } catch (e){ ocrCache[n] = ''; return ''; }
+      }
+      function pageHasText(tl){ return !!(tl && tl.querySelector('span') && (tl.textContent || '').replace(/\s/g, '').length > 6); }
+      function ttsUnitsFromText(text){
+        var units = [], re = /[^.!?\n]+[.!?]+["')\]’”]*|[^.!?\n]+(?=\n|$)/g, m, clean = (text || '').replace(/\s+/g, ' ');
+        while ((m = re.exec(clean))){ var t = (m[0] || '').trim(); if (t.length >= 2) units.push({ text: t, spans: [] }); }
+        if (!units.length && clean.trim().length >= 2) units.push({ text: clean.trim(), spans: [] });
+        return units;
+      }
+      function ttsLoadPage(n){
+        return ensureRendered(n).then(function (tl){
+          var units = ttsBuildUnits(tl);
+          if (units.length){ TTS.units = units; return units.length; }
+          $('ttsNow').textContent = 'Reading scanned text (OCR)…';                 // image-only page → OCR it
+          return ocrPage(n).then(function (text){ TTS.units = ttsUnitsFromText(text); return TTS.units.length; });
+        });
+      }
       /* speak one sentence; resolves when finished (or interrupted) */
       function ttsSpeakText(text){
         if (TTSP && TTSP.speak){
@@ -1934,7 +2186,7 @@ const faqItems = [
       }
       function ttsPause(){ TTS.playing = false; TTS.seq++; ttsStopEngine(); ttsSyncUI(); }
       function ttsResume(){ if (!TTS.active){ ttsStart(); return; } TTS.playing = true; TTS.seq++; ttsSyncUI(); ttsRun(); }
-      function ttsFinish(){ TTS.playing = false; TTS.seq++; ttsStopEngine(); $('ttsNow').textContent = ''; ttsSyncUI(); }
+      function ttsFinish(){ TTS.playing = false; TTS.seq++; ttsStopEngine(); $('ttsNow').textContent = ''; ttsSyncUI(); try { if (window.SnapJarKit && SnapJarKit.adReadAloudEnd) SnapJarKit.adReadAloudEnd(); } catch (e) {} /* interstitial seam: read-aloud finished the document */ }
       function ttsStop(){ TTS.active = false; TTS.playing = false; TTS.seq++; ttsStopEngine(); ttsClearHL(); var b = $('ttsBar'); if (b) b.hidden = true; var l = $('prListen'); if (l) l.classList.remove('on'); var pm = $('prMain'); if (pm) pm.classList.remove('tts-on'); }
       async function ttsJump(d){
         if (!TTS.active) return;
@@ -1970,7 +2222,7 @@ const faqItems = [
       $('ttsPlay').onclick = function (){ if (TTS.active && TTS.playing){ ttsPause(); return; } var sp = ttsSelectionSpan(); if (sp){ ttsStartFromSpan(sp); return; } ttsResume(); };
       $('ttsPrev').onclick = function (){ ttsJump(-1); };
       $('ttsNext').onclick = function (){ ttsJump(1); };
-      $('ttsClose').onclick = ttsStop;
+      $('ttsClose').onclick = function (){ ttsStop(); try { if (window.SnapJarKit && SnapJarKit.adReadAloudEnd) SnapJarKit.adReadAloudEnd(); } catch (e) {} };  /* interstitial seam: user ended read-aloud */
       var TTS_RATES = [0.75, 1, 1.25, 1.5, 1.75, 2];
       $('ttsRate').onclick = function (){
         var i = TTS_RATES.indexOf(TTS.rate); i = (i + 1) % TTS_RATES.length; TTS.rate = TTS_RATES[i];
@@ -2087,17 +2339,11 @@ const faqItems = [
       /* ===================== PASTE into the writer (images / links / tables / rich HTML) ===================== */
       (function (){
         function sanitize(html){
-          var tmp = document.createElement('div'); tmp.innerHTML = html;
-          tmp.querySelectorAll('script,style,meta,link,iframe,object,embed,noscript,title,head').forEach(function (n){ n.remove(); });
-          tmp.querySelectorAll('*').forEach(function (n){
-            Array.prototype.slice.call(n.attributes || []).forEach(function (a){
-              var nm = a.name.toLowerCase();
-              if (nm.indexOf('on') === 0 || nm === 'style' || nm === 'class' || nm === 'id') n.removeAttribute(a.name);
-              if (nm === 'href' && /^\s*javascript:/i.test(a.value)) n.removeAttribute(a.name);
-            });
-          });
+          // delegate to the shared allowlist sanitizer (handles on*, formaction, xlink:href,
+          // control-char-obfuscated javascript:, unknown tags, etc.), then re-tag tables for editor styling.
+          var clean = (window.SnapJarKit && window.SnapJarKit.sanitizeHtml) ? window.SnapJarKit.sanitizeHtml(html) : '';
+          var tmp = document.createElement('div'); tmp.innerHTML = clean;
           tmp.querySelectorAll('table').forEach(function (t){ t.className = 'wr-tbl'; });
-          tmp.querySelectorAll('a[href]').forEach(function (a){ a.setAttribute('rel', 'noopener'); });
           return tmp.innerHTML;
         }
         function pasteImageFile(f){ var r = new FileReader(); r.onload = function (){ var im = new Image(); im.onload = function (){ insertHTML('<img src="' + r.result + '" alt="">'); }; im.onerror = function (){ if (window.SnapJarKit) window.SnapJarKit.toast('Could not paste that image', 'err'); }; im.src = r.result; }; r.readAsDataURL(f); }
@@ -2163,10 +2409,20 @@ const faqItems = [
       /* deep links from My Files: ?recent=<id> (open saved), ?new=1 (create), ?open=1 (source sheet) */
       try {
         var qs = new URLSearchParams(location.search);
-        var rid = qs.get('recent');
-        if (rid && window.SJRecents) {
+        var rid = qs.get('recent'), did = qs.get('docopen');
+        if (did && window.SJRecents) {                       // open a Word/Excel/PPT/CSV/text doc in the native reader
+          $('docView').hidden = false; $('dvLoad').hidden = false; $('dvLoadT').textContent = 'Opening…';   // no empty-editor flash
+          window.SJRecents.get(did).then(function (rec){
+            if (rec && rec.blob){
+              var f;
+              try { f = new File([rec.blob], rec.name || 'document', { type: rec.blob.type || '' }); }   // File.name is read-only — set it via the constructor only
+              catch (e) { f = rec.blob; try { f.name = rec.name; } catch (_) {} }
+              openDoc(f);
+            } else status('That file is no longer available.');
+          }).catch(function (){ status('Couldn’t open that document.'); });
+        } else if (rid && window.SJRecents) {
           status('Opening…');
-          window.SJRecents.get(rid).then(function (rec){ if (rec && rec.blob) openFile(rec.blob); else status('That file is no longer available.'); });
+          window.SJRecents.get(rid).then(function (rec){ if (rec && rec.blob) openFile(rec.blob, rec.name || 'Document.pdf', { skipRecentAdd: true }); else status('That file is no longer available.'); });
         } else if (qs.get('new') === '1') {
           enterWrite(true);
         } else if (qs.get('open') === '1') {

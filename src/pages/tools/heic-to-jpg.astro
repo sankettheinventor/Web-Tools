@@ -73,18 +73,23 @@ const howSteps = [
         w.appendChild(im);w.appendChild(nm);w.appendChild(b);$('grid').appendChild(w);
         $('dlall').hidden=results.length<2;
       }
+      var heicBusy=false;
       async function convert(files){
+        if(heicBusy){ if(window.SnapJarKit)window.SnapJarKit.toast('Still converting — hold on a moment','work'); return; }
         if(typeof heic2any==='undefined'){$('status').textContent='HEIC engine still loading — please wait a second and try again.';return;}
-        $('drop').hidden=true;$('editor').hidden=false;
-        var q=parseInt($('q').value,10)/100, arr=Array.prototype.slice.call(files), failed=0;
-        for(var i=0;i<arr.length;i++){
-          $('status').textContent='Converting '+(i+1)+' of '+arr.length+'…';
-          try{ var out=await heic2any({blob:arr[i],toType:'image/jpeg',quality:q}); add(Array.isArray(out)?out[0]:out, arr[i].name); }
-          catch(e){ failed++; }
-        }
-        var msg='Done — '+results.length+' converted.';
-        if(failed) msg+=' '+failed+' file(s) skipped (not a HEIC?).';
-        $('status').textContent=msg;
+        heicBusy=true;
+        try{
+          $('drop').hidden=true;$('editor').hidden=false;
+          var q=parseInt($('q').value,10)/100, arr=Array.prototype.slice.call(files), failed=0;
+          for(var i=0;i<arr.length;i++){
+            $('status').textContent='Converting '+(i+1)+' of '+arr.length+'…';
+            try{ var out=await heic2any({blob:arr[i],toType:'image/jpeg',quality:q}); add(Array.isArray(out)?out[0]:out, arr[i].name); }
+            catch(e){ failed++; }
+          }
+          var msg='Done — '+results.length+' converted.';
+          if(failed) msg+=' '+failed+' file(s) skipped (not a HEIC?).';
+          $('status').textContent=msg;
+        } finally { heicBusy=false; }
       }
       $('browse').onclick=function(){$('file').click();};
       $('drop').onclick=function(e){if(e.target.id==='drop'||e.target.className.indexOf('drop-')===0)$('file').click();};

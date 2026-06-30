@@ -226,6 +226,8 @@ const faqItems = [
         // Advanced: baseline (no extras) vs optimized (step-up + prepayments) on the loan P&I.
         var stepup=num('stepup'), annual=num('annual'), oneAmt=num('onetime'), oneYear=num('otyear');
         var base = simulate(loan, r, pi, 0, 0, 0, 0);
+        // tie the headline "Total interest" to the month-by-month sim so it matches the save panel
+        if (base && !base.never && isFinite(base.totInt)) el('bdInt').textContent = money(base.totInt);
         var opt  = simulate(loan, r, pi, stepup, annual, oneAmt, oneYear);
         var body = el('schedBody'); body.innerHTML = '';
         if (opt.never || base.never){

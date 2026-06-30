@@ -13,7 +13,7 @@ body.is-app {
   --app-tile: #ffffff;
   --app-line: #ecebf3;
   --app-ink: #16121f;
-  --app-dim: #8b85a0;
+  --app-dim: #6f6987;   /* darkened to meet WCAG AA 4.5:1 on white (was #8b85a0 = 3.52:1) */
   --app-nav: #141026;
   --app-accent: #6b4dff;
   /* ===== Unified bottom-sheet tokens (theme-aware: auto-adapt via the vars they reference) =====
@@ -79,8 +79,11 @@ body.is-app .tool { box-shadow: var(--app-shadow); }
 .app-info {
   width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--app-line); background: var(--app-tile);
   color: var(--app-dim); font: italic 800 13px Georgia, serif; cursor: pointer; display: grid; place-items: center;
+  position: relative;
   transition: transform var(--d-micro) var(--ease-out), color var(--d-micro) var(--ease-out), border-color var(--d-micro) var(--ease-out);
 }
+/* keep the 26px visual but give it a ≥44px touch target */
+.app-info::before { content: ""; position: absolute; inset: -9px; }
 .app-info:hover { color: var(--app-accent); border-color: var(--app-accent); }
 .app-info:active { transform: scale(.9); }
 
@@ -108,7 +111,9 @@ body.is-app .tool { box-shadow: var(--app-shadow); }
   background: var(--app-tile); border: 1px solid var(--app-line); border-radius: var(--r-lg);
   color: var(--app-dim); font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
 }
-.app-ad::before { content: "Advertisement"; }
+.app-ad:not(.filled)::before { content: "Advertisement"; opacity: .6; }
+/* Don't reserve a labelled empty ad box in the premium flow — only show once an ad fills it. */
+.app-ad:empty { display: none; margin: 0; min-height: 0; border: 0; }
 
 @media (max-width: 340px) { .app-grid { grid-template-columns: repeat(3, 1fr); gap: var(--s4) var(--s2); } }
 
@@ -138,10 +143,10 @@ body.is-app .tool { box-shadow: var(--app-shadow); }
 .appbar-i.on { color: #fff; }
 .appbar-i.on .abi { transform: translateY(-1px); }
 .appbar-i.on .abi svg { filter: drop-shadow(0 2px 7px rgba(139,123,255,.65)); }
-.appbar-i.on::before {
+.appbar-i.on::before { /* one-accent: violet, no pink */
   content: ""; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
   width: 26px; height: 3px; border-radius: 0 0 4px 4px;
-  background: linear-gradient(90deg, var(--brand2), var(--brand));
+  background: var(--app-accent);
   box-shadow: 0 0 10px rgba(124,92,255,.7);
 }
 .appbar-i:active { transform: scale(.92); }
@@ -183,7 +188,7 @@ body.is-app .tool { box-shadow: var(--app-shadow); }
 .app-modal-card h3 { font-size: var(--t-md); font-weight: 800; margin: 8px 0 10px; color: var(--app-ink); }
 .app-modal-card p { font-size: var(--t-sm); color: var(--app-dim); line-height: 1.6; margin: 0 0 10px; }
 .app-modal-card p b { color: var(--app-ink); }
-.amc-close { margin-top: 10px; width: 100%; padding: 13px; border-radius: 13px; border: 0; background: linear-gradient(135deg, var(--brand2), var(--brand)); color: #fff; font: inherit; font-weight: 800; cursor: pointer; transition: transform var(--d-micro) var(--ease-out); }
+.amc-close { margin-top: 10px; width: 100%; padding: 13px; border-radius: 13px; border: 0; background: var(--app-accent); color: #fff; font: inherit; font-weight: 800; cursor: pointer; transition: transform var(--d-micro) var(--ease-out); }
 .amc-close:active { transform: scale(.98); }
 .amc-later { margin-top: 4px; width: 100%; padding: 11px; border-radius: 13px; border: 0; background: none; color: var(--app-dim); font: inherit; font-weight: 700; cursor: pointer; }
 .amc-later:active { color: var(--app-ink); }
@@ -213,9 +218,9 @@ body.is-app .faq { display: none !important; }
 
 /* tighten the tool header for the app: smaller kicker, calmer color, fade-up in */
 body.is-app .head { padding: var(--s5) 0 var(--s4); animation: app-rise .42s var(--ease-out) both; }
-body.is-app .head .kicker { color: var(--app-dim); font-size: 10.5px; letter-spacing: 1.6px; }
+/* In-app a tool is a native screen, not a landing page — drop the SEO eyebrow + tagline. */
+body.is-app .head .kicker, body.is-app .head p { display: none; }
 body.is-app .head h1 { letter-spacing: -.4px; }
-body.is-app .head p { font-size: var(--t-sm); }
 
 /* the tool card rises in just after the header — a single, calm entrance */
 body.is-app .tool { animation: app-rise .5s var(--ease-out) both; animation-delay: .06s; }
@@ -304,7 +309,7 @@ body.is-app .tool .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: to
 .scan-opt .so-ic svg{ width:24px; height:24px; color:#fff; }
 .scan-opt:active .so-ic{ transform:scale(.94); }
 .scan-opt .so-l{ font-size:12px; font-weight:700; letter-spacing:.1px; }
-.scan-opt .so-soon{ position:absolute; top:7px; right:7px; font-size:8.5px; font-weight:800; text-transform:uppercase; letter-spacing:.5px; color:#fff; background:linear-gradient(135deg,var(--brand2),var(--brand)); padding:2px 6px; border-radius:7px; }
+.scan-opt .so-soon{ position:absolute; top:7px; right:7px; font-size:8.5px; font-weight:800; text-transform:uppercase; letter-spacing:.5px; color:#fff; background:var(--app-accent); padding:2px 6px; border-radius:7px; }
 .scan-cancel{ width:100%; margin-top:14px; padding:14px; border:0; border-radius:14px; background:var(--sheet-row); color:var(--app-dim); font:inherit; font-weight:700; cursor:pointer; }
 .scan-cancel:active{ background:var(--sheet-row-active); }
 
@@ -327,16 +332,16 @@ body.is-app .tool .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: to
 .sjcp-hex{ flex:1; min-width:0; background:var(--sheet-row); border:1px solid var(--sheet-line); border-radius:11px; color:var(--app-ink); font:inherit; font-weight:700; font-family:ui-monospace,monospace; letter-spacing:1.5px; text-transform:uppercase; padding:12px; outline:none; }
 .sjcp-hex:focus{ border-color:var(--app-accent); }
 .sjcp-presets{ display:grid; grid-template-columns:repeat(7,1fr); gap:8px; }
-.sjcp-ps{ aspect-ratio:1; border-radius:9px; border:1px solid rgba(0,0,0,.12); cursor:pointer; transition:transform .1s ease; padding:0; }
+.sjcp-ps{ aspect-ratio:1; border-radius:9px; border:1px solid var(--app-line); cursor:pointer; transition:transform .1s ease; padding:0; }
 .sjcp-ps:active{ transform:scale(.88); }
 .sjcp-actions{ display:flex; gap:10px; margin-top:2px; }
 .sjcp-btn{ flex:1; padding:13px; border-radius:13px; border:1px solid var(--sheet-line); background:var(--sheet-row); color:var(--app-ink); font:inherit; font-weight:700; cursor:pointer; transition:transform .1s ease; }
-.sjcp-btn.primary{ border-color:transparent; background:linear-gradient(135deg,var(--brand2),var(--brand)); color:#fff; }
+.sjcp-btn.primary{ border-color:transparent; background:var(--app-accent); color:#fff; }
 .sjcp-btn:active{ transform:scale(.98); }
 /* the swatch button that replaces each native colour input in the forms */
 .sjcp-swatch{ display:flex; align-items:center; gap:10px; width:100%; height:44px; padding:0 10px; border:1px solid var(--line,var(--sheet-line)); border-radius:10px; background:var(--surface2,var(--sheet-row)); cursor:pointer; font:inherit; }
 .sjcp-swatch:active{ transform:scale(.99); }
-.sjcp-chip{ width:26px; height:26px; border-radius:7px; border:1px solid rgba(0,0,0,.15); flex:0 0 auto; }
+.sjcp-chip{ width:26px; height:26px; border-radius:7px; border:1px solid var(--app-line); flex:0 0 auto; }
 .sjcp-val{ flex:1; text-align:left; font-family:ui-monospace,monospace; font-weight:700; font-size:13px; color:var(--app-ink,var(--txt)); }
 .sjcp-ic{ color:var(--app-dim,var(--dim)); flex:0 0 auto; }
 
@@ -370,7 +375,8 @@ body.is-app .tool .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: to
 .sj-offline[hidden]{ display:none; }
 .sjo-ic{ font-size:18px; flex:0 0 auto; }
 .sjo-tx{ flex:1; font-size:12.5px; font-weight:600; color:#fff; line-height:1.4; }
-.sjo-x{ flex:0 0 auto; width:26px; height:26px; border:0; border-radius:50%; background:rgba(255,255,255,.10); color:rgba(255,255,255,.8); font-size:13px; cursor:pointer; }
+.sjo-x{ flex:0 0 auto; width:26px; height:26px; border:0; border-radius:50%; background:rgba(255,255,255,.10); color:rgba(255,255,255,.8); font-size:13px; cursor:pointer; position:relative; }
+.sjo-x::before{ content:""; position:absolute; inset:-9px; }  /* ≥44px touch target */
 .sjo-x:active{ background:rgba(255,255,255,.2); }
 
 /* ===================== larger phones · foldables · tablets ===================== */

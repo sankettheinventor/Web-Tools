@@ -118,7 +118,7 @@ const howSteps = [
             var buf=await files[i].arrayBuffer();
             var src=await PDFLib.PDFDocument.load(buf,{ignoreEncryption:true});
             var pages=await out.copyPages(src, src.getPageIndices());
-            pages.forEach(function(p){ if(deg){p.setRotation(PDFLib.degrees(deg));} out.addPage(p); });
+            pages.forEach(function(p){ if(deg){p.setRotation(PDFLib.degrees((p.getRotation().angle+deg)%360));} out.addPage(p); });
           }
           var bytes=await out.save();
           var blob=new Blob([bytes],{type:'application/pdf'});

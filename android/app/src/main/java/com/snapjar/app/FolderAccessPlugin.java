@@ -44,6 +44,18 @@ public class FolderAccessPlugin extends Plugin {
         }
         Uri treeUri = data.getData();
         try {
+            // release previously-persisted folder grants — we only ever keep the ONE the user just
+            // picked. Without this, every re-pick leaked a grant (Android caps persisted grants, and
+            // it silently retained read access to every folder ever chosen — a privacy concern).
+            java.util.List<android.content.UriPermission> held = getContext().getContentResolver().getPersistedUriPermissions();
+            for (android.content.UriPermission p : held) {
+                if (!p.getUri().equals(treeUri)) {
+                    try { getContext().getContentResolver().releasePersistableUriPermission(p.getUri(),
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION); } catch (Exception ignored) {}
+                }
+            }
+        } catch (Exception ignored) {}
+        try {
             getContext().getContentResolver().takePersistableUriPermission(treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
         } catch (Exception ignored) {}
         DocumentFile root = DocumentFile.fromTreeUri(getContext(), treeUri);
@@ -102,16 +114,24 @@ public class FolderAccessPlugin extends Plugin {
         try {
             Uri uri = Uri.parse(uriStr);
             is = getContext().getContentResolver().openInputStream(uri);
+            if (is == null) { call.reject("cannot open file"); return; }
+            // base64 over the JS bridge needs ~3x the file size in peak heap; cap to avoid an
+            // OutOfMemoryError (an Error, NOT caught by `catch (Exception)`) hard-crashing the app.
+            final long MAX = 60L * 1024 * 1024; // 60 MB
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             byte[] buf = new byte[65536];
-            int n;
-            while ((n = is.read(buf)) > 0) bos.write(buf, 0, n);
+            int n; long total = 0;
+            while ((n = is.read(buf)) > 0) {
+                total += n;
+                if (total > MAX) { call.reject("This file is too large to open here (over 60 MB)."); return; }
+                bos.write(buf, 0, n);
+            }
             String b64 = Base64.encodeToString(bos.toByteArray(), Base64.NO_WRAP);
             JSObject ret = new JSObject();
             ret.put("data", b64);
             call.resolve(ret);
-        } catch (Exception e) {
-            call.reject(e.getMessage() == null ? "read failed" : e.getMessage());
+        } catch (Throwable t) {
+            call.reject(t.getMessage() == null ? "read failed" : t.getMessage());
         } finally {
             if (is != null) try { is.close(); } catch (Exception ignored) {}
         }

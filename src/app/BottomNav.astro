@@ -50,9 +50,9 @@
   <div class="app-modal-card" role="dialog" aria-modal="true" aria-label="Rate SnapJar">
     <div class="amc-ic">⭐</div>
     <h3>Enjoying SnapJar?</h3>
-    <p>A quick rating helps SnapJar reach everyone — a <b>virus-free</b>, <b>100% free</b> toolkit with <b>real working tools</b> that keeps your files private.</p>
+    <p>Made by a tiny team and kept private and free. A quick rating helps more people find it.</p>
     <button class="amc-close" id="appRateGo" type="button">Rate the app ⭐</button>
-    <button class="amc-later" id="appRateExit" type="button">Exit</button>
+    <button class="amc-later" id="appRateExit" type="button">Not now</button>
   </div>
 </div>
 
@@ -63,10 +63,11 @@
     var cat = p === '/' ? 'home'
       : p === '/recent' ? 'recent'
       : p.indexOf('/tools/pdf-studio') === 0 ? 'pdf'
-      : /(pdf-tools|compress-pdf|split-pdf|organize-pdf|rotate-pdf|add-page-numbers|watermark-pdf|extract-pages|remove-pages|jpg-to-pdf|pdf-to-jpg|text-to-pdf)/.test(p) ? 'pdf'
-      : /(\/compress|\/convert|\/watermark|favicon|heic-to-jpg|color-picker|color-converter|gradient-generator|palette-extractor|qr-code|svg-optimizer|jpg-to-|png-to-|webp-to-)/.test(p) ? 'image'
-      : 'home';
-    var on = document.querySelector('.appbar-i[data-nav="' + cat + '"]');
+      : p.indexOf('/tools/scanner') === 0 ? 'scan'
+      : /(pdf-tools|compress-pdf|split-pdf|organize-pdf|rotate-pdf|add-page-numbers|watermark-pdf|extract-pages|remove-pages|jpg-to-pdf|pdf-to-jpg|text-to-pdf|word-to-pdf|pdf-to-word)/.test(p) ? 'pdf'
+      : /(\/compress$|\/convert|\/watermark$|favicon|heic-to-jpg|palette-extractor|color-picker|jpg-to-png|jpg-to-webp|png-to-jpg|png-to-webp|webp-to-jpg|webp-to-png)/.test(p) ? 'image'
+      : '';   // calculators, QR, color/gradient/svg, text tools, scanner → no false highlight
+    var on = cat ? document.querySelector('.appbar-i[data-nav="' + cat + '"]') : null;
     if (on) on.classList.add('on');
 
     /* Center "Scan" → premium SnapJar scan sheet → route each mode. */
@@ -78,42 +79,24 @@
     function toast(m, t){ if (window.SnapJarKit && window.SnapJarKit.toast) window.SnapJarKit.toast(m, t || 'info'); }
     function adPause(){ if (window.SnapJarKit && window.SnapJarKit.adPause) window.SnapJarKit.adPause(); }
     function adResume(){ if (window.SnapJarKit && window.SnapJarKit.adResume) window.SnapJarKit.adResume(); }
-    function openScan(){ if (sheet) sheet.hidden = false; adPause(); }
+    function haptic(s){ if (window.SnapJarKit && window.SnapJarKit.haptic) window.SnapJarKit.haptic(s); }
+    function openScan(){ if (sheet) sheet.hidden = false; adPause(); haptic('light'); }
     function closeScan(){ if (sheet) sheet.hidden = true; adResume(); }
     if (scanBtn) scanBtn.addEventListener('click', openScan);
     var scanCancel = document.getElementById('scanCancel'); if (scanCancel) scanCancel.addEventListener('click', closeScan);
     if (sheet) sheet.addEventListener('click', function (e){ if (e.target === sheet) closeScan(); });
 
-    var NAMES = { document: 'Scan', id: 'ID card', book: 'Book scan', signature: 'Signature' };
-    /* Native ML Kit document scanner = the premium flow: opens the camera, detects
-       edges live, auto-crops, supports retake + multi-page, returns a clean PDF.
-       Re-resolve the plugin each time in case it registered after this script ran. */
-    async function doScan(mode){
-      closeScan();
-      var DS = DocumentScanner || Plug('DocumentScanner');
-      if (!DS) { location.href = '/tools/pdf-studio.html?filterscan=1'; return; } // fallback: in-page camera + filter
-      try {
-        toast('Opening scanner…', 'work');
-        var res = await DS.scanDocument({ resultFormats: 'PDF', pageLimit: mode === 'id' ? 2 : 30 });
-        var uri = res && res.pdf && res.pdf.uri;
-        if (!uri) { toast('Scan cancelled'); return; }
-        var src = Cap && Cap.convertFileSrc ? Cap.convertFileSrc(uri) : uri;
-        var blob = await (await fetch(src)).blob();
-        if (window.SJRecents) {
-          var id = await window.SJRecents.add({ name: (NAMES[mode] || 'Scan') + '.pdf', kind: 'pdf', blob: blob });
-          if (id) { location.href = '/tools/pdf-studio.html?recent=' + id; return; }
-        }
-        location.href = '/tools/pdf-studio.html';
-      } catch (e) { toast('Scan cancelled'); }
-    }
+    /* Each scan type → our own premium scanner (camera → auto edge-detect →
+       draggable-corner crop + magnifier → perspective warp → scan filters → PDF),
+       fully on-device. QR + Scan text keep their dedicated flows. */
     if (sheet) sheet.addEventListener('click', function (e){
       var b = e.target && e.target.closest && e.target.closest('.scan-opt'); if (!b) return;
       var mode = b.getAttribute('data-scan');
-      if (mode === 'qr') { closeScan(); location.href = '/tools/pdf-studio.html?scanqr=1'; return; }
-      if (mode === 'text') { closeScan(); location.href = '/tools/pdf-studio.html?ocr=1'; return; }
-      if (mode === 'photo') { closeScan(); location.href = '/tools/pdf-studio.html?filterscan=1'; return; }
-      /* Document / ID card / Book / Signature → native camera scanner (auto-crop). */
-      doScan(mode);
+      haptic('light'); closeScan();
+      if (mode === 'qr') { location.href = '/tools/qr-scan.html'; return; }            // native QR/barcode scanner
+      if (mode === 'text') { location.href = '/tools/text-scan.html'; return; }            // dedicated Scan-to-text (OCR) flow
+      /* Document / ID card / Book / Signature / Photo → native document scanner. */
+      location.href = '/tools/scanner.html?mode=' + mode;
     });
 
     /* Leaving message — intercept hardware Back: navigate back in-page if possible,
@@ -121,21 +104,27 @@
     var rate = document.getElementById('appRate');
     function showRate(){ if (rate) rate.hidden = false; adPause(); }
     var App = Plug('App');
+    function rateSeen(){ try { return localStorage.getItem('sj_rate_seen') === '1'; } catch (e) { return true; } }
+    function markRateSeen(){ try { localStorage.setItem('sj_rate_seen', '1'); } catch (e) {} }
     if (App) {
       try {
         App.addListener('backButton', function (info) {
-          if (rate && !rate.hidden) { rate.hidden = true; try { App.exitApp(); } catch (e) {} return; }
-          if (info && info.canGoBack) { window.history.back(); }
-          else { showRate(); }
+          if (document.body.classList.contains('sc-on')) return;   // scanner handles its own Back
+          if (rate && !rate.hidden) { rate.hidden = true; adResume(); try { App.exitApp(); } catch (e) {} return; }
+          if (info && info.canGoBack) { window.history.back(); return; }
+          // At the root: show the rate ask ONCE in the app's lifetime, then always just exit.
+          if (!rateSeen()) { markRateSeen(); showRate(); }
+          else { try { App.exitApp(); } catch (e) {} }
         });
       } catch (e) {}
       var go = document.getElementById('appRateGo'), ex = document.getElementById('appRateExit');
       if (go) go.addEventListener('click', function () {
+        markRateSeen();
         try { window.open('market://details?id=com.snapjar.app', '_system'); }
         catch (e) { try { window.open('https://play.google.com/store/apps/details?id=com.snapjar.app', '_system'); } catch (_) {} }
-        if (rate) rate.hidden = true;
+        if (rate) rate.hidden = true; adResume();
       });
-      if (ex) ex.addEventListener('click', function () { try { App.exitApp(); } catch (e) { if (rate) rate.hidden = true; } });
+      if (ex) ex.addEventListener('click', function () { if (rate) rate.hidden = true; try { App.exitApp(); } catch (e) {} });
       if (rate) rate.addEventListener('click', function (e) { if (e.target === rate) { rate.hidden = true; adResume(); } });
     }
   })();

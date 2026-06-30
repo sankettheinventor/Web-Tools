@@ -43,7 +43,9 @@ const howSteps = [
     <p>The tool scans your photo, groups similar pixels into colour buckets, and surfaces the most common ones as a palette. Click any swatch to copy its HEX code. It's perfect for building a brand palette from a logo, a moodboard from a photo, or matching UI colours to an image. Everything runs in your browser — the photo is never uploaded.</p>
     <div class="xlinks"><a href="/tools/color-picker">Color Picker →</a><a href="/tools/gradient-generator">Gradient Generator →</a></div>
   </div>
-  <style>
+  <!-- is:global so the JS-created .sw swatch buttons (createElement) actually get these styles —
+       Astro scopes a plain <style> to template elements only, leaving createElement'd nodes unstyled. -->
+  <style is:global>
     .drop{border:2px dashed var(--line);border-radius:14px;background:var(--surface2);padding:40px 20px;text-align:center;cursor:pointer}
     .drop.drag{border-color:var(--brand)}.drop-ic{font-size:40px;margin-bottom:8px}.drop-t{font-size:16px;font-weight:600}.drop-s{font-size:13px;color:var(--dim);margin-top:6px}
     .linklike{background:none;border:0;color:var(--brand);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline}
@@ -110,7 +112,7 @@ const howSteps = [
           p.appendChild(d);
         });
       }
-      function load(f){var im=new Image();im.onload=function(){$('drop').hidden=true;$('editor').hidden=false;render(im);};im.onerror=function(){$('drop').querySelector('.drop-t').textContent='Could not open this image — it may be corrupt or unsupported.';};im.src=window.SnapJarKit.track(f);}
+      function load(f){var im=new Image();im.onload=function(){$('drop').hidden=true;$('editor').hidden=false;render(im);};im.onerror=function(){if(window.SnapJarKit)window.SnapJarKit.toast('Could not open this image — it may be corrupt or unsupported.','err');};im.src=window.SnapJarKit.track(f);}
       $('browse').onclick=function(e){e.stopPropagation();$('file').click();};
       $('drop').onclick=function(e){if(e.target.id==='drop'||e.target.className.indexOf('drop-')===0)$('file').click();};
       $('file').onchange=function(e){if(e.target.files[0])load(e.target.files[0]);};

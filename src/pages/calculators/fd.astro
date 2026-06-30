@@ -153,10 +153,14 @@ const faqItems = [
         rows.push({yr:full+1,open:openBal,interest:r2.interest,tax:r2.tax,net:r2.interest-r2.tax,close:r2.close});
         openBal=r2.close;
       }
-      // post-tax maturity: gross corpus minus total tax on interest (works for both modes)
+      // CUMULATIVE: principal+interest compounds, then subtract tax → net corpus at maturity.
+      // PAYOUT: interest is paid OUT each year (not returned at maturity), so the maturity lump is
+      // just the principal P; interest earned is tracked separately as netInt (was wrongly added
+      // back into the maturity figure, overstating it).
       var grossMat=payout?P:openBal;
-      var postTaxMat=grossMat+(payout?(totInt-totTax):(-totTax));
-      return {rows:rows,totInt:totInt,totTax:totTax,grossMat:grossMat,postTaxMat:postTaxMat};
+      var netInt=totInt-totTax;
+      var postTaxMat=payout?P:(openBal-totTax);
+      return {rows:rows,totInt:totInt,totTax:totTax,netInt:netInt,grossMat:grossMat,postTaxMat:postTaxMat};
     }
     function c(){var P=num('amt'),R=num('rate'),Y=num('years'),n=parseInt(el('freq').value,10);var A=P*Math.pow(1+R/100/n,n*Y);
       el('mat').textContent=money(A);el('sub').textContent=Y+' yr · '+el('freq').selectedOptions[0].textContent.toLowerCase();
@@ -168,8 +172,10 @@ const faqItems = [
       el('ptInt').textContent=money(sim.totInt);
       el('ptTax').textContent=money(sim.totTax);
       el('ptMat').textContent=money(sim.postTaxMat);
-      var netGain=sim.postTaxMat-P;
-      var effYield=(P>0&&Y>0)?(Math.pow(sim.postTaxMat/P,1/Y)-1)*100:0;
+      // payout: net benefit = interest received (post-tax); simple average yield (no compounding).
+      // cumulative: net benefit = corpus growth; CAGR.
+      var netGain=payout?sim.netInt:(sim.postTaxMat-P);
+      var effYield=(P>0&&Y>0)?(payout?(sim.netInt/(P*Y))*100:(Math.pow(sim.postTaxMat/P,1/Y)-1)*100):0;
       el('ptYield').textContent=(P>0&&Y>0)?effYield.toFixed(2)+'%':'—';
       if(taxPct>0||payout){
         el('taxHint').textContent='After '+(taxPct>0?taxPct+'% tax':'no tax')+(payout?', paying interest out yearly,':',')+' you keep '+money(netGain)+' of interest — an effective '+effYield.toFixed(2)+'% post-tax yield.';

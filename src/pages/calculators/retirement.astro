@@ -153,7 +153,7 @@ const faqItems = [
       // Closed-form baseline (no step-up) — keeps the primary result exact.
       var fvP=P*Math.pow(1+i,n);var fvM=(i>0)?M*((Math.pow(1+i,n)-1)/i)*(1+i):M*n;var corpus=fvP+fvM;
       var invested=P+M*n;var real=corpus/Math.pow(1+INF/100,yrs);
-      el('corpus').textContent=money(corpus);el('sub').textContent=yrs+' years to retirement';
+      el('corpus').textContent=money(corpus);el('sub').textContent=(ret<=age)?'Set retirement age above your current age':yrs+' years to retirement';
       el('bdInv').textContent=money(invested);el('bdReal').textContent=money(real);
 
       // Advanced: step-up scenario (monthly sim) vs baseline (no step-up).

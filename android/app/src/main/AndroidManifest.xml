@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <application
-        android:allowBackup="true"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        tools:replace="android:allowBackup,android:fullBackupContent"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
@@ -50,7 +54,6 @@
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="content" android:mimeType="application/pdf" />
                 <data android:scheme="file" android:mimeType="application/pdf" />
             </intent-filter>
@@ -60,6 +63,20 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:scheme="content" android:mimeType="image/*" />
                 <data android:scheme="file" android:mimeType="image/*" />
+            </intent-filter>
+            <!-- OPEN-WITH: only the office types the doc viewer actually RENDERS (docx via mammoth,
+                 xls/xlsx via SheetJS, pptx via pptx-preview, csv). Legacy .doc/.ppt (only a "convert
+                 it" message) and the over-broad text/plain are intentionally NOT claimed, so SnapJar
+                 doesn't appear in the chooser for files it can't really open. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="content" android:mimeType="application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+                <data android:scheme="content" android:mimeType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
+                <data android:scheme="content" android:mimeType="application/vnd.ms-excel" />
+                <data android:scheme="content" android:mimeType="application/vnd.openxmlformats-officedocument.presentationml.presentation" />
+                <data android:scheme="content" android:mimeType="text/csv" />
+                <data android:scheme="content" android:mimeType="text/comma-separated-values" />
             </intent-filter>
 
         </activity>
@@ -87,4 +104,6 @@
          app still installs on camera-less devices. -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <!-- Light haptic feedback on key actions (premium tactile feel). -->
+    <uses-permission android:name="android.permission.VIBRATE" />
 </manifest>

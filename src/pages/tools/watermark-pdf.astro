@@ -79,7 +79,11 @@ const howSteps = [
           var np=doc.getPages().length;
           doc.getPages().forEach(function(p){var w=p.getWidth(),h=p.getHeight();var size=Math.min(w,h)*0.10;var tw=font.widthOfTextAtSize(text,size);
             while(tw>w*0.9 && size>6){ size-=1; tw=font.widthOfTextAtSize(text,size); }
-            p.drawText(text,{x:w/2-Math.cos(ag*Math.PI/180)*tw/2,y:h/2-Math.sin(ag*Math.PI/180)*tw/2,size:size,font:font,color:PDFLib.rgb(0.5,0.5,0.55),opacity:op,rotate:PDFLib.degrees(ag)});});
+            // center the ROTATED text box on the page: offset the draw origin (baseline-left) by
+            // the text-box half-extents rotated by ag, so the box centre lands at (w/2,h/2) for ANY angle.
+            var rad=ag*Math.PI/180, ht=size*0.72;
+            var ox=(tw/2)*Math.cos(rad)-(ht/2)*Math.sin(rad), oy=(tw/2)*Math.sin(rad)+(ht/2)*Math.cos(rad);
+            p.drawText(text,{x:w/2-ox,y:h/2-oy,size:size,font:font,color:PDFLib.rgb(0.5,0.5,0.55),opacity:op,rotate:PDFLib.degrees(ag)});});
           var out=await doc.save();var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([out],{type:'application/pdf'}));a.download=srcName+'-watermarked.pdf';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);
           $('status').textContent='Done — watermarked '+np+' page'+(np===1?'':'s')+'.';
         }catch(err){

@@ -26,7 +26,9 @@
   --result-bg:linear-gradient(135deg,#eef0ff,#fdeef4);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
+/* NOTE: global smooth-scroll removed — on Android WebView it animated every scroll *correction*
+   (from an ad-zone reflow, focus, or anchor) into a visible "page scrolls itself up" jump.
+   Explicit scrollIntoView({behavior:'smooth'}) calls still animate where intended. */
 /* Premium self-hosted variable font (offline; no Google CDN) */
 @font-face{font-family:'Jakarta';font-style:normal;font-display:swap;font-weight:200 800;src:url('/fonts/jakarta.woff2') format('woff2');}
 @font-face{font-family:'Jakarta';font-style:normal;font-display:swap;font-weight:200 800;unicode-range:U+0100-024F,U+0259,U+1E00-1EFF,U+2020,U+20A0-20AB,U+20AD-20CF,U+2113,U+2C60-2C7F,U+A720-A7FF;src:url('/fonts/jakarta-ext.woff2') format('woff2');}
@@ -57,7 +59,7 @@ input[type=color]::-webkit-color-swatch{border:none;border-radius:6px}
 @media(max-width:760px){input:not([type=range]):not([type=checkbox]),select,textarea{font-size:var(--t-base) !important}}
 
 /* ---- nav + brand promise ---- */
-nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(10px);background:var(--nav-bg);border-bottom:1px solid var(--line)}
+nav:not(.appbar){position:sticky;top:0;z-index:50;backdrop-filter:blur(10px);background:var(--nav-bg);border-bottom:1px solid var(--line)}
 .nav-in{display:flex;align-items:center;justify-content:space-between;height:60px;max-width:var(--maxw);margin:0 auto;padding:0 var(--s5)}
 .brand{display:flex;align-items:center;gap:var(--s2);font-weight:800;font-size:var(--t-md);color:var(--txt)}
 .brand:hover{text-decoration:none}
@@ -336,6 +338,9 @@ input[type=range]:active::-moz-range-thumb{transform:scale(1.18)}
    (PDF reorder / rotate / delete) must clear the ~44px tappable minimum. */
 @media(pointer:coarse){
   .pbtns button,.fl-btn{min-width:44px !important;min-height:44px !important}
+  /* root-level floor for the small toolbar toggles across tools (compress/watermark/qr/editor) */
+  .tg,.modebtn,.wt,.qt,.ed-tool,.wr-tool,.csel-opt,.sjsel-opt,.lib-mi,.doc-more,.vrm{min-height:44px !important}
+  .tg,.wt,.qt,.modebtn{min-width:44px !important}
 }
 /* APP SHELL styles live in a SEPARATE file — public/assets/app.css — loaded only in
    the Capacitor app build (PUBLIC_APP_BUILD=1). Keeps this web stylesheet clean. */
@@ -381,10 +386,13 @@ a:not(.brand):active,[role=button]:active,.atile:active,.tcard:active,.modebtn:a
 /* toast stack — floating confirmations */
 .sj-toasts{ position:fixed; left:0; right:0; bottom:calc(18px + env(safe-area-inset-bottom)); z-index:400; display:flex; flex-direction:column; align-items:center; gap:8px; pointer-events:none; padding:0 14px; }
 body.is-app .sj-toasts{ bottom:calc(96px + env(safe-area-inset-bottom)); }
-.sj-toast{ pointer-events:auto; display:flex; align-items:center; gap:10px; max-width:440px; width:max-content; padding:12px 16px 12px 13px;
+.sj-toast{ pointer-events:auto; display:flex; align-items:flex-start; gap:10px; box-sizing:border-box;
+  max-width:min(440px, calc(100vw - 28px)); width:max-content; padding:12px 16px 12px 13px;
   background:var(--surface,#1a1726); color:var(--txt,#fff); border:1px solid var(--line); border-radius:14px;
-  box-shadow:0 14px 38px -12px rgba(0,0,0,.55); font-size:14px; font-weight:600;
+  box-shadow:0 14px 38px -12px rgba(0,0,0,.55); font-size:14px; font-weight:600; line-height:1.4;
+  overflow-wrap:anywhere; word-break:break-word;
   opacity:0; transform:translateY(14px) scale(.96); transition:opacity .26s var(--ease-out,ease), transform .26s var(--ease-out,ease); }
+.sj-toast .sj-tic{ margin-top:1px; }
 .sj-toast.in{ opacity:1; transform:none; }
 .sj-toast.out{ opacity:0; transform:translateY(8px) scale(.98); }
 .sj-tic{ flex:0 0 auto; width:22px; height:22px; display:inline-grid; place-items:center; border-radius:50%; color:#fff; }

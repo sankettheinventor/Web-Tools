@@ -207,9 +207,16 @@ const howSteps = [
         });
       }
 
+      var startTries=0;
       function start(){
-        if(typeof QRCodeStyling==='undefined'){return setTimeout(start,150);}
+        if(typeof QRCodeStyling==='undefined'){ if(++startTries>40){ if(window.SnapJarKit) window.SnapJarKit.toast('QR engine failed to load — check your connection and reopen the tool','err'); return; } return setTimeout(start,150); }
         qr=new QRCodeStyling(opts()); qr.append($('preview'));
+      }
+      // never let an export button feel dead: tell the user why nothing happened
+      function qrReady(){
+        if(!qr){ if(window.SnapJarKit) window.SnapJarKit.toast('QR engine still loading — try again in a moment','work'); return false; }
+        if(!data().trim()){ if(window.SnapJarKit) window.SnapJarKit.toast('Enter something to encode first','warn'); return false; }
+        return true;
       }
       $('tabs').addEventListener('click',function(e){
         var b=e.target.closest('.qt'); if(!b)return;
@@ -225,13 +232,14 @@ const howSteps = [
         var f=e.target.files[0]; if(!f){logoData=null;render();return;}
         var r=new FileReader(); r.onload=function(){logoData=r.result;render();}; r.readAsDataURL(f);
       });
-      $('png').onclick=function(){qr&&qr.download({name:'qr-code',extension:'png'});};
-      $('svg').onclick=function(){qr&&qr.download({name:'qr-code',extension:'svg'});};
+      $('png').onclick=function(){ if(qrReady()) qr.download({name:'qr-code',extension:'png'}); };
+      $('svg').onclick=function(){ if(qrReady()) qr.download({name:'qr-code',extension:'svg'}); };
       $('copy').onclick=function(){
-        if(!qr||!qr.getRawData)return;
+        if(!qrReady()||!qr.getRawData)return;
         qr.getRawData('png').then(function(blob){
           if(navigator.clipboard&&window.ClipboardItem){navigator.clipboard.write([new ClipboardItem({'image/png':blob})]).then(function(){$('copy').textContent='Copied!';if(window.SnapJarKit)window.SnapJarKit.toast('QR image copied to clipboard','ok');setTimeout(function(){$('copy').textContent='Copy';},1200);}).catch(function(){if(window.SnapJarKit)window.SnapJarKit.toast('Couldn’t copy the image — try the PNG download','err');});}
-        });
+          else { if(window.SnapJarKit)window.SnapJarKit.toast('Copy isn’t supported here — use the PNG download instead','err'); }
+        }).catch(function(){ if(window.SnapJarKit)window.SnapJarKit.toast('Couldn’t copy the image — use the PNG download','err'); });
       };
       buildPresets(); start();
     })();

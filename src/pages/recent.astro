@@ -121,28 +121,28 @@ const description = 'Your PDFs and folders — stored only on your device.';
         if(!it) return;
         var id = typeof it==='object' ? it.id : it;
         var kind = typeof it==='object' ? (it.kind||'pdf') : 'pdf';
+        var nm0 = typeof it==='object' ? (it.name||'') : '';
         if(kind==='pdf'){ location.href='/tools/pdf-studio.html?recent='+encodeURIComponent(id); return; }
-        // non-PDF (image / other): share it, or re-save to Documents › SnapJar
+        // Word/Excel/PowerPoint/CSV/text → open in the in-app doc reader (same path as notifications)
+        if(/\.(docx?|xlsx?|pptx?|csv|txt)$/i.test(nm0)){ location.href='/tools/pdf-studio.html?docopen='+encodeURIComponent(id); return; }
+        // image / other → open in the user's chosen app via a temporary system grant (no in-app preview)
         if(!R||!R.get){ toast('Open the app to use this file','info'); return; }
         R.get(id).then(function(rec){
           var blob = rec && rec.blob; if(!blob){ toast('File unavailable','warn'); return; }
-          var nm = (rec.name||it.name||'file');
-          var file; try{ file = new File([blob], nm, {type: blob.type||'application/octet-stream'}); }catch(e){}
-          if(navigator.canShare && file && navigator.canShare({files:[file]})){
-            navigator.share({ files:[file], title:nm }).catch(function(){});
-          } else if(window.SnapJarKit && window.SnapJarKit.saveDownload){
-            window.SnapJarKit.saveDownload(blob, nm, {skipRecent:true});
-          } else { toast('Saved in Files › Documents › SnapJar','info'); }
+          if(window.SnapJarKit && window.SnapJarKit.openExternal) window.SnapJarKit.openExternal(blob, rec.name||it.name||'file');
         });
       }
+      function fileAct(it, fn){ if(!R||!R.get) return; R.get(it.id).then(function(rec){ if(rec&&rec.blob&&window.SnapJarKit&&window.SnapJarKit[fn]) window.SnapJarKit[fn](rec.blob, rec.name||it.name||'file'); else toast('File unavailable','warn'); }); }
 
       function docMenu(it){
         listFoldersFor(function(folders){
           sheet(it.name, [
-            { ic:'📂', label:(it.kind&&it.kind!=='pdf')?'Open / Share':'Open', on:function(){ openDoc(it); } },
+            { ic:'📂', label:'Open', on:function(){ openDoc(it); } },
+            { ic:'📤', label:'Open in another app', on:function(){ fileAct(it, 'openExternal'); } },
+            { ic:'⬇️', label:'Save to device', on:function(){ fileAct(it, 'exportFile'); } },
             folders.length || it.folderId ? { ic:'📁', label:'Move to folder…', on:function(){ moveMenu(it, folders); } } : null,
             { ic:'✏️', label:'Rename', on:function(){ ask({title:'Rename', value:it.name, ok:'Save'}).then(function(v){ if(v){ R.rename(it.id, v).then(load); toast('Renamed','ok'); } }); } },
-            { ic:'🗑️', label:'Delete', danger:true, on:function(){ R.remove(it.id).then(load); toast('Deleted','ok'); } }
+            { ic:'🗑️', label:'Delete', danger:true, on:function(){ ask({title:'Delete "'+it.name+'"?', body:"This can't be undone.", ok:'Delete', danger:true, confirm:true}).then(function(yes){ if(yes){ R.remove(it.id).then(load); toast('Deleted','ok'); } }); } }
           ]);
         });
       }
@@ -156,7 +156,7 @@ const description = 'Your PDFs and folders — stored only on your device.';
         sheet(f.name, [
           { ic:'📂', label:'Open folder', on:function(){ enterFolder(f); } },
           { ic:'✏️', label:'Rename', on:function(){ ask({title:'Rename folder', value:f.name, ok:'Save'}).then(function(v){ if(v){ R.renameFolder(f.id,v).then(load); } }); } },
-          { ic:'🗑️', label:'Delete folder', danger:true, on:function(){ R.removeFolder(f.id).then(load); toast('Folder deleted — files kept','ok'); } }
+          { ic:'🗑️', label:'Delete folder', danger:true, on:function(){ ask({title:'Delete folder "'+f.name+'"?', body:'The folder is removed; its files stay in My Files.', ok:'Delete', danger:true, confirm:true}).then(function(yes){ if(yes){ R.removeFolder(f.id).then(load); toast('Folder deleted — files kept','ok'); } }); } }
         ]);
       }
       function newFolder(cb){
@@ -164,8 +164,10 @@ const description = 'Your PDFs and folders — stored only on your device.';
           if(!v) return; R.addFolder(v).then(function(id){ if(cb) cb(id,v); else load(); toast('Folder created','ok'); });
         });
       }
-      function enterFolder(f){ current=f.id; currentName=f.name; render(); }
+      // push a history entry so the hardware/OS Back returns to the folder LIST (not out of My Files)
+      function enterFolder(f){ current=f.id; currentName=f.name; try{ history.pushState({sjFolder:f.id},''); }catch(e){} render(); }
       function goRoot(){ current=null; currentName=''; render(); }
+      window.addEventListener('popstate', function(){ if(current) goRoot(); });
 
       function listFoldersFor(cb){ R.listFolders().then(cb); }
 
@@ -212,7 +214,7 @@ const description = 'Your PDFs and folders — stored only on your device.';
       function load(){ render(); }
 
       /* ---- wire ---- */
-      back.addEventListener('click', goRoot);
+      back.addEventListener('click', function(){ try{ history.back(); }catch(e){ goRoot(); } });
       document.getElementById('actOpen').addEventListener('click', function(){ location.href='/tools/pdf-studio.html?open=1'; });
       document.getElementById('actNew').addEventListener('click', function(){ location.href='/tools/pdf-studio.html?new=1'; });
       document.getElementById('actFolder').addEventListener('click', function(){ if(R) newFolder(); else toast('Open the app to create folders','info'); });
