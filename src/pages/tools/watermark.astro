@@ -132,8 +132,8 @@ const howSteps = [
     .wm-thumbs img{width:58px;height:46px;object-fit:cover;border-radius:7px;border:2px solid var(--line);cursor:pointer;flex:0 0 auto}
     .wm-thumbs img.sel{border-color:var(--brand)}
 
-    .wmapp-main{flex:1;display:grid;grid-template-columns:280px 1fr;gap:14px;min-height:0}
-    .wm-side{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:14px;display:flex;flex-direction:column;min-height:0}
+    .wmapp-main{flex:1;display:grid;grid-template-columns:280px minmax(0,1fr);gap:14px;min-height:0;min-width:0}
+    .wm-side{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:14px;display:flex;flex-direction:column;min-height:0;min-width:0}
     .wm-tabs{display:flex;gap:6px;margin-bottom:12px;flex:0 0 auto}
     .wt{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;background:var(--surface2);border:1px solid var(--line);border-radius:9px;font:inherit;font-size:11.5px;font-weight:700;color:var(--dim);cursor:pointer}
     .wt span{font-size:15px}.wt.on{color:#fff;background:linear-gradient(135deg,var(--brand2),var(--brand));border-color:transparent}
@@ -150,9 +150,9 @@ const howSteps = [
     .chkrow{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--txt)}.chkrow input{width:16px;height:16px;accent-color:var(--brand)}
 
     .wm-canvas{background:var(--surface2);border:1px solid var(--line);border-radius:13px;display:flex;align-items:center;justify-content:center;
-      min-height:0;overflow:hidden;cursor:pointer;transition:border-color .15s,background .15s}
+      min-height:0;min-width:0;overflow:hidden;cursor:pointer;transition:border-color .15s,background .15s}
     .wm-canvas.drag{border-color:var(--brand);background:var(--surface)}
-    #canvas{max-width:100%;max-height:100%;height:auto;border-radius:8px;display:block}
+    #canvas{max-width:100%;max-height:100%;width:auto;height:auto;border-radius:8px;display:block}
     #canvas[hidden]{display:none}
     .drop-prompt{text-align:center;padding:24px}
     .drop-ic{font-size:42px;margin-bottom:8px}.drop-t{font-size:16px;font-weight:600;color:var(--txt)}.drop-s{font-size:12.5px;color:var(--dim);margin-top:6px}
@@ -165,9 +165,9 @@ const howSteps = [
 
     @media(max-width:760px){
       .wmapp{height:auto;min-height:0}
-      .wmapp-main{grid-template-columns:1fr}
+      .wmapp-main{grid-template-columns:minmax(0,1fr)}
       .wm-scroll{overflow:visible}
-      .wm-canvas{min-height:300px}
+      .wm-canvas{min-height:300px;max-height:68vh}   /* bound the preview so a big image can't overflow the screen */
     }
   </style>
 
