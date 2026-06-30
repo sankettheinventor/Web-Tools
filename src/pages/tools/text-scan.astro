@@ -68,6 +68,7 @@ const description = 'Scan text from any document, book, screen or sign and turn 
   </style>
 
   <script>
+    import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';   // static (bundled) — matches the working PDF tools; avoids a fragile lazy chunk
     (function () {
       var $ = function (id){ return document.getElementById(id); };
       var K = function (){ return window.SnapJarKit; };
@@ -166,7 +167,6 @@ const description = 'Scan text from any document, book, screen or sign and turn 
         var text = curText(); if (!text.trim()){ toast('Nothing to save', 'info'); return; }
         busy('Building PDF…');
         try {
-          var lib = await import('pdf-lib'); var PDFDocument = lib.PDFDocument, StandardFonts = lib.StandardFonts, rgb = lib.rgb;
           var pdf = await PDFDocument.create(), font = await pdf.embedFont(StandardFonts.Helvetica);
           var W = 595, H = 842, M = 56, size = 12, lh = 17, maxW = W - M * 2;
           var page = pdf.addPage([W, H]), y = H - M;
@@ -182,9 +182,15 @@ const description = 'Scan text from any document, book, screen or sign and turn 
           });
           var out = await pdf.save(), blob = new Blob([out], { type: 'application/pdf' });
           var nm = 'Scanned text ' + new Date().toISOString().slice(0, 10) + '.pdf';
-          if (window.SJRecents){ var id = await window.SJRecents.add({ name: nm, kind: 'pdf', blob: blob }); if (id){ leave(true); location.href = '/tools/pdf-studio.html?recent=' + id; return; } }
-          if (K() && K().saveDownload) K().saveDownload(blob, nm); leave();
-        } catch (e){ toast('Could not build the PDF', 'err'); show('txResult'); }
+          var id = null;
+          if (window.SJRecents){
+            // timeout-guard the IndexedDB save so a blocked DB can never freeze "Building PDF…"
+            try { id = await Promise.race([ window.SJRecents.add({ name: nm, kind: 'pdf', blob: blob }), new Promise(function (r){ setTimeout(function (){ r(null); }, 5000); }) ]); } catch (e2){ id = null; }
+          }
+          if (id){ leave(true); location.href = '/tools/pdf-studio.html?recent=' + id; return; }
+          if (K() && K().saveDownload) K().saveDownload(blob, nm);   // fallback: save to device + Recent unavailable
+          toast('Saved to Files', 'ok'); leave();
+        } catch (e){ var em = ((e && (e.message || e)) + '').slice(0, 140); toast('Could not build the PDF: ' + em, 'err'); show('txResult'); }
       }
 
       function show(id){ ['txLoad', 'txResult'].forEach(function (s){ $(s).hidden = s !== id; }); }
