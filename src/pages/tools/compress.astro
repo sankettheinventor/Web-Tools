@@ -121,7 +121,10 @@ const howSteps = [
       }
       // TARGET mode: binary-search quality, then downscale if still too big. Iteration-capped.
       var QUAL_STEPS=8;   // binary-search iterations per scale (caps ~256 quality levels)
-      var SCALE_TRIES=6;  // how many times we shrink dimensions before giving up
+      // Enough downscale steps to actually REACH small targets (e.g. 10KB) on big photos.
+      // 6 only reached ~33% width (~42KB floor) and then gave up over-target; 16 reaches ~2.8%
+      // width if needed, so a small KB target is honoured (it stops at the LARGEST scale that fits).
+      var SCALE_TRIES=16; // how many times we shrink dimensions before giving up
       function tmsg(t,cls){ var e=$('tmsg'); e.textContent=t; e.className='tmsg'+(cls?(' '+cls):''); }
       async function runTarget(){
         if(!img)return;
@@ -151,7 +154,7 @@ const howSteps = [
           }
           if(bestUnder) break;            // found something at/under target — stop shrinking
           scale*=0.8;                     // still too big even at min quality: downscale and retry
-          if(Math.round(img.naturalWidth*scale)<32) break; // don't go absurdly small
+          if(Math.round(img.naturalWidth*scale)<24) break; // don't go absurdly small
         }
         var out=bestUnder||best;
         if(!out){ tmsg('Could not encode this image in the chosen format.','warn'); return; }

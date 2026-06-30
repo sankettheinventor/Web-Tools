@@ -1252,11 +1252,13 @@ const APP_LINK_FIX = `(function(){document.addEventListener('click',function(e){
           try { if (document.hidden) return; } catch (e) {}            // app in background → don't waste requests
           if (paused || overlayOpen()) return;                          // a sheet/modal is open → don't refresh under it
           if (body.classList.contains('mrec-on')) return;               // MREC mode has its own ad
-          /* Re-request EVERY cycle, even if the last request didn't fill — each new request
-             is a fresh chance to fill, which is how we lift requests + match rate. */
-          try { swallow(AdMob.removeBanner()); } catch (e) {}
-          shown = false;                                                // let showAd() re-request a new creative
-          showAd();                                                     // new ad → same reserved strip → no shift, no work loss
+          /* Reload IN PLACE: with a banner already shown, showBanner() routes to the plugin's
+             updateExistingAdView() which loads a fresh ad into the SAME native AdView. We must
+             NOT removeBanner() first — removeBanner async-nulls the native AdView while showBanner
+             async-calls loadAd on it → NullPointerException that CRASHES the whole app (this was
+             the "app quits" bug). In-place reload is also smoother (no teardown/flicker) and still
+             re-requests every cycle even on a prior no-fill. */
+          showAd();
         }, BANNER_CFG.refreshMs);
       }).catch(function () {});
     })();

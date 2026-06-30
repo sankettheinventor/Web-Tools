@@ -1,3 +1,19 @@
+diff --git a/node_modules/@capacitor-community/admob/android/src/main/java/com/getcapacitor/community/admob/banner/BannerExecutor.java b/node_modules/@capacitor-community/admob/android/src/main/java/com/getcapacitor/community/admob/banner/BannerExecutor.java
+index c629139..2748eeb 100644
+--- a/node_modules/@capacitor-community/admob/android/src/main/java/com/getcapacitor/community/admob/banner/BannerExecutor.java
++++ b/node_modules/@capacitor-community/admob/android/src/main/java/com/getcapacitor/community/admob/banner/BannerExecutor.java
+@@ -226,6 +226,11 @@ public class BannerExecutor extends Executor {
+         activitySupplier
+             .get()
+             .runOnUiThread(() -> {
++                // SnapJar patch: guard against a race with removeBanner() (which async-nulls
++                // mAdView on the UI thread). Without this, a refresh/reposition that calls
++                // removeBanner()+showBanner() back-to-back could run loadAd on a null AdView →
++                // NullPointerException that crashes the whole app.
++                if (mAdView == null) return;
+                 final AdRequest adRequest = RequestHelper.createRequest(adOptions);
+                 mAdView.loadAd(adRequest);
+             });
 diff --git a/node_modules/@capacitor-community/admob/android/src/main/java/com/getcapacitor/community/admob/helpers/RequestHelper.java b/node_modules/@capacitor-community/admob/android/src/main/java/com/getcapacitor/community/admob/helpers/RequestHelper.java
 index 8affa64..c43fb5a 100644
 --- a/node_modules/@capacitor-community/admob/android/src/main/java/com/getcapacitor/community/admob/helpers/RequestHelper.java
